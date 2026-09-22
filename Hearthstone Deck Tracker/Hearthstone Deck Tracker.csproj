@@ -19,6 +19,8 @@
     <FileVersion>$(AssemblyVersion)</FileVersion>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <UseWPF>true</UseWPF>
+    <!-- Use the SDK compiler for translations instead of the separate al.exe tool. -->
+    <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
     <PlatformTarget>x64</PlatformTarget>
     <Platforms>x64</Platforms>
   </PropertyGroup>
@@ -79,7 +81,7 @@
   </ItemGroup>
 
   <Target Name="GenerateDesignerFiles">
-    <GenerateResource SdkToolsPath="$(TargetFrameworkSDKToolsDirectory)" Sources="Properties/Strings.resx" StronglyTypedLanguage="C#" StronglyTypedClassName="Strings" StronglyTypedNamespace="Hearthstone_Deck_Tracker.Properties" StronglyTypedFileName="Properties/Strings.Designer.cs" OutputResources="Hearthstone_Deck_Tracker.Properties.Strings.resources" PublicClass="true" />
+    <GenerateResource ExecuteAsTool="false" SdkToolsPath="$(TargetFrameworkSDKToolsDirectory)" Sources="Properties/Strings.resx" StronglyTypedLanguage="C#" StronglyTypedClassName="Strings" StronglyTypedNamespace="Hearthstone_Deck_Tracker.Properties" StronglyTypedFileName="Properties/Strings.Designer.cs" OutputResources="Hearthstone_Deck_Tracker.Properties.Strings.resources" PublicClass="true" />
     <Delete Files="Hearthstone_Deck_Tracker.Properties.Strings.resources" />
   </Target>
 

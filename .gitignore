@@ -192,3 +192,6 @@ Resources/Tiles/
 
 # Rider config files
 .idea/
+
+# Local study notes for agents. Not part of the product.
+/knowledge/

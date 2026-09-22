@@ -6,6 +6,9 @@
     <TargetFramework>net472</TargetFramework>
     <PlatformTarget>x64</PlatformTarget>
     <Platforms>x64</Platforms>
+    <!-- Use already provisioned files without contacting upstream during Bootstrap. -->
+    <UseLocalDependencies Condition="'$(UseLocalDependencies)' == ''">false</UseLocalDependencies>
+    <UpdateLocalizations Condition="'$(UpdateLocalizations)' == ''">false</UpdateLocalizations>
   </PropertyGroup>
 
   <Target Name="Bootstrap">
@@ -22,12 +25,7 @@
     <BobsBuddyUrl>https://libs.hearthsim.net/hdt/BobsBuddy.zip</BobsBuddyUrl>
   </PropertyGroup>
 
-  <ItemGroup>
-    <LocalizationFiles Include="$(SlnDirectory)/HDT-Localization/*.resx" />
-  </ItemGroup>
-
-
-  <Target Name="DownloadDeps" BeforeTargets="Bootstrap">
+  <Target Name="DownloadDeps" BeforeTargets="Bootstrap" Condition="'$(UseLocalDependencies)' != 'true'">
     <DownloadFile SourceUrl="$(HearthDbUrl)" DestinationFolder="$(SlnDirectory)/lib" SkipUnchangedFiles="true">
       <Output TaskParameter="DownloadedFile" ItemName="Content" />
     </DownloadFile>
@@ -42,34 +40,44 @@
     </DownloadFile>
   </Target>
 
-	<Target Name="UnpackHearthMirrorDeps" BeforeTargets="Bootstrap" DependsOnTargets="DownloadDeps">
+	<Target Name="UnpackHearthMirrorDeps" Condition="'$(UseLocalDependencies)' != 'true'" BeforeTargets="Bootstrap" DependsOnTargets="DownloadDeps">
 		<Unzip SourceFiles="$(SlnDirectory)/lib/HearthMirror.x64.zip" DestinationFolder="$(SlnDirectory)/lib" />
 		<Delete Files="$(SlnDirectory)/lib/HearthMirror.x64.zip" />
 	</Target>
 
-  <Target Name="UnpackHearthDbDeps" BeforeTargets="Bootstrap" DependsOnTargets="DownloadDeps">
+  <Target Name="UnpackHearthDbDeps" Condition="'$(UseLocalDependencies)' != 'true'" BeforeTargets="Bootstrap" DependsOnTargets="DownloadDeps">
     <Unzip SourceFiles="$(SlnDirectory)/lib/HearthDb.zip" DestinationFolder="$(SlnDirectory)/lib" />
     <Delete Files="$(SlnDirectory)/lib/HearthDb.zip" />
   </Target>
 
-	<Target Name="UnpackBobsBuddyDeps" BeforeTargets="Bootstrap" DependsOnTargets="DownloadDeps">
+	<Target Name="UnpackBobsBuddyDeps" Condition="'$(UseLocalDependencies)' != 'true'" BeforeTargets="Bootstrap" DependsOnTargets="DownloadDeps">
 		<Unzip SourceFiles="$(SlnDirectory)/lib/BobsBuddy.zip" DestinationFolder="$(SlnDirectory)/lib" />
 		<Delete Files="$(SlnDirectory)/lib/BobsBuddy.zip" />
 	</Target>
 
-  <Target Name="CloneHDTLocalization" Condition="!Exists('$(SlnDirectory)/HDT-Localization')" BeforeTargets="Bootstrap">
-      <Message Importance="normal" Text="Couldn't find HDT-Localization repo." />
-      <Exec WorkingDirectory="$(SlnDirectory)" Command="git clone --depth=1 https://github.com/HearthSim/HDT-Localization.git HDT-Localization" />
-      <Copy SourceFiles="@(LocalizationFiles)" DestinationFolder="$(HDTDirectory)/Properties" SkipUnchangedFiles="true"/>
+  <Target Name="CloneHDTLocalization" Condition="'$(UseLocalDependencies)' != 'true' and !Exists('$(SlnDirectory)/HDT-Localization')" BeforeTargets="Bootstrap">
+    <Exec WorkingDirectory="$(SlnDirectory)" Command="git clone --depth=1 https://github.com/HearthSim/HDT-Localization.git HDT-Localization" />
   </Target>
 
-  <Target Name="UpdateHDTLocalization" Condition="Exists('$(SlnDirectory)/HDT-Localization')" BeforeTargets="Bootstrap">
-      <Message Importance="normal" Text="Fetching latest localizations from HDT-Localization repo." />
-      <Exec WorkingDirectory="$(SlnDirectory)/HDT-Localization" Command="git fetch" />
-      <Exec WorkingDirectory="$(SlnDirectory)/HDT-Localization" Command="git reset --hard origin/master" />
-      <Copy SourceFiles="@(LocalizationFiles)" DestinationFolder="$(HDTDirectory)/Properties" SkipUnchangedFiles="true"/>
+  <Target Name="UpdateHDTLocalization" Condition="'$(UseLocalDependencies)' != 'true' and '$(UpdateLocalizations)' == 'true' and Exists('$(SlnDirectory)/HDT-Localization/.git')" BeforeTargets="Bootstrap">
+    <Exec WorkingDirectory="$(SlnDirectory)/HDT-Localization" Command="git pull --ff-only" />
   </Target>
 
+  <Target Name="CopyHDTLocalization" BeforeTargets="Bootstrap" DependsOnTargets="CloneHDTLocalization;UpdateHDTLocalization">
+    <!-- Evaluate after cloning, so the first build also sees the new files. -->
+    <ItemGroup>
+      <LocalizationFiles Include="$(SlnDirectory)/HDT-Localization/*.resx" />
+    </ItemGroup>
+    <Copy SourceFiles="@(LocalizationFiles)" DestinationFolder="$(HDTDirectory)/Properties" SkipUnchangedFiles="true" />
+    <Error Condition="!Exists('$(HDTDirectory)/Properties/Strings.resx')" Text="Missing Strings.resx. Provide HDT-Localization/*.resx or run Bootstrap with UseLocalDependencies=false." />
+  </Target>
+
+  <Target Name="ValidateLocalDependencies" BeforeTargets="Bootstrap" Condition="'$(UseLocalDependencies)' == 'true'">
+    <ItemGroup>
+      <RequiredDependency Include="HearthDb.dll;HearthMirror.dll;HSReplay.dll;BobsBuddy.dll" />
+    </ItemGroup>
+    <Error Condition="!Exists('$(SlnDirectory)/lib/%(RequiredDependency.Identity)')" Text="Missing lib/%(RequiredDependency.Identity). Provision dependencies before using UseLocalDependencies=true. HSReplay and BobsBuddy are still required until their features are removed." />
+  </Target>
   <Target Name="Changelog" BeforeTargets="Bootstrap">
     <Copy SourceFiles="$(SlnDirectory)/CHANGELOG.md" DestinationFolder="$(HDTDirectory)/Resources" SkipUnchangedFiles="true"/>
   </Target>
