@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
 using System.Windows.Media;
 using Hearthstone_Deck_Tracker.Enums;
@@ -21,6 +22,7 @@ namespace Hearthstone_Deck_Tracker.Windows.MainWindowControls
 		private int _losses;
 		private bool _hasDeck;
 		private string _resultFilter = "all";
+		private int _periodFilter;
 
 		private static readonly Brush WinSegment = new SolidColorBrush(Color.FromRgb(0x80, 0xD8, 0xB0));
 		private static readonly Brush LossSegment = new SolidColorBrush(Color.FromRgb(0xED, 0x93, 0x9E));
@@ -69,6 +71,8 @@ namespace Hearthstone_Deck_Tracker.Windows.MainWindowControls
 				_filteredGames = value;
 				OnPropertyChanged();
 				OnPropertyChanged(nameof(ShownCountLabel));
+				OnPropertyChanged(nameof(HasFilteredGames));
+				OnPropertyChanged(nameof(DayGroups));
 			}
 		}
 
@@ -97,6 +101,9 @@ namespace Hearthstone_Deck_Tracker.Windows.MainWindowControls
 		}
 
 		public int TotalGames => Wins + Losses;
+		public string WinrateLabel => TotalGames == 0 ? "—" : WinrateTotal.ToString("0.#", CultureInfo.GetCultureInfo("ru-RU")) + "%";
+		public IEnumerable<MatchHistoryDay> DayGroups => FilteredGames.GroupBy(g => g.StartTime.Date)
+			.Select(g => new MatchHistoryDay(g.Key, g.ToList()));
 
 		public bool HasData
 		{
@@ -115,6 +122,7 @@ namespace Hearthstone_Deck_Tracker.Windows.MainWindowControls
 			{
 				_winrateTotal = value;
 				OnPropertyChanged();
+				OnPropertyChanged(nameof(WinrateLabel));
 			}
 		}
 
@@ -159,8 +167,23 @@ namespace Hearthstone_Deck_Tracker.Windows.MainWindowControls
 		}
 
 		public string ShownCountLabel => HasData
-			? $"Показано {FilteredGames.Count} из {Games.Count}"
+			? $"Показано {FilteredGames.Count} из {TotalGames}"
 			: "";
+
+		public int PeriodFilter
+		{
+			get => _periodFilter;
+			set
+			{
+				if(_periodFilter == value)
+					return;
+				_periodFilter = value;
+				ApplyFilter();
+				OnPropertyChanged();
+			}
+		}
+
+		public bool HasFilteredGames => FilteredGames.Count > 0;
 
 		public static Brush GetResultAccent(GameResult result)
 			=> result == GameResult.Win ? WinSegment : LossSegment;
@@ -173,7 +196,9 @@ namespace Hearthstone_Deck_Tracker.Windows.MainWindowControls
 
 		public void Update()
 		{
-			Games = _deck?.GetRelevantGames().OrderByDescending(x => x.StartTime).ToList() ?? new List<GameStats>();
+			Games = _deck?.GetRelevantGames()
+				.Where(x => x.Result == GameResult.Win || x.Result == GameResult.Loss)
+				.OrderByDescending(x => x.StartTime).ToList() ?? new List<GameStats>();
 			HasData = Games.Any();
 
 			if(!HasData)
@@ -185,15 +210,6 @@ namespace Hearthstone_Deck_Tracker.Windows.MainWindowControls
 				RecentResults.Clear();
 				return;
 			}
-
-			Wins = Games.Count(g => g.Result == GameResult.Win);
-			Losses = Games.Count(g => g.Result == GameResult.Loss);
-			var total = Wins + Losses;
-			WinrateTotal = total > 0 ? Math.Round(100.0 * Wins / total, 1) : 0;
-
-			RecentResults.Clear();
-			foreach(var game in Games.Take(24).Reverse())
-				RecentResults.Add(game.Result == GameResult.Loss ? LossSegment : WinSegment);
 
 			ApplyFilter();
 			OnPropertyChanged(nameof(FilterAll));
@@ -213,11 +229,35 @@ namespace Hearthstone_Deck_Tracker.Windows.MainWindowControls
 		private void ApplyFilter()
 		{
 			IEnumerable<GameStats> query = Games;
+			if(_periodFilter == 1)
+				query = query.Where(g => g.StartTime.Date >= DateTime.Today.AddDays(-6));
+			else if(_periodFilter == 2)
+				query = query.Where(g => g.StartTime.Date == DateTime.Today);
+			var periodGames = query.ToList();
+			Wins = periodGames.Count(g => g.Result == GameResult.Win);
+			Losses = periodGames.Count(g => g.Result == GameResult.Loss);
+			WinrateTotal = TotalGames == 0 ? 0 : Math.Round(100.0 * Wins / TotalGames, 1);
+			RecentResults.Clear();
+			foreach(var game in periodGames.Take(24).Reverse())
+				RecentResults.Add(GetResultAccent(game.Result));
 			if(_resultFilter == "win")
 				query = query.Where(g => g.Result == GameResult.Win);
 			else if(_resultFilter == "loss")
 				query = query.Where(g => g.Result == GameResult.Loss);
 			FilteredGames = query.ToList();
 		}
+	}
+
+	public class MatchHistoryDay
+	{
+		public MatchHistoryDay(DateTime date, List<GameStats> games)
+		{
+			Label = date == DateTime.Today ? "Сегодня" : date == DateTime.Today.AddDays(-1) ? "Вчера"
+				: date.ToString("d MMMM", CultureInfo.GetCultureInfo("ru-RU"));
+			Games = games;
+		}
+		public string Label { get; }
+		public List<GameStats> Games { get; }
+		public string CountLabel => $"Матчей: {Games.Count}";
 	}
 }

@@ -15,6 +15,8 @@
            mc:Ignorable="d"
            d:DesignHeight="500" d:DesignWidth="300">
     <DockPanel.Resources>
+      <ResourceDictionary>
+        <ResourceDictionary.MergedDictionaries><ResourceDictionary Source="/Controls/StandardDesign.xaml"/></ResourceDictionary.MergedDictionaries>
         <SolidColorBrush x:Key="TextBrush" Color="#EDF2FA"/>
         <SolidColorBrush x:Key="GrayTextColorBrush" Color="#A3B0C4"/>
         <SolidColorBrush x:Key="ControlBackgroundBrush" Color="#1C2533"/>
@@ -94,16 +96,17 @@
             <Path Fill="{StaticResource TextBrush}" Data="F1 M128,128z M0,0z M72.235,79.21C73.0695,76.488 73.3789,74.7684 72.9561,71.9516 72.4948,68.8782 71.8963,66.8896 69.711,64.6933 67.25,62.2199 60.6967,61.427 60.6967,61.427 60.6967,61.427 60.6967,69.285 58.5333,70.1371 57.4512,70.5632 51.5224,65.8501 51.3218,61.427 51.2811,60.5298 57.3469,52.6993 63.2208,51.9911 64.6627,51.8172 78.1658,58.8699 79.4468,67.5971 80.2304,72.9361 78.9604,76.3974 76.2017,81.0251 74.0383,84.6543 52.4037,101.7121 52.4037,101.7121 52.4037,101.7121 55.4531,103.6071 63.2207,102.8001 70.7181,102.0221 82.9067,98.5642 84.8547,97.3566 88.8207,94.8979 102.8837,76.3076 103.9647,63.2426 105.0467,50.1776 80.5277,21.2666 74.0377,20.0556 69.7108,19.2477 43.3887,27.5962 38.7017,32.0316 36.0172,34.572 24.9997,54.5326 24.9997,58.8876 24.9997,61.0651 32.2111,78.3646 35.0957,81.0256 37.9803,83.6871 58.5337,92.0876 60.6967,91.1876 63.2207,90.1376 71.4007,81.9333 72.2347,79.2116z" />
             <Path Fill="{StaticResource TextBrush}" Data="F1 M128,128z M0,0z M72.235,79.21C73.0695,76.488 73.3789,74.7684 72.9561,71.9516 72.4948,68.8782 71.8963,66.8896 69.711,64.6933 67.25,62.2199 60.6967,61.427 60.6967,61.427 60.6967,61.427 60.6967,69.285 58.5333,70.1371 57.4512,70.5632 51.5224,65.8501 51.3218,61.427 51.2811,60.5298 57.3469,52.6993 63.2208,51.9911 64.6627,51.8172 78.1658,58.8699 79.4468,67.5971 80.2304,72.9361 78.9604,76.3974 76.2017,81.0251 74.0383,84.6543 52.4037,101.7121 52.4037,101.7121 52.4037,101.7121 55.4531,103.6071 63.2207,102.8001 70.7181,102.0221 82.9067,98.5642 84.8547,97.3566 88.8207,94.8979 102.8837,76.3076 103.9647,63.2426 105.0467,50.1776 80.5277,21.2666 74.0377,20.0556 69.7108,19.2477 43.3887,27.5962 38.7017,32.0316 36.0172,34.572 24.9997,54.5326 24.9997,58.8876 24.9997,61.0651 32.2111,78.3646 35.0957,81.0256 37.9803,83.6871 58.5337,92.0876 60.6967,91.1876 63.2207,90.1376 71.4007,81.9333 72.2347,79.2116z" />
         </Canvas>
+      </ResourceDictionary>
     </DockPanel.Resources>
-    <StackPanel DockPanel.Dock="Top" Margin="8,4,8,12">
-        <TextBlock Text="Библиотека колод" FontSize="28" FontWeight="SemiBold" Foreground="{DynamicResource TextBrush}"/>
-        <TextBlock x:Name="LibraryCount" Text="Ваши колоды · Standard" Foreground="{DynamicResource GrayTextColorBrush}" Margin="0,3,0,18"/>
-        <TextBox x:Name="LibrarySearch" FontSize="14" MinHeight="38" Padding="10,6" Background="#1C2533" Foreground="#EDF2FA" CaretBrush="White" BorderBrush="#3F5673" TextChanged="LibrarySearch_OnTextChanged"
+    <StackPanel DockPanel.Dock="Top" Margin="16,18,16,10">
+        <TextBlock Text="Библиотека колод" FontSize="22" FontWeight="SemiBold" Foreground="{DynamicResource TextBrush}"/>
+        <TextBlock x:Name="LibraryCount" Text="Ваши колоды · Standard" Foreground="{DynamicResource GrayTextColorBrush}" Margin="0,4,0,16"/>
+        <TextBox x:Name="LibrarySearch" Style="{StaticResource STSearch}" Tag="Поиск колоды, класса, архетипа" TextChanged="LibrarySearch_OnTextChanged"
                  controls1:TextBoxHelper.Watermark="Найти колоду, класс, архетип или тег"/>
         <WrapPanel Margin="0,12,0,0">
-            <CheckBox x:Name="FavoritesFilter" Foreground="#EDF2FA" Content="Избранное" Margin="0,0,18,8" Checked="LibraryFilter_OnChanged" Unchecked="LibraryFilter_OnChanged"/>
-            <CheckBox x:Name="GroupArchetypes" Foreground="#EDF2FA" Content="По архетипам" IsChecked="True" Margin="0,0,18,8" Checked="LibraryFilter_OnChanged" Unchecked="LibraryFilter_OnChanged"/>
-            <Button Content="Фильтры и сортировка" Padding="10,4" Click="LibrarySort_OnClick"/>
+            <CheckBox x:Name="FavoritesFilter" Foreground="#EDF2FA" Content="Избранное" Margin="0,0,6,6" Checked="LibraryFilter_OnChanged" Unchecked="LibraryFilter_OnChanged"/>
+            <CheckBox x:Name="GroupArchetypes" Foreground="#EDF2FA" Content="По архетипам" IsChecked="True" Margin="0,0,6,6" Checked="LibraryFilter_OnChanged" Unchecked="LibraryFilter_OnChanged"/>
+            <Button Content="Фильтры" Style="{StaticResource STButton}" Padding="10,6" Margin="0,0,0,6" ToolTip="Фильтры и сортировка" Click="LibrarySort_OnClick"/>
         </WrapPanel>
     </StackPanel>
     <DockPanel DockPanel.Dock="Top" Visibility="Collapsed">
@@ -253,13 +256,13 @@
             </ListView.ItemTemplate>
         </ListView>
     </DockPanel>
-    <ListView Name="ListViewClasses" Height="58" DockPanel.Dock="Top" SelectionChanged="Selector_OnSelectionChanged"
-              BorderThickness="0" Background="Transparent" Margin="8,0,8,12"
-              ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Disabled"
+    <ListView Name="ListViewClasses" Height="88" DockPanel.Dock="Top" SelectionChanged="Selector_OnSelectionChanged"
+              BorderThickness="0" Background="Transparent" Margin="14,0,14,4"
+              ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled"
               ScrollViewer.CanContentScroll="True">
         <ListView.Template>
             <ControlTemplate TargetType="ListView">
-                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" Background="Transparent"><ItemsPresenter/></ScrollViewer>
+                <ItemsPresenter/>
             </ControlTemplate>
         </ListView.Template>
         <ListView.Resources>
@@ -268,7 +271,7 @@
             </Style>
             <Style TargetType="ListViewItem">
                 <Setter Property="Padding" Value="0"/>
-                <Setter Property="Margin" Value="2,0"/>
+                <Setter Property="Margin" Value="2"/>
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="ListViewItem">
@@ -284,16 +287,16 @@
         </ListView.Resources>
         <ListView.ItemsPanel>
             <ItemsPanelTemplate>
-                <StackPanel Orientation="Horizontal" />
+                <UniformGrid Columns="6" />
             </ItemsPanelTemplate>
         </ListView.ItemsPanel>
     </ListView>
-    <Border DockPanel.Dock="Bottom" Background="#1C2533" CornerRadius="9" Padding="12" Margin="6,12,6,0">
+    <Border DockPanel.Dock="Bottom" Background="#1C2533" CornerRadius="9" Padding="12" Margin="16,12,16,16">
         <DockPanel>
             <Button DockPanel.Dock="Right" Content="Без колоды" Padding="10,5" Margin="12,0,0,0" Click="LibraryNoDeck_OnClick"/>
             <StackPanel VerticalAlignment="Center">
                 <TextBlock Text="АКТИВНАЯ КОЛОДА" FontSize="10" Foreground="#A3B0C4"/>
-                <TextBlock Text="{Binding ActiveDeck.Name, RelativeSource={RelativeSource AncestorType=deckPicker:DeckPicker}, TargetNullValue=Не выбрана}" Foreground="#EDF2FA" TextTrimming="CharacterEllipsis" Margin="0,3,0,0"/>
+                <TextBlock Text="{Binding ActiveDeck.Name, RelativeSource={RelativeSource AncestorType=deckPicker:DeckPicker}, TargetNullValue=Не выбрана, FallbackValue=Не выбрана}" Foreground="#EDF2FA" TextTrimming="CharacterEllipsis" Margin="0,3,0,0"/>
             </StackPanel>
         </DockPanel>
     </Border>
@@ -349,16 +352,16 @@
             </Style>
             <Style TargetType="ListViewItem">
                 <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                <Setter Property="Margin" Value="6,4"/>
+                <Setter Property="Margin" Value="16,0,8,8"/>
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="ListViewItem">
-                            <Border x:Name="Card" CornerRadius="12" Background="{DynamicResource ControlBackgroundBrush}" BorderBrush="#304F6782" BorderThickness="1" Padding="16">
+                            <Border x:Name="Card" CornerRadius="10" Background="{DynamicResource ControlBackgroundBrush}" BorderBrush="Transparent" BorderThickness="1" Padding="12">
                                 <ContentPresenter/>
                             </Border>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Card" Property="BorderBrush" Value="#7398BD"/></Trigger>
-                                <Trigger Property="IsSelected" Value="True"><Setter TargetName="Card" Property="BorderBrush" Value="{DynamicResource AccentColorBrush}"/><Setter TargetName="Card" Property="Background" Value="#244D91C9"/></Trigger>
+                                <Trigger Property="IsSelected" Value="True"><Setter TargetName="Card" Property="BorderBrush" Value="#52769E"/><Setter TargetName="Card" Property="Background" Value="#21334A"/></Trigger>
                                 <Trigger Property="IsKeyboardFocusWithin" Value="True"><Setter TargetName="Card" Property="BorderBrush" Value="{DynamicResource AccentColorBrush}"/></Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
@@ -370,9 +373,9 @@
             <GroupStyle>
                 <GroupStyle.HeaderTemplate>
                     <DataTemplate>
-                        <DockPanel Margin="10,18,10,7">
+                        <DockPanel Margin="16,14,16,9">
                             <TextBlock Text="{Binding ItemCount}" DockPanel.Dock="Right" Foreground="{DynamicResource GrayTextColorBrush}"/>
-                            <TextBlock Text="{Binding Name}" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextBrush}"/>
+                            <TextBlock Text="{Binding Name}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource GrayTextColorBrush}" TextTrimming="CharacterEllipsis"/>
                         </DockPanel>
                     </DataTemplate>
                 </GroupStyle.HeaderTemplate>
@@ -381,14 +384,14 @@
         <ListView.ItemTemplate>
             <DataTemplate>
                 <Grid>
-                    <Grid.ColumnDefinitions><ColumnDefinition Width="56"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                    <Border Width="44" Height="56" CornerRadius="8" Background="{Binding Deck.ClassColorBrush}" VerticalAlignment="Top">
-                        <Image Source="{Binding Deck.ClassImage}" Width="40" Height="40" RenderOptions.BitmapScalingMode="HighQuality"/>
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="36"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                    <Border Width="36" Height="40" CornerRadius="8" Background="Transparent" VerticalAlignment="Top">
+                        <Image Source="{Binding Deck.ClassImage}" Width="32" Height="32" RenderOptions.BitmapScalingMode="HighQuality"/>
                     </Border>
                     <StackPanel Grid.Column="1" Margin="8,0,12,0">
-                        <TextBlock Text="{Binding Deck.NameAndVersion}" FontSize="18" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource TextBrush}" ToolTip="{Binding Deck.NameAndVersion}"/>
+                        <TextBlock Text="{Binding Deck.NameAndVersion}" FontSize="15" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource TextBrush}" ToolTip="{Binding Deck.NameAndVersion}"/>
                         <Button Content="{Binding Archetype}" Click="SetArchetype_OnClick" HorizontalAlignment="Left" Padding="7,2" Margin="0,5,0,10" Foreground="#B4C8E2" FontSize="11" ToolTip="Изменить архетип колоды"/>
-                        <TextBlock Text="{Binding Deck.StatsString}" FontSize="13" Foreground="{DynamicResource TextBrush}"/>
+                        <TextBlock Text="{Binding Deck.StatsString}" FontSize="11" Foreground="{DynamicResource GrayTextColorBrush}"/>
                     </StackPanel>
                     <StackPanel Grid.Column="2">
                         <Button Content="{Binding FavoriteGlyph}" Click="Favorite_OnClick" FontSize="22" Padding="6,0" HorizontalAlignment="Right" ToolTip="Добавить или убрать из избранного"/>
@@ -399,7 +402,7 @@
         </ListView.ItemTemplate>
     </ListView>
         <StackPanel x:Name="LibraryEmpty" Visibility="Collapsed" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="24" IsHitTestVisible="False">
-            <TextBlock Text="Здесь пока нет колод" FontSize="22" TextAlignment="Center" Foreground="{DynamicResource TextBrush}"/>
+            <TextBlock Text="Здесь пока нет колод" FontSize="18" FontWeight="SemiBold" TextAlignment="Center" Foreground="{DynamicResource TextBrush}"/>
             <TextBlock Text="Добавьте колоду через меню «Импорт» или измените фильтры." TextWrapping="Wrap" TextAlignment="Center" MaxWidth="340" Margin="0,12,0,0" Foreground="{DynamicResource GrayTextColorBrush}"/>
         </StackPanel>
     </Grid>

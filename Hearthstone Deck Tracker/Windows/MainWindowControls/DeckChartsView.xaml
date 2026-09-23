@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="Hearthstone_Deck_Tracker.Windows.MainWindowControls.DeckChartsView"
+<UserControl x:Class="Hearthstone_Deck_Tracker.Windows.MainWindowControls.DeckChartsView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -6,62 +6,38 @@
              xmlns:local="clr-namespace:Hearthstone_Deck_Tracker.Windows.MainWindowControls"
              xmlns:converters="clr-namespace:Hearthstone_Deck_Tracker.Utility.Converters"
              xmlns:lex="http://wpflocalizeextension.codeplex.com"
-             xmlns:commands="clr-namespace:Hearthstone_Deck_Tracker.Commands"
              mc:Ignorable="d"
              d:DesignHeight="500" d:DesignWidth="360"
              Background="#121721" TextElement.FontFamily="Segoe UI">
     <UserControl.Resources>
-        <converters:GameStatsHasReplayConverter x:Key="CanViewReplayConverter" />
+      <ResourceDictionary>
+        <ResourceDictionary.MergedDictionaries><ResourceDictionary Source="/Controls/StandardDesign.xaml"/></ResourceDictionary.MergedDictionaries>
         <converters:LocalizationConverter x:Key="LocalizationConverter" />
-        <Style x:Key="HistoryFilter" TargetType="RadioButton">
-            <Setter Property="Foreground" Value="#A3B0C4"/>
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderBrush" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="10,6"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="RadioButton">
-                        <Border x:Name="Surface" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6" Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="Surface" Property="Background" Value="#395578"/>
-                                <Setter TargetName="Surface" Property="BorderBrush" Value="#648FBE"/>
-                                <Setter Property="Foreground" Value="#EDF2FA"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
+      </ResourceDictionary>
     </UserControl.Resources>
     <UserControl.DataContext>
         <local:DeckChartsViewModel/>
     </UserControl.DataContext>
     <Grid>
         <DockPanel Visibility="{Binding HasData, Converter={StaticResource BoolToVisibility}}">
-            <Border DockPanel.Dock="Top" Background="#1C2533" CornerRadius="12" Padding="18,16" Margin="14,8,14,0">
+            <Border DockPanel.Dock="Top" Background="#1C2533" CornerRadius="10" Padding="16" Margin="0">
                 <StackPanel>
                     <UniformGrid Columns="3">
                         <StackPanel>
-                            <TextBlock FontSize="27" FontWeight="SemiBold" Foreground="#EDF2FA">
-                                <Run Text="{Binding WinrateTotal, Mode=OneWay}"/><Run Text="%"/>
-                            </TextBlock>
-                            <TextBlock Text="Победы" FontSize="12" Foreground="#A3B0C4"/>
+                            <TextBlock Text="{Binding WinrateLabel}" FontSize="23" FontWeight="SemiBold" Foreground="#EDF2FA"/>
+                            <TextBlock Text="Доля побед" FontSize="10" Foreground="#A3B0C4"/>
                         </StackPanel>
                         <StackPanel>
-                            <TextBlock FontSize="27" FontWeight="SemiBold" Foreground="#EDF2FA">
+                          <Viewbox StretchDirection="DownOnly" HorizontalAlignment="Left" MaxHeight="29">
+                            <TextBlock FontSize="23" FontWeight="SemiBold" Foreground="#EDF2FA">
                                 <Run Text="{Binding Wins, Mode=OneWay}"/><Run Text=" — "/><Run Text="{Binding Losses, Mode=OneWay}"/>
                             </TextBlock>
-                            <TextBlock Text="Победы / поражения" FontSize="12" Foreground="#A3B0C4"/>
+                          </Viewbox>
+                            <TextBlock Text="Победы / поражения" FontSize="10" Foreground="#A3B0C4" TextWrapping="Wrap"/>
                         </StackPanel>
                         <StackPanel>
-                            <TextBlock Text="{Binding TotalGames}" FontSize="27" FontWeight="SemiBold" Foreground="#EDF2FA"/>
-                            <TextBlock Text="Всего игр" FontSize="12" Foreground="#A3B0C4"/>
+                            <TextBlock Text="{Binding TotalGames}" FontSize="23" FontWeight="SemiBold" Foreground="#EDF2FA"/>
+                            <TextBlock Text="Игр" FontSize="10" Foreground="#A3B0C4"/>
                         </StackPanel>
                     </UniformGrid>
                     <ItemsControl ItemsSource="{Binding RecentResults}" Margin="0,16,0,0">
@@ -78,83 +54,99 @@
                     </ItemsControl>
                     <DockPanel Margin="0,8,0,0">
                         <TextBlock Text="Последние матчи" FontSize="11" Foreground="#A3B0C4"/>
-                        <TextBlock Text="Новые сверху" FontSize="11" Foreground="#A3B0C4" HorizontalAlignment="Right"/>
+                        <TextBlock Text="Старые → новые" FontSize="11" Foreground="#A3B0C4" HorizontalAlignment="Right"/>
                     </DockPanel>
                 </StackPanel>
             </Border>
 
-            <Border DockPanel.Dock="Top" Background="#19212D" CornerRadius="8" Padding="3" Margin="14,16,14,0" HorizontalAlignment="Left">
-                <StackPanel Orientation="Horizontal">
-                    <RadioButton Content="Все" GroupName="HistoryFilter" Style="{StaticResource HistoryFilter}" IsChecked="{Binding FilterAll}"/>
-                    <RadioButton Content="Победы" GroupName="HistoryFilter" Style="{StaticResource HistoryFilter}" IsChecked="{Binding FilterWins}"/>
-                    <RadioButton Content="Поражения" GroupName="HistoryFilter" Style="{StaticResource HistoryFilter}" IsChecked="{Binding FilterLosses}"/>
-                </StackPanel>
-            </Border>
+            <Grid DockPanel.Dock="Top" Margin="0,14,0,0">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                <Border Background="#19212D" CornerRadius="8" Padding="3" HorizontalAlignment="Left">
+                    <StackPanel Orientation="Horizontal">
+                        <RadioButton Content="Все" GroupName="HistoryFilter" Style="{StaticResource STFilter}" IsChecked="{Binding FilterAll}"/>
+                        <RadioButton Content="Победы" GroupName="HistoryFilter" Style="{StaticResource STFilter}" IsChecked="{Binding FilterWins}"/>
+                        <RadioButton Content="Поражения" GroupName="HistoryFilter" Style="{StaticResource STFilter}" IsChecked="{Binding FilterLosses}"/>
+                    </StackPanel>
+                </Border>
+                <ComboBox Grid.Column="1" Width="98" Margin="6,0,0,0" VerticalAlignment="Center"
+                          SelectedIndex="{Binding PeriodFilter, Mode=TwoWay}" Foreground="#EDF2FA" Background="#1C2533" BorderBrush="#3F5673">
+                    <ComboBoxItem Content="Всё время"/><ComboBoxItem Content="7 дней"/><ComboBoxItem Content="Сегодня"/>
+                </ComboBox>
+            </Grid>
 
-            <DockPanel DockPanel.Dock="Bottom" Margin="18,12,18,4">
+            <DockPanel DockPanel.Dock="Bottom" Margin="0,12,0,0">
                 <TextBlock Text="{Binding ShownCountLabel}" FontSize="11" Foreground="#A3B0C4"/>
-                <TextBlock Text="Новые матчи сверху" FontSize="11" Foreground="#A3B0C4" HorizontalAlignment="Right"/>
+                <TextBlock Text="Новые сверху" FontSize="11" Foreground="#A3B0C4" HorizontalAlignment="Right"/>
             </DockPanel>
 
-            <ScrollViewer Margin="10,12,10,0" VerticalScrollBarVisibility="Auto">
-                <ItemsControl ItemsSource="{Binding FilteredGames, IsAsync=True}">
+            <ScrollViewer Margin="0,16,0,0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+              <Grid>
+                <ItemsControl ItemsSource="{Binding DayGroups}">
+                  <ItemsControl.ItemTemplate><DataTemplate><StackPanel>
+                    <DockPanel Margin="0,0,8,10"><TextBlock Text="{Binding Label}" FontSize="12" FontWeight="SemiBold" Foreground="#A3B0C4"/><TextBlock Text="{Binding CountLabel}" FontSize="10" Foreground="#8F9DB1" HorizontalAlignment="Right"/></DockPanel>
+                <ItemsControl ItemsSource="{Binding Games}" Margin="0,0,0,12">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border Margin="4,0,4,8" Background="#1C2533" CornerRadius="10" BorderBrush="Transparent" BorderThickness="1">
-                                <Border.Style>
-                                    <Style TargetType="Border">
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ContentPresenter}}" Value="True">
-                                                <Setter Property="BorderBrush" Value="#52769E"/>
-                                                <Setter Property="Background" Value="#203047"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Border.Style>
-                                <Grid Cursor="Hand" IsEnabled="{Binding Converter={StaticResource CanViewReplayConverter}, Path=.}">
-                                    <Grid.InputBindings>
-                                        <MouseBinding MouseAction="LeftClick" Command="commands:GlobalCommands.OpenReplay" CommandParameter="{Binding}"/>
-                                    </Grid.InputBindings>
+                            <Border Margin="0,0,6,8">
+                                <Expander Style="{StaticResource STMatch}">
+                                  <Expander.Header>
+                                <Grid>
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="44"/>
+                                        <ColumnDefinition Width="40"/>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <Border Width="30" Height="30" CornerRadius="8" Margin="14,14,0,14" HorizontalAlignment="Left" VerticalAlignment="Center"
+                                    <Border Width="30" Height="30" CornerRadius="8" Margin="0" HorizontalAlignment="Left" VerticalAlignment="Center"
                                             Background="{Binding ResultIconBackground}">
                                         <TextBlock Text="{Binding ResultGlyph}" HorizontalAlignment="Center" VerticalAlignment="Center"
                                                    FontWeight="SemiBold" Foreground="{Binding ResultAccentBrush}"/>
                                     </Border>
-                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="4,0,8,0">
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,8,0">
                                         <TextBlock Text="{Binding OpponentHero, Converter={StaticResource LocalizationConverter}}"
-                                                   FontWeight="SemiBold" FontSize="14" Foreground="#EDF2FA"/>
+                                                   FontWeight="SemiBold" FontSize="14" Foreground="#EDF2FA" TextTrimming="CharacterEllipsis"/>
                                         <TextBlock FontSize="11" Foreground="#A3B0C4" Margin="0,3,0,0">
-                                            <Run Text="{Binding Turns, Mode=OneWay}"/><Run Text=" ходов · "/><Run Text="{Binding Duration, Mode=OneWay}"/>
+                                            <Run Text="{Binding Turns, Mode=OneWay}"/><Run Text=" ходов · "/><Run Text="{Binding SortableDuration, Mode=OneWay}"/><Run Text=" мин"/>
                                         </TextBlock>
                                     </StackPanel>
-                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="0,0,14,0" HorizontalAlignment="Right">
+                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="0" HorizontalAlignment="Right">
                                         <TextBlock Text="{Binding Result, Converter={StaticResource EnumDescriptionConverter}}"
                                                    FontWeight="Medium" HorizontalAlignment="Right" Foreground="{Binding ResultAccentBrush}"/>
-                                        <TextBlock Text="{Binding Age}" FontSize="11" Foreground="#A3B0C4" HorizontalAlignment="Right" Margin="0,3,0,0"/>
+                                        <TextBlock Text="{Binding StartTime, StringFormat={}{0:dd.MM · HH:mm}}" FontSize="10" Foreground="#A3B0C4" HorizontalAlignment="Right" Margin="0,3,0,0"/>
                                     </StackPanel>
                                 </Grid>
+                                  </Expander.Header>
+                                  <StackPanel Cursor="Arrow">
+                                      <Border Height="1" Background="#34445A" Margin="0,0,0,12"/>
+                                      <DockPanel Margin="0,0,0,6"><TextBlock Text="Ваш ранг" Foreground="#A3B0C4"/><TextBlock Text="{Binding RankString}" HorizontalAlignment="Right" Foreground="#EDF2FA"/></DockPanel>
+                                      <DockPanel Margin="0,0,0,6"><TextBlock Text="Первый ход" Foreground="#A3B0C4"/><TextBlock HorizontalAlignment="Right" Foreground="#EDF2FA"><TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Text" Value="Вы"/><Style.Triggers><DataTrigger Binding="{Binding Coin}" Value="True"><Setter Property="Text" Value="Соперник"/></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock></DockPanel>
+                                      <TextBlock Text="{Binding Note}" TextWrapping="Wrap" Foreground="#A3B0C4" Margin="0,4,0,0"/>
+                                  </StackPanel>
+                                </Expander>
                             </Border>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
+                  </StackPanel></DataTemplate></ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <TextBlock Text="За этот период таких матчей нет" Foreground="#A3B0C4" TextAlignment="Center" Margin="14,28"
+                           Visibility="{Binding HasFilteredGames, Converter={StaticResource InverseBoolToVisibility}}"/>
+              </Grid>
             </ScrollViewer>
         </DockPanel>
         <Grid Visibility="{Binding HasData, Converter={StaticResource InverseBoolToVisibility}}">
             <StackPanel VerticalAlignment="Center" Margin="24">
-                <TextBlock TextAlignment="Center" FontSize="16" Foreground="#A3B0C4"
+                <TextBlock TextAlignment="Center" TextWrapping="Wrap" FontSize="18" FontWeight="SemiBold" Foreground="#EDF2FA"
                            Visibility="{Binding HasDeck, Converter={StaticResource BoolToVisibility}}"
                            Text="{lex:Loc DeckCharts_Label_NoData}"/>
-                <TextBlock TextAlignment="Center" Margin="0,8,0,0" Foreground="#A3B0C4"
+                <TextBlock TextAlignment="Center" TextWrapping="Wrap" Margin="0,8,0,0" Foreground="#A3B0C4"
                            Visibility="{Binding HasDeck, Converter={StaticResource BoolToVisibility}}"
                            Text="{lex:Loc DeckCharts_Label_PlaySomeGames}"/>
-                <TextBlock TextAlignment="Center" FontSize="16" Foreground="#A3B0C4"
+                <TextBlock TextAlignment="Center" TextWrapping="Wrap" FontSize="18" FontWeight="SemiBold" Foreground="#EDF2FA"
                            Visibility="{Binding HasDeck, Converter={StaticResource InverseBoolToVisibility}}"
-                           Text="{lex:Loc DeckCharts_Label_NoSelectedDeck}"/>
+                           Text="Пока нет истории"/>
+                <TextBlock TextAlignment="Center" TextWrapping="Wrap" FontSize="12" Foreground="#A3B0C4" Margin="0,8,0,0"
+                           Visibility="{Binding HasDeck, Converter={StaticResource InverseBoolToVisibility}}"
+                           Text="Выберите колоду в библиотеке."/>
             </StackPanel>
         </Grid>
     </Grid>

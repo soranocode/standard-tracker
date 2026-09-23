@@ -10,61 +10,37 @@
              d:DesignHeight="700" d:DesignWidth="320"
              Background="#121721" TextElement.FontFamily="Segoe UI" TextElement.Foreground="#EDF2FA">
     <UserControl.Resources>
+      <ResourceDictionary>
+        <ResourceDictionary.MergedDictionaries><ResourceDictionary Source="/Controls/StandardDesign.xaml"/></ResourceDictionary.MergedDictionaries>
         <SolidColorBrush x:Key="TextBrush" Color="#EDF2FA"/>
         <SolidColorBrush x:Key="MutedBrush" Color="#A3B0C4"/>
         <SolidColorBrush x:Key="SurfaceBrush" Color="#1C2533"/>
         <SolidColorBrush x:Key="AccentBrush" Color="#79B4FF"/>
-        <Style x:Key="DeckPill" TargetType="ToggleButton">
-            <Setter Property="Foreground" Value="#EDF2FA"/>
-            <Setter Property="Background" Value="#1C2533"/>
-            <Setter Property="BorderBrush" Value="#3F5673"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="10,6"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="ToggleButton">
-                        <Border x:Name="Surface" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="7" Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="Surface" Property="Background" Value="#395578"/>
-                                <Setter TargetName="Surface" Property="BorderBrush" Value="#79B4FF"/>
-                            </Trigger>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Surface" Property="BorderBrush" Value="#79B4FF"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
+      </ResourceDictionary>
     </UserControl.Resources>
     <DockPanel>
-        <StackPanel DockPanel.Dock="Top" Margin="14,16,14,0">
+        <StackPanel DockPanel.Dock="Top" Margin="16,18,16,0" Visibility="{Binding HasDeck, Converter={StaticResource BoolToVisibility}}">
             <DockPanel>
-                <Border Width="44" Height="44" CornerRadius="10" Background="{Binding ClassColorBrush}" DockPanel.Dock="Left" Margin="0,0,12,0">
-                    <Image Source="{Binding ClassImage}" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality"/>
+                <Border Width="40" Height="40" CornerRadius="10" Background="#1C2533" DockPanel.Dock="Left" Margin="0,0,12,0">
+                    <Image Source="{Binding ClassImage}" Width="34" Height="34" RenderOptions.BitmapScalingMode="HighQuality"/>
                 </Border>
                 <StackPanel VerticalAlignment="Center">
-                    <TextBlock Text="{Binding DeckName}" FontSize="22" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"
+                    <TextBlock Text="{Binding DeckName}" FontSize="18" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"
                                Foreground="{StaticResource TextBrush}" ToolTip="{Binding DeckName}"/>
                     <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                        <Border BorderBrush="#3F5673" Background="#29384E" BorderThickness="1" CornerRadius="7" Padding="7,2" Margin="0,0,8,0">
+                        <Border Background="Transparent" Padding="0" Margin="0,0,8,0">
                             <TextBlock Text="{Binding ClassName}" FontSize="11" Foreground="#B4C8E2"/>
                         </Border>
                         <TextBlock Text="{Binding FormatLabel}" FontSize="12" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center"/>
                     </StackPanel>
                 </StackPanel>
             </DockPanel>
-            <Border Margin="0,10,0,0" Padding="9,7" Background="#18212D" BorderBrush="#34445A" BorderThickness="1" CornerRadius="7"
+            <Border Margin="0,10,0,0" Padding="0"
                     Visibility="{Binding HasDeck, Converter={StaticResource BoolToVisibility}}">
-                <TextBlock Text="{Binding DeckCode}" FontSize="10" FontFamily="Consolas" Foreground="#8FA1BA" TextWrapping="Wrap"
+                <TextBlock Text="{Binding DeckCode}" FontSize="10" FontFamily="Consolas" Foreground="#8FA1BA" TextTrimming="CharacterEllipsis"
                            ToolTip="{Binding DeckCode}"/>
             </Border>
-            <Border Margin="0,14,0,0" Background="{StaticResource SurfaceBrush}" CornerRadius="12" Padding="12,14"
+            <Border Margin="0,12,0,0" Background="{StaticResource SurfaceBrush}" CornerRadius="9" Padding="12,9"
                     Visibility="{Binding HasDeck, Converter={StaticResource BoolToVisibility}}">
                 <UniformGrid Columns="3">
                     <StackPanel>
@@ -81,33 +57,33 @@
                     </StackPanel>
                 </UniformGrid>
             </Border>
-            <TextBox x:Name="SearchBox" Margin="0,12,0,0" MinHeight="38" Padding="12,8" FontSize="14"
-                     Background="#1C2533" Foreground="#EDF2FA" CaretBrush="White" BorderBrush="#3F5673"
+            <TextBox x:Name="SearchBox" Margin="0,12,0,0" Style="{StaticResource STSearch}" Tag="Найти карту"
                      Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                      controls1:TextBoxHelper.Watermark="Найти карту"
                      Visibility="{Binding HasDeck, Converter={StaticResource BoolToVisibility}}"/>
             <WrapPanel Margin="0,12,0,0" Visibility="{Binding HasDeck, Converter={StaticResource BoolToVisibility}}">
-                <ToggleButton Content="Все" Style="{StaticResource DeckPill}" Margin="0,0,8,0" IsChecked="{Binding FilterAll}"/>
-                <ToggleButton Content="Существа" Style="{StaticResource DeckPill}" Margin="0,0,8,0" IsChecked="{Binding FilterMinions}"/>
-                <ToggleButton Content="Заклинания" Style="{StaticResource DeckPill}" IsChecked="{Binding FilterSpells}"/>
+                <RadioButton Content="Все" GroupName="CardType" Style="{StaticResource STFilter}" Margin="0,0,4,0" IsChecked="{Binding FilterAll}"/>
+                <RadioButton Content="Существа" GroupName="CardType" Style="{StaticResource STFilter}" Margin="0,0,4,0" IsChecked="{Binding FilterMinions}"/>
+                <RadioButton Content="Заклинания" GroupName="CardType" Style="{StaticResource STFilter}" IsChecked="{Binding FilterSpells}"/>
             </WrapPanel>
         </StackPanel>
 
-        <Border DockPanel.Dock="Bottom" Margin="6,0,6,8" Padding="12" Background="#1C2533" CornerRadius="9"
-                Visibility="{Binding HasDeck, Converter={StaticResource BoolToVisibility}}">
+        <Border x:Name="ManaCurveContainer" DockPanel.Dock="Bottom" Margin="16,0,16,16" Padding="12" Background="#1C2533" CornerRadius="9"
+                Visibility="{Binding Visibility, ElementName=ManaCurveMyDecks}">
             <DockPanel>
                 <TextBlock DockPanel.Dock="Top" Margin="0,0,0,8">
                     <Run Text="КРИВАЯ МАНЫ" FontSize="10" Foreground="#A3B0C4"/>
-                    <Run Text="  ·  " Foreground="#A3B0C4"/>
-                    <Run Text="Столбец — фильтр" FontSize="10" Foreground="#A3B0C4"/>
                 </TextBlock>
-                <local:ManaCurve x:Name="ManaCurveMyDecks" Height="110"/>
+                <ItemsControl DockPanel.Dock="Top" ItemsSource="{Binding ManaCounts}" Margin="0,0,0,5">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="8"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock Text="{Binding}" FontSize="10" Foreground="#A3B0C4" HorizontalAlignment="Center"/></DataTemplate></ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <local:ManaCurve x:Name="ManaCurveMyDecks" Height="64" Width="Auto"/>
             </DockPanel>
         </Border>
 
-        <DockPanel DockPanel.Dock="Bottom" Margin="14,0,14,8">
+        <DockPanel DockPanel.Dock="Bottom" Margin="16,0,16,10">
             <TextBlock Text="{Binding ShownLabel}" FontSize="11" Foreground="{StaticResource MutedBrush}"/>
-            <TextBlock Text="Decoded via HearthDb" FontSize="11" Foreground="{StaticResource MutedBrush}" HorizontalAlignment="Right"/>
         </DockPanel>
 
         <Grid Margin="0,8,0,0">
@@ -117,14 +93,18 @@
                 <ListBox.ItemContainerStyle>
                     <Style TargetType="ListBoxItem">
                         <Setter Property="Padding" Value="0"/>
-                        <Setter Property="Margin" Value="14,0,14,8"/>
+                        <Setter Property="Margin" Value="16,0,8,4"/>
                         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                         <Setter Property="Template">
                             <Setter.Value>
                                 <ControlTemplate TargetType="ListBoxItem">
-                                    <Border Background="#1C2533" BorderBrush="#30465F" BorderThickness="1" CornerRadius="4" Height="34">
+                                    <Border x:Name="CardSurface" Background="#1C2533" BorderBrush="#30465F" BorderThickness="1" CornerRadius="4" Height="34">
                                         <ContentPresenter/>
                                     </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="CardSurface" Property="BorderBrush" Value="#52769E"/></Trigger>
+                                        <Trigger Property="IsSelected" Value="True"><Setter TargetName="CardSurface" Property="Background" Value="#263B56"/><Setter TargetName="CardSurface" Property="BorderBrush" Value="#79B4FF"/></Trigger>
+                                    </ControlTemplate.Triggers>
                                 </ControlTemplate>
                             </Setter.Value>
                         </Setter>
@@ -154,7 +134,7 @@
             </ListBox>
             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="24"
                         Visibility="{Binding EmptyVisibility}">
-                <TextBlock Text="{Binding EmptyTitle}" FontSize="22" FontWeight="SemiBold" TextAlignment="Center" Foreground="#EDF2FA"/>
+                <TextBlock Text="{Binding EmptyTitle}" FontSize="18" FontWeight="SemiBold" TextAlignment="Center" Foreground="#EDF2FA"/>
                 <TextBlock Text="{Binding EmptySubtitle}" TextWrapping="Wrap" TextAlignment="Center" MaxWidth="280"
                            Margin="0,12,0,0" Foreground="#A3B0C4"/>
             </StackPanel>

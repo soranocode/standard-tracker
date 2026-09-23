@@ -566,15 +566,17 @@ namespace Hearthstone_Deck_Tracker.Windows
 
 		public void UpdateMyGamesPanelVisibility()
 		{
-			const int baseWidth = 1100;
+			const int baseWidth = 1200;
 			if(Config.Instance.ShowMyGamesPanel)
 			{
 				MyGamesPanel.Visibility = Visible;
+				HistoryColumn.Width = new GridLength(1.1, GridUnitType.Star);
 				MinWidth = baseWidth;
 			}
 			else
 			{
-				MinWidth = baseWidth - MyGamesPanel.Width - MyGamesPanel.Margin.Left;
+				MinWidth = 800;
+				HistoryColumn.Width = new GridLength(0);
 				MyGamesPanel.Visibility = Collapsed;
 			}
 		}

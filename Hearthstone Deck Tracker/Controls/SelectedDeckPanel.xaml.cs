@@ -25,6 +25,20 @@ namespace Hearthstone_Deck_Tracker.Controls
 		{
 			InitializeComponent();
 			DataContext = ViewModel;
+			// Keep the compact chart treatment local to this panel.
+			for(var i = 0; i < 8; i++)
+			{
+				var bar = (ManaCostBar)ManaCurveMyDecks.FindName($"ManaCostBar{i}");
+				bar.Width = 22;
+				bar.HorizontalAlignment = HorizontalAlignment.Center;
+				bar.TextBlockCount.Visibility = Visibility.Collapsed;
+				// The source chart stacks card types; one colour should read as one solid column.
+				foreach(var segment in new[] { bar.WeaponsRect, bar.SpellsRect, bar.MinionsRect, bar.HeroesRect })
+				{
+					segment.RadiusX = 0;
+					segment.RadiusY = 0;
+				}
+			}
 		}
 
 		public void SetDeck(TrackerDeck? deck)
@@ -55,7 +69,7 @@ namespace Hearthstone_Deck_Tracker.Controls
 		public Visibility EmptyVisibility => HasCards ? Visibility.Collapsed : Visibility.Visible;
 
 		public string DeckName => _deck?.NameAndVersion ?? "Колода не выбрана";
-		public string ClassName => _deck?.Class ?? "";
+		public string ClassName => _deck?.Class == null ? "" : LocUtil.Get(_deck.Class) ?? _deck.Class;
 		public string FormatLabel => _deck == null ? "" : (_deck.StandardViable ? "Standard" : "Wild");
 		public BitmapImage? ClassImage => _deck?.ClassImage;
 		public SolidColorBrush? ClassColorBrush => _deck?.ClassColorBrush;
@@ -81,6 +95,8 @@ namespace Hearthstone_Deck_Tracker.Controls
 		public int TotalCards => _allCards.Sum(c => c.Count);
 		public int MinionCards => _allCards.Where(c => c.TypeEnum == CardType.MINION).Sum(c => c.Count);
 		public int SpellCards => _allCards.Where(c => c.TypeEnum == CardType.SPELL).Sum(c => c.Count);
+		public IEnumerable<int> ManaCounts => Enumerable.Range(0, 8)
+			.Select(cost => _deck?.GetSelectedDeckVersion().Cards.Where(c => Math.Min(c.Cost, 7) == cost).Sum(c => c.Count) ?? 0);
 
 		public string ShownLabel
 		{
@@ -96,7 +112,7 @@ namespace Hearthstone_Deck_Tracker.Controls
 		public string EmptyTitle => _deck == null ? "Выберите колоду" : "Таких карт нет";
 		public string EmptySubtitle => _deck == null
 			? "Откройте колоду в библиотеке слева."
-			: "Измените поиск, тип или стоимость.";
+			: "Измените поиск или тип карты.";
 
 		public string SearchText
 		{
@@ -162,6 +178,7 @@ namespace Hearthstone_Deck_Tracker.Controls
 			OnPropertyChanged(nameof(TotalCards));
 			OnPropertyChanged(nameof(MinionCards));
 			OnPropertyChanged(nameof(SpellCards));
+			OnPropertyChanged(nameof(ManaCounts));
 			OnPropertyChanged(nameof(SearchText));
 			OnPropertyChanged(nameof(FilterAll));
 			OnPropertyChanged(nameof(FilterMinions));

@@ -137,7 +137,7 @@ namespace Hearthstone_Deck_Tracker.Controls.DeckPicker
 		public string Class => Deck.GetClass;
 
 		public string Archetype => string.IsNullOrWhiteSpace(Deck.Archetype) ? "Без архетипа" : Deck.Archetype;
-		public string LibraryGroup => Class + " · " + Archetype;
+		public string LibraryGroup => (string.IsNullOrEmpty(Deck.Class) ? Class : LocUtil.Get(Deck.Class!) ?? Deck.Class) + " · " + Archetype;
 		public string FavoriteGlyph => Favorite ? "★" : "☆";
 
 		public string DeckId => Deck.DeckId.ToString();

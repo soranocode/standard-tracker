@@ -170,7 +170,7 @@
             </controls:Flyout>
         </controls:FlyoutsControl>
     </controls:MetroWindow.Flyouts>
-    <Grid>
+    <Grid Background="#0C1016">
         <DockPanel>
             <StatusBar Name="StatusBarDev" DockPanel.Dock="Bottom" Visibility="Collapsed">
                 <StatusBarItem Margin="2,0,0,0">
@@ -230,10 +230,14 @@
             </StatusBar>
             <mainWindowControls:NewsBarView x:Name="NewsBar" DockPanel.Dock="Top" Visibility="Collapsed"/>
             <mainWindowControls:MainWindowMenuView x:Name="MainWindowMenu" DockPanel.Dock="Top"/>
-            <Separator DockPanel.Dock="Top" Panel.ZIndex="2" Margin="0,-1,0,0"/>
-            <DockPanel Margin="16">
-                <DockPanel Width="320" DockPanel.Dock="Right" Margin="5,0,0,0">
-                    <controls1:StartHearthstoneButton DockPanel.Dock="Top" Margin="0,0,0,5"/>
+            <Grid Margin="16,12,16,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1.05*"/>
+                    <ColumnDefinition x:Name="HistoryColumn" Width="1.1*"/>
+                    <ColumnDefinition Width="1*"/>
+                </Grid.ColumnDefinitions>
+                <DockPanel Grid.Column="2" Margin="8,0,0,0">
+                    <controls1:StartHearthstoneButton DockPanel.Dock="Top" Margin="0,0,0,12"/>
                     <Border Name="PanelVersionComboBox" BorderThickness="1" BorderBrush="#34445A" Background="#1C2533" Visibility="Collapsed" Margin="0,0,0,5" DockPanel.Dock="Top" CornerRadius="7" Padding="4">
                         <DockPanel>
                             <TextBlock Text="{lex:LocTextUpper MainWindow_Label_SelectedVersion}" FontWeight="SemiBold" FontSize="14" VerticalAlignment="Center" Margin="5,0,0,0" Foreground="#EDF2FA"/>
@@ -247,16 +251,18 @@
                         </DockPanel>
                     </Border>
                     <controls1:DeckSideboards x:Name="PlayerSideboards" DockPanel.Dock="Bottom" Margin="8,0"/>
-                    <controls1:SelectedDeckPanel x:Name="SelectedDeckPanel" />
+                    <Border Background="#121721" BorderBrush="#34445A" BorderThickness="1" CornerRadius="14" ClipToBounds="True">
+                        <controls1:SelectedDeckPanel x:Name="SelectedDeckPanel" Background="Transparent" />
+                    </Border>
                 </DockPanel>
-                <DockPanel Name="MyGamesPanel" Width="360" DockPanel.Dock="Right" Margin="16,0,12,0" Background="#121721">
+                <DockPanel Name="MyGamesPanel" Grid.Column="1" Margin="8,0,8,0" Background="Transparent">
                     <GroupBox x:Name="GroupBoxHsReplayDeckInfo" Header="{lex:LocTextUpper MainWindow_Header_GlobalDeckStatistics}" DockPanel.Dock="Top" Margin="0,0,0,5" Visibility="Collapsed">
                         <mainWindowControls:HsReplayDeckInfoView x:Name="HsReplayDeckInfo"/>
                     </GroupBox>
                     <Border Margin="0" Background="#121721" BorderBrush="#34445A" BorderThickness="1" CornerRadius="14" Padding="0">
                         <DockPanel>
-                            <DockPanel DockPanel.Dock="Top" Margin="22,18,22,0">
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" MouseDown="MyGamesFilters_OnClick" Cursor="Hand">
+                            <DockPanel DockPanel.Dock="Top" Margin="20,18,20,0">
+                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right" MouseDown="MyGamesFilters_OnClick" Cursor="Hand" ToolTip="Настройки статистики" Margin="10,0,0,0">
                                     <TextBlock Text="{lex:LocTextUpper MainWindow_MyGames_HasActiveFilters}" Foreground="#A3B0C4" Margin="8,0" VerticalAlignment="Center"
                                         Visibility="{Binding ActiveFiltersWarningVisibility, RelativeSource={RelativeSource AncestorType=windows:MainWindow}}"/>
                                     <Rectangle Width="16" Height="16" Opacity="0.8">
@@ -266,30 +272,32 @@
                                     </Rectangle>
                                 </StackPanel>
                                 <StackPanel>
-                                    <TextBlock Text="История игр" FontSize="23" FontWeight="SemiBold" Foreground="#EDF2FA"/>
+                                    <TextBlock Text="История игр" FontSize="22" FontWeight="SemiBold" Foreground="#EDF2FA"/>
                                     <TextBlock Text="{Binding SelectedDeckName, RelativeSource={RelativeSource AncestorType=windows:MainWindow}, TargetNullValue=Выберите колоду}"
-                                               Foreground="#A3B0C4" FontSize="12" Margin="0,4,0,0"/>
+                                               Foreground="#A3B0C4" FontSize="12" Margin="0,4,0,0" TextTrimming="CharacterEllipsis"/>
                                 </StackPanel>
                             </DockPanel>
-                            <mainWindowControls:DeckChartsView x:Name="DeckCharts" Margin="8,8,8,12"/>
+                            <mainWindowControls:DeckChartsView x:Name="DeckCharts" Margin="20,18,20,16" Background="Transparent"/>
                         </DockPanel>
                     </Border>
                 </DockPanel>
-                <DockPanel>
+                <DockPanel Grid.Column="0" Margin="0,0,8,0">
                     <controls1:RemovableBanner DockPanel.Dock="Top" Click="RemovableBanner_OnClick" Close="RemovableBanner_OnClose"
                                                Background="{StaticResource HSReplayNetBlue}" Foreground="White"
                                                Visibility="{Binding CollectionSyncingBannerVisbiility, RelativeSource={RelativeSource AncestorType=controls:MetroWindow}}"
                                                Removable="{Binding CollectionSyncingBannerRemovable, RelativeSource={RelativeSource AncestorType=controls:MetroWindow}}">
                         <mainWindowControls:CollectionSyncingBannerView Margin="8"/>
                     </controls1:RemovableBanner>
-                    <Grid Margin="0,2,0,0">
-                        <deckPicker:DeckPicker x:Name="DeckPickerList" OnSelectedDeckChanged="DeckPickerList_OnSelectedDeckChanged" />
+                    <Border Background="#121721" BorderBrush="#34445A" BorderThickness="1" CornerRadius="14">
+                    <Grid Margin="0">
+                        <deckPicker:DeckPicker x:Name="DeckPickerList" Background="Transparent" OnSelectedDeckChanged="DeckPickerList_OnSelectedDeckChanged" />
                         <Label Content="{Binding IntroductionLabelText, RelativeSource={RelativeSource AncestorType=controls:MetroWindow}}" Foreground="DarkGray"
                                FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center"
                                Visibility="Collapsed" />
                     </Grid>
+                    </Border>
                 </DockPanel>
-            </DockPanel>
+            </Grid>
         </DockPanel>
         <onboarding:NewUserOnboarding DataContext="{Binding Source={x:Static hsReplay:HSReplayNetClientAnalytics.OnboardingViewModel}}" />
     </Grid>
