@@ -3,11 +3,11 @@
     <OutputType>WinExe</OutputType>
     <RootNamespace>Hearthstone_Deck_Tracker</RootNamespace>
     <AssemblyName>HearthstoneDeckTracker</AssemblyName>
-    <AssemblyTitle>Hearthstone Deck Tracker</AssemblyTitle>
+    <AssemblyTitle>Standard Tracker</AssemblyTitle>
     <TargetFramework>net472</TargetFramework>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <Company>HearthSim</Company>
-    <Product>Hearthstone Deck Tracker</Product>
+    <Product>Standard Tracker</Product>
     <NeutralLanguage>en</NeutralLanguage>
     <Description>Hearthstone Deck Tracker</Description>
     <Copyright>Copyright 2026 HearthSim LLC. All rights reserved.</Copyright>
@@ -71,7 +71,7 @@
 
   <PropertyGroup>
     <SentryDsn>$(SENTRY_DSN)</SentryDsn>
-    <SentryDsn Condition="'$(SentryDsn)' == ''">https://63f3118ab76da59e220c259639c60330@o35918.ingest.us.sentry.io/80405</SentryDsn>
+    <SentryDsn Condition="'$(SentryDsn)' == ''"></SentryDsn>
     <!-- when unset SentryReporter falls back to Squirrel/Portable, based on the build configuration -->
     <SentryEnvironment>$(SENTRY_ENVIRONMENT)</SentryEnvironment>
   </PropertyGroup>

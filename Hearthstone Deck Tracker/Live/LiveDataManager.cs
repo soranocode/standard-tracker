@@ -25,16 +25,7 @@ namespace Hearthstone_Deck_Tracker.Live
 
 		public static async void WatchBoardState()
 		{
-			if(_running)
-				return;
-			if(!Config.Instance.SendTwitchExtensionData || Config.Instance.SelectedTwitchUser <= 0 || (HSReplayNetOAuth.TwitchUsers?.Count ?? 0) == 0)
-				return;
-			var streaming = await HSReplayNetOAuth.IsStreaming(Config.Instance.SelectedTwitchUser);
-			OnStreamingChecked?.Invoke(streaming);
-			if(!streaming)
-				return;
-			_running = true;
-			BoardStateWatcher.Start();
+			await Task.CompletedTask;
 		}
 
 		public static void Stop()

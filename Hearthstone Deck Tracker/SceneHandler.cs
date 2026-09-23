@@ -101,7 +101,7 @@ public class SceneHandler
 			Core.Overlay.UpdateBattlegroundsSessionVisibility();
 			Core.Overlay.UpdateBattlegroundsGuidesPreLobbyVisibility();
 			Core.Overlay.UpdateTier7PreLobbyVisibility();
-			Watchers.BaconWatcher.Run();
+			Watchers.BaconWatcher.Stop();
 			Remote.Config.Load();
 		}
 		else if(to == Mode.GAMEPLAY)
@@ -109,9 +109,9 @@ public class SceneHandler
 			Core.Overlay.UpdateBattlegroundsSessionVisibility();
 			Watchers.BigCardWatcher.Run();
 			Watchers.ChoicesWatcher.Run();
-			Watchers.SpecialShopChoicesStateWatcher.Run();
+			Watchers.SpecialShopChoicesStateWatcher.Stop();
 			Watchers.DiscoverStateWatcher.Run();
-			Watchers.BaconWatcher.Run();
+			Watchers.BaconWatcher.Stop();
 			Watchers.MulliganTooltipWatcher.Run();
 			Watchers.MulliganStateWatcher.Run();
 			Watchers.PlayZoneWatcher.Run();
@@ -121,8 +121,8 @@ public class SceneHandler
 			Core.Game.CacheArenaRating();
 			Core.Overlay.UpdateArenaPickHelperVisibility();
 			Core.Overlay.UpdateArenaPreLobbyVisibility();
-			Watchers.ArenaWatcher.Run();
-			Watchers.ArenaStateWatcher.Run();
+			Watchers.ArenaWatcher.Stop();
+			Watchers.ArenaStateWatcher.Stop();
 			Remote.Config.Load();
 		}
 

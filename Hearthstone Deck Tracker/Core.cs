@@ -1,4 +1,4 @@
-#region
+﻿#region
 
 using System;
 using System.Collections.Generic;
@@ -56,8 +56,7 @@ namespace Hearthstone_Deck_Tracker
 
 		// Should be global to application. Always use this one instead of
 		// instantiating a new HttpClient.
-		public static readonly HttpClient HttpClient = new(new HttpClientHandler
-			{ AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate });
+		public static readonly HttpClient HttpClient = new(new Utility.OfflineHttpHandler());
 
 		internal static GameV2? _game;
 		public static GameV2 Game => _game ??= new GameV2();
@@ -124,8 +123,7 @@ namespace Hearthstone_Deck_Tracker
 			splashScreenWindow.ShowConditional();
 
 			ConfigManager.Run();
-			if(Config.Instance.GoogleAnalytics)
-				HSReplayNetClientAnalytics.Initialize();
+				// Disabled in the standalone tracker: HSReplayNetClientAnalytics.Initialize();
 
 			if(ConfigManager.PreviousVersion == null)
 				Config.SetInitialLanguage();
@@ -213,30 +211,10 @@ namespace Hearthstone_Deck_Tracker
 			MainWindow.Show();
 			splashScreenWindow.Close();
 
-			if(ConfigManager.UpdatedVersion != null)
-			{
-				if(ConfigManager.ShouldShowUpdateNotes())
-				{
-					MainWindow.UpdateNotesControl.LoadReleaseNotes();
-					MainWindow.FlyoutUpdateNotes.IsOpen = true;
-					MainWindow.UpdateNotesControl.SetHighlight(ConfigManager.PreviousVersion);
-				}
-
-#if(SQUIRREL)
-				// Once per update, update the remote. We do this in case e.g. GitHub was down and switched
-				// every user to a different remote.
-				SquirrelConnection.FindBestRemote();
-#endif
-
-#if(SQUIRREL && !DEV)
-				if(Config.Instance.CheckForDevUpdates && !Config.Instance.AllowDevUpdates.HasValue)
-					MainWindow.ShowDevUpdatesMessage();
-#endif
-			}
 			DataIssueResolver.Run();
 
 #if(!SQUIRREL)
-			Helper.CopyReplayFiles();
+			// Disabled in the standalone tracker: Helper.CopyReplayFiles();
 #endif
 			BackupManager.Run();
 
@@ -247,9 +225,9 @@ namespace Hearthstone_Deck_Tracker
 			if(Config.Instance.TimerWindowOnStartup)
 				Windows.TimerWindow.Show();
 
-			PluginManager.Instance.LoadPluginsFromDefaultPath();
-			MainWindow.Options.OptionsTrackerPlugins.Load();
-			PluginManager.Instance.StartUpdateAsync();
+			// Disabled in the standalone tracker: PluginManager.Instance.LoadPluginsFromDefaultPath();
+			// Disabled in the standalone tracker: MainWindow.Options.OptionsTrackerPlugins.Load();
+			// Disabled in the standalone tracker: PluginManager.Instance.StartUpdateAsync();
 
 			UpdateOverlayAsync();
 
@@ -267,13 +245,13 @@ namespace Hearthstone_Deck_Tracker
 				Overlay.ShowRestartRequiredWarning();
 			}
 
-			Remote.Config.Load();
+			// Disabled in the standalone tracker: Remote.Config.Load();
 			HotKeyManager.Load();
 
 			if(Helper.HearthstoneDirExists && Config.Instance.StartHearthstoneWithHDT && !Game.IsRunning)
 				HearthstoneRunner.StartHearthstone().Forget();
 
-			HSReplayNetHelper.UpdateAccount().Forget();
+			// Disabled in the standalone tracker: HSReplayNetHelper.UpdateAccount().Forget();
 
 			if(Config.Instance.BattlegroundsSessionRecapWindowOnStart)
 				Windows.BattlegroundsSessionWindow.Show();
@@ -469,7 +447,7 @@ namespace Hearthstone_Deck_Tracker
 						Watchers.SceneWatcher.Run();
 						Watchers.UiWatcher.Run();
 
-						Remote.Config.Load();
+						// Disabled in the standalone tracker: Remote.Config.Load();
 						Remote.Mercenaries.Load();
 						Remote.LiveSecrets.Load();
 

@@ -158,29 +158,7 @@ namespace Hearthstone_Deck_Tracker
 #if(!SQUIRREL)
 		internal static void SetupDeckListFile()
 		{
-			if(Config.Instance.SaveDataInAppData == null)
-				return;
-			var appDataPath = Path.Combine(Config.AppDataPath, "PlayerDecks.xml");
-			var dataDirPath = Path.Combine(Config.Instance.DataDirPath, "PlayerDecks.xml");
-			if(Config.Instance.SaveDataInAppData.Value)
-			{
-				if(File.Exists(dataDirPath))
-				{
-					if(File.Exists(appDataPath))
-						//backup in case the file already exists
-						File.Move(appDataPath, appDataPath + DateTime.Now.ToFileTime());
-					File.Move(dataDirPath, appDataPath);
-					Log.Info("Moved decks to appdata");
-				}
-			}
-			else if(File.Exists(appDataPath))
-			{
-				if(File.Exists(dataDirPath))
-					//backup in case the file already exists
-					File.Move(dataDirPath, dataDirPath + DateTime.Now.ToFileTime());
-				File.Move(appDataPath, dataDirPath);
-				Log.Info("Moved decks to local");
-			}
+			// Profiles are isolated. Legacy file migration is intentionally unavailable.
 		}
 
 #endif

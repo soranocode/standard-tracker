@@ -33,16 +33,16 @@
         <Separator Margin="10,10,10,5" />
         <CheckBox x:Name="CheckboxConfigSaveAppData" Content="{lex:Loc Options_Tracker_Settings_CheckBox_SaveConfigAppData}"
                   Foreground="{Binding Color, Source={x:Static options:AdvancedOptions.Instance}}"
-                  Visibility="{Binding Visibility, Source={x:Static options:AdvancedOptions.Instance}}"
+                 
                   HorizontalAlignment="Left" Margin="10,5,0,0"
                   VerticalAlignment="Top" Checked="CheckboxConfigSaveAppData_Checked"
-                  Unchecked="CheckboxConfigSaveAppData_Unchecked" />
+                  Unchecked="CheckboxConfigSaveAppData_Unchecked"  Visibility="Collapsed"/>
         <CheckBox x:Name="CheckboxDataSaveAppData" Content="{lex:Loc Options_Tracker_Settings_CheckBox_SaveDataAppData}"
                   Foreground="{Binding Color, Source={x:Static options:AdvancedOptions.Instance}}"
-                  Visibility="{Binding Visibility, Source={x:Static options:AdvancedOptions.Instance}}"
+                 
                   HorizontalAlignment="Left" Margin="10,5,0,0"
                   VerticalAlignment="Top" Checked="CheckboxDataSaveAppData_Checked"
-                  Unchecked="CheckboxDataSaveAppData_Unchecked" />
+                  Unchecked="CheckboxDataSaveAppData_Unchecked"  Visibility="Collapsed"/>
         <CheckBox x:Name="CheckboxStartWithWindows" Content="{lex:Loc Options_Tracker_Settings_CheckBox_StartWithWindows}"
                   HorizontalAlignment="Left" Margin="10,5,0,0"
                   VerticalAlignment="Top" Checked="CheckboxStartWithWindows_Checked"
@@ -119,7 +119,7 @@
         <Button Name="SelectSaveDataPath" Margin="10,5,10,0" Content="{lex:Loc Options_Tracker_Settings_Button_DataPath}"
                 Click="SelectSaveDataPath_Click"
                 Foreground="{Binding Color, Source={x:Static options:AdvancedOptions.Instance}}"
-                Visibility="{Binding Visibility, Source={x:Static options:AdvancedOptions.Instance}}" />
+                 Visibility="Collapsed"/>
         <Button Name="ButtonHearthstoneLogsDirectory" Margin="10,5,10,0" Content="{lex:Loc Options_Tracker_Settings_Button_LogDirectory}"
                 Click="ButtonHearthstoneLogsDirectory_Click"
                 Foreground="{Binding Color, Source={x:Static options:AdvancedOptions.Instance}}"

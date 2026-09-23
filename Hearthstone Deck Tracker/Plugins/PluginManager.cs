@@ -166,14 +166,7 @@ namespace Hearthstone_Deck_Tracker.Plugins
 
 		public void LoadPluginsFromPath(string pluginPath, bool checkSubDirs)
 		{
-			if(!Directory.Exists(pluginPath))
-				return;
-			if(Plugins.Any())
-				UnloadPlugins();
-			var files = Helper.GetFileInfos(pluginPath, checkSubDirs);
-			Log.Info("Loading Plugins...");
-			LoadPlugins(files);
-			LoadPluginSettings();
+			// Plugins are not supported by this standalone product.
 		}
 
 		// Blizzard has kindly asked us to stop supporting reconnector plugins
@@ -187,19 +180,7 @@ namespace Hearthstone_Deck_Tracker.Plugins
 		};
 		public void LoadPlugins(IEnumerable<FileInfo> files)
 		{
-			foreach(var file in files.Where(f => f.Extension.Equals(".dll")))
-			{
-				var plugins = GetModule(file.FullName, typeof(IPlugin));
-				foreach(var p in plugins)
-				{
-					if(_prohibitedPluginNames.Contains(p.Name))
-					{
-						Log.Info($"Refusing to load plugin: {p.Name}");
-						continue;
-					}
-					Plugins.Add(p);
-				}
-			}
+			// Plugins are not supported by this standalone product.
 		}
 
 		private static string NormalizeImport(string import) => import.Replace(".dll", "").Trim().ToLowerInvariant();

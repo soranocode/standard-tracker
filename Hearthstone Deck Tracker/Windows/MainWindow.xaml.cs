@@ -1,4 +1,4 @@
-#region
+﻿#region
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -486,7 +486,7 @@ namespace Hearthstone_Deck_Tracker.Windows
 			ComboBoxDeckVersion.SelectedItem = deck?.SelectedVersion;
 			PanelVersionComboBox.Visibility = deck is { HasVersions: true } ? Visible : Collapsed;
 
-			GroupBoxHsReplayDeckInfo.Visibility = deck?.IsArenaDeck == true || deck?.IsDungeonDeck == true || deck?.IsDuelsDeck == true ? Collapsed : Visible;
+			GroupBoxHsReplayDeckInfo.Visibility = Collapsed;
 			DeckCharts.SetDeck(deck);
 			HsReplayDeckInfo.SetDeck(deck);
 		}
@@ -619,20 +619,7 @@ namespace Hearthstone_Deck_Tracker.Windows
 
 		public Visibility CollectionSyncingBannerVisbiility
 		{
-			get
-			{
-				if(!(Remote.Config.Data?.CollectionBanner?.Visible ?? true))
-					return Collapsed;
-				if(Config.Instance.HideCollectionSyncingBanner >= CollectionBannerId)
-				{
-					var synced = Account.Instance.CollectionState.Any();
-					var removablePostSync = Remote.Config.Data?.CollectionBanner?.RemovablePostSync ?? false;
-					var removablePreSync = Remote.Config.Data?.CollectionBanner?.RemovablePreSync ?? false;
-					if(synced && removablePostSync || !synced && removablePreSync)
-						return Collapsed;
-				}
-				return Visible;
-			}
+			get => Collapsed;
 		}
 
 		private int CollectionBannerId => Remote.Config.Data?.CollectionBanner?.RemovalId ?? 0;

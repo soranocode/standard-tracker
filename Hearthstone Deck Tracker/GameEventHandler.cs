@@ -72,24 +72,11 @@ namespace Hearthstone_Deck_Tracker
 			_game = game;
 		}
 
-		public bool RecordCurrentGameMode => _game.CurrentGameMode == None && Config.Instance.RecordOther
-											 || _game.CurrentGameMode == Practice && Config.Instance.RecordPractice
-											 || _game.CurrentGameMode == Arena && Config.Instance.RecordArena
-											 || _game.CurrentGameMode == Brawl && Config.Instance.RecordBrawl
-											 || _game.CurrentGameMode == Ranked && Config.Instance.RecordRanked
-											 || _game.CurrentGameMode == Friendly && Config.Instance.RecordFriendly
-											 || _game.CurrentGameMode == Casual && Config.Instance.RecordCasual
-											 || _game.CurrentGameMode == Spectator && Config.Instance.RecordSpectator;
+		public bool RecordCurrentGameMode => StandardMode.IsSupported(_game.CurrentFormatType, _game.CurrentGameMode)
+			&& (_game.CurrentGameMode == Ranked ? Config.Instance.RecordRanked
+				: _game.CurrentGameMode == Casual ? Config.Instance.RecordCasual : Config.Instance.RecordFriendly);
 
-		public bool UploadCurrentGameMode => _game.CurrentGameMode == Practice && Config.Instance.HsReplayUploadPractice
-											 || _game.CurrentGameMode == Arena && Config.Instance.HsReplayUploadArena
-											 || _game.CurrentGameMode == Brawl && Config.Instance.HsReplayUploadBrawl
-											 || _game.CurrentGameMode == Ranked && Config.Instance.HsReplayUploadRanked
-											 || _game.CurrentGameMode == Friendly && Config.Instance.HsReplayUploadFriendly
-											 || _game.CurrentGameMode == Casual && Config.Instance.HsReplayUploadCasual
-											 || _game.CurrentGameMode == Spectator && Config.Instance.HsReplayUploadSpectator
-											 || _game.IsBattlegroundsMatch && Config.Instance.HsReplayUploadBattlegrounds
-											 || _game.IsMercenariesMatch && Config.Instance.HsReplayUploadMercenaries;
+		public bool UploadCurrentGameMode => false;
 
 		public bool ShouldSuppressLog => _game.IsBattlegroundsMatch && (_game.CurrentGameStats?.IsReconnect ?? false);
 
@@ -733,10 +720,10 @@ namespace Hearthstone_Deck_Tracker
 					Core.Overlay.BattlegroundsAnomalyGuideListViewModel.Update();
 					Core.Overlay.BattlegroundsTrinketGuideListViewModel.Update();
 					Core.Overlay.BattlegroundsQuestGuideListViewModel.Update();
-					Watchers.BattlegroundsLeaderboardWatcher.Run();
-					Watchers.BattlegroundsLobbyInfoWatcher.Run();
+					Watchers.BattlegroundsLeaderboardWatcher.Stop();
+					Watchers.BattlegroundsLobbyInfoWatcher.Stop();
 					if(_game.IsBattlegroundsDuosMatch)
-						Watchers.BattlegroundsTeammateBoardStateWatcher.Run();
+						Watchers.BattlegroundsTeammateBoardStateWatcher.Stop();
 
 					// the mulligan is already over, so HandlePlayerMulliganDone will never snapshot the hero
 					if(_game.BattlegroundsHeroPickState.PickedHeroDbfId is null)
@@ -777,6 +764,15 @@ namespace Hearthstone_Deck_Tracker
 					return;
 				}
 				_handledGameEnd = true;
+				if(!StandardMode.IsSupported(_game.CurrentFormatType, _game.CurrentGameMode))
+				{
+					TurnTimer.Instance.Stop();
+					Core.Overlay.HideTimers();
+					_assignedDeck = null;
+					_lastGame = null;
+					_game.CurrentGameStats = null;
+					return;
+				}
 				TurnTimer.Instance.Stop();
 				Core.Overlay.HideTimers();
 				Core.Overlay.HideMercenariesGameOverlay();
@@ -1970,8 +1966,8 @@ namespace Hearthstone_Deck_Tracker
 
 		private async void HandleBattlegroundsStart()
 		{
-			Watchers.BattlegroundsLeaderboardWatcher.Run();
-			Watchers.BattlegroundsLobbyInfoWatcher.Run();
+			Watchers.BattlegroundsLeaderboardWatcher.Stop();
+			Watchers.BattlegroundsLobbyInfoWatcher.Stop();
 			OpponentDeadForTracker.Reset();
 			Core.Overlay.BattlegroundsInspirationViewModel.Reset();
 
@@ -1994,7 +1990,7 @@ namespace Hearthstone_Deck_Tracker
 			Core.Overlay.BattlegroundsMinionPinningViewModel.Reset();
 
 			if(Core.Game.IsBattlegroundsDuosMatch)
-				Watchers.BattlegroundsTeammateBoardStateWatcher.Run();
+				Watchers.BattlegroundsTeammateBoardStateWatcher.Stop();
 
 			if(_game.GameEntity?.GetTag(STEP) != (int)Step.BEGIN_MULLIGAN)
 			{

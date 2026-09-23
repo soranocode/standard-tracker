@@ -22,7 +22,7 @@ namespace Hearthstone_Deck_Tracker.Utility
 		[DllImport("user32.dll")]
 		private static extern bool AllowSetForegroundWindow(int dwProcessId);
 
-		private static readonly uint ActivateMessage = User32.RegisterWindowMessage("HearthstoneDeckTracker_Activate");
+		private static readonly uint ActivateMessage = User32.RegisterWindowMessage("StandardTracker_Activate");
 
 		private static MessageWindow? _messageWindow;
 
@@ -121,9 +121,9 @@ namespace Hearthstone_Deck_Tracker.Utility
 				MessageBoxButton.OK, MessageBoxImage.Error);
 		}
 
-		private static string GetWindowTitle() => "HearthstoneDeckTracker_" + GetDataDirHash();
+		private static string GetWindowTitle() => "StandardTracker_" + GetDataDirHash();
 
-		private static string GetStartupMutexName() => @"Local\HearthstoneDeckTracker_" + GetDataDirHash() + "_Startup";
+		private static string GetStartupMutexName() => @"Local\StandardTracker_" + GetDataDirHash() + "_Startup";
 
 		private static string GetDataDirHash()
 		{

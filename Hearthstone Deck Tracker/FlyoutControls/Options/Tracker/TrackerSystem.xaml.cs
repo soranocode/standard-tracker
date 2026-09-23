@@ -1,4 +1,4 @@
-#region
+﻿#region
 
 using System;
 using System.Collections.Generic;
@@ -306,7 +306,7 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.Tracker
 			catch(Exception ex)
 			{
 				Log.Error(ex);
-				ErrorManager.AddError("Could not open AppData folder.", "Manually navigate to '%AppData%/HearthstoneDeckTracker'.");
+				ErrorManager.AddError("Could not open AppData folder.", "Manually navigate to '%AppData%/StandardTracker'.");
 			}
 		}
 

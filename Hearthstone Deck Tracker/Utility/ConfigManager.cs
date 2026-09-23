@@ -18,22 +18,10 @@ namespace Hearthstone_Deck_Tracker.Utility
 
 		public static void Run()
 		{
-			PreviousVersion = string.IsNullOrEmpty(Config.Instance.CreatedByVersion) ? null : new Version(Config.Instance.CreatedByVersion);
-			var currentVersion = Helper.GetCurrentVersion();
-
-			// Assign current version to the config instance so that it will be saved when the config
-			// is rewritten to disk, thereby telling us what version of the application created it
-			Config.Instance.CreatedByVersion = currentVersion.ToString();
-
-			ConvertLegacyConfig(currentVersion, PreviousVersion);
-
+			PreviousVersion = Version.TryParse(Config.Instance.CreatedByVersion, out var previous) ? previous : null;
+			Config.Instance.CreatedByVersion = Helper.GetCurrentVersion().ToString();
 			if(Config.Instance.SelectedTags.Count == 0)
 				Config.Instance.SelectedTags.Add("All");
-
-#if(!SQUIRREL)
-			if(!Directory.Exists(Config.Instance.DataDir))
-				Config.Instance.Reset(nameof(Config.DataDirPath));
-#endif
 		}
 
 		// Logic to silently skip hotfix releases to fix some regressions that players haven't noticed yet

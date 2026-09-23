@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -555,22 +555,7 @@ namespace Hearthstone_Deck_Tracker.Utility.Analytics
 
 		private static async void WritePoints(IEnumerable<InfluxPoint> points, bool highPrecision)
 		{
-			if(!points.Any())
-				return;
-			try
-			{
-				using(var client = new UdpClient())
-				{
-					var line = string.Join("\n", points.Select(x => x.ToLineProtocol()));
-					var data = Encoding.UTF8.GetBytes(line);
-					var length = await client.SendAsync(data, data.Length, "metrics.hearthsim.net", highPrecision ? 8099 : 8091);
-					Log.Debug(line + " - " +  length);
-				}
-			}
-			catch(Exception ex)
-			{
-				Log.Debug(ex.ToString());
-			}
+			await System.Threading.Tasks.Task.CompletedTask;
 		}
 	}
 }

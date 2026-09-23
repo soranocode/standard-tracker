@@ -380,81 +380,12 @@ namespace Hearthstone_Deck_Tracker
 
 		public static void AutoImportArena(ArenaInfo? info = null)
 		{
-			var deck = info ?? DeckImporter.FromArena();
-			if(deck?.Deck.Cards.Sum(x => x.Count) != 30)
-				return;
-
-			Log.Info($"Found new complete {deck.Deck.Hero} arena deck!");
-
-			var matchingHsId =
-				DeckList.Instance.Decks.FirstOrDefault(d => d.IsArenaDeck && d.HsId != 0 && d.HsId == deck.Deck.Id);
-			if(matchingHsId != null)
-			{
-				// update NOOOOOO! cards after expansion release
-				Log.Info("...but we already know that id. Checking for changes...");
-
-				if(MatchesMirrorDeck(matchingHsId, deck.Deck))
-				{
-					Log.Info("No changes found.");
-					return;
-				}
-
-				Log.Info("Updating deck with new cards...");
-				matchingHsId.Cards.Clear();
-				var cards = deck.Deck.Cards.Select(x =>
-				{
-					var card = Database.GetCardFromId(x.Id);
-					if(card == null)
-						return null;
-					card.Count = x.Count;
-					return card;
-				}).WhereNotNull();
-				foreach(var card in cards)
-					matchingHsId.Cards.Add(card);
-				matchingHsId.Sideboards = ConvertSideboards(deck.Deck.Sideboards);
-				DeckList.Instance.ActiveDeck = matchingHsId;
-				return;
-			}
-
-			var recentArenaDecks = DeckList.Instance.Decks.Where(d => d.IsArenaDeck && d.Cards.Sum(x => x.Count) == 30).OrderByDescending(
-					d => d.LastPlayedNewFirst).Take(15);
-			if(recentArenaDecks.Any(d => d.Cards.All(c => deck.Deck.Cards.Any(c2 => c.Id == c2.Id && c.Count == c2.Count))))
-			{
-				Log.Info("...but we already have that one. Discarding.");
-				return;
-			}
-
-			if(Core.Game.IgnoredArenaDecks.Contains(deck.Deck.Id))
-			{
-				Log.Info("...but it was already discarded by the user. No automatic action taken.");
-				return;
-			}
-
-			ImportArenaDeck(deck.Deck);
+			// Only manually imported Standard decks are retained.
 		}
 
 		public static void ImportArenaDeck(HearthMirror.Objects.Deck deck)
 		{
-			var arenaDeck = new Deck
-			{
-				Class = Database.GetCardFromId(deck.Hero)?.PlayerClass,
-				HsId = deck.Id,
-				Cards = new ObservableCollection<Card>(deck.Cards.Select(x =>
-				{
-					var card = Database.GetCardFromId(x.Id);
-					if(card == null)
-						return null;
-					card.Count = x.Count;
-					return card;
-				}).WhereNotNull()),
-				Sideboards = ConvertSideboards(deck.Sideboards),
-				LastEdited = DateTime.Now,
-				IsArenaDeck = true
-			};
-			arenaDeck.Name = Helper.ParseDeckNameTemplate(Config.Instance.ArenaDeckNameTemplate, arenaDeck);
-			Log.Info($"Saving new arena deck: {arenaDeck.Name} ({arenaDeck.HsId})");
-			DeckList.Instance.Decks.Add(arenaDeck);
-			DeckList.Instance.ActiveDeck = arenaDeck;
+			// Arena is not supported.
 		}
 
 		private static List<Sideboard> ConvertSideboards(Dictionary<string, List<HearthMirror.Objects.Card>>? sideboards) =>
@@ -586,6 +517,8 @@ namespace Hearthstone_Deck_Tracker
 
 		public static void SaveDeck(Deck deck, bool invokeApi = true)
 		{
+			if(!deck.StandardViable)
+				return;
 			deck.Edited();
 			DeckList.Instance.Decks.Add(deck);
 			DeckList.Save();
@@ -596,6 +529,8 @@ namespace Hearthstone_Deck_Tracker
 
 		public static void SaveDeck(Deck baseDeck, Deck newVersion, bool overwriteCurrent = false)
 		{
+			if(!newVersion.StandardViable)
+				return;
 			DeckList.Instance.Decks.Remove(baseDeck);
 			baseDeck.Versions?.Clear();
 			if(!overwriteCurrent)

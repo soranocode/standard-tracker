@@ -337,7 +337,8 @@ namespace Hearthstone_Deck_Tracker.Windows
 			// producing frames for offscreen windows, which would freeze OBS capture. In
 			// place with opacity 0 the capture stays connected (transparent frames) and
 			// the window keeps its size and position.
-			var hardHidden = Config.Instance.HideOverlay
+			var hardHidden = !StandardMode.IsSupported(_game.CurrentFormatType, _game.CurrentGameMode)
+			                  || _game.IsInMenu || Config.Instance.HideOverlay
 			                  || (Config.Instance.HideOverlayInSpectator && _game.CurrentGameMode == GameMode.Spectator)
 			                  || Helper.GameWindowState == WindowState.Minimized;
 			var behind = !isForeground &&

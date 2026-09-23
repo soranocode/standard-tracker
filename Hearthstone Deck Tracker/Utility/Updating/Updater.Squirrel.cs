@@ -1,4 +1,4 @@
-#if(SQUIRREL)
+﻿#if(SQUIRREL)
 using System;
 using System.ComponentModel;
 using System.IO;
@@ -25,43 +25,7 @@ namespace Hearthstone_Deck_Tracker.Utility.Updating
 
 		public static async void CheckForUpdates(bool force = false)
 		{
-			// An update has already been downloaded and installed, and is just waiting for a
-			// restart. Checking again would reset the status bar (UpdaterState.Checking/None
-			// both hide the "click to update" message) while leaving it visible but empty.
-			if(Status.UpdaterState == UpdaterState.Available)
-				return;
-			if(!force && !ShouldCheckForUpdates())
-				return;
-			_lastUpdateCheck = DateTime.Now;
-			try
-			{
-				bool updated;
-				using(var mgr = await GetUpdateManager(false))
-					updated = await SquirrelUpdate(mgr, false);
-
-				if(!updated && Config.Instance.CheckForDevUpdates)
-				{
-					using(var mgr = await GetUpdateManager(true))
-						updated = await SquirrelUpdate(mgr, false);
-				}
-
-				if(updated)
-				{
-					_updateCheckDelay = new TimeSpan(1, 0, 0);
-					Status.StatusBarVisibility = Visibility.Visible;
-				}
-			}
-			catch(WebException ex)
-			{
-				SquirrelConnection.FindBestRemote();
-				Status.OnFailed(ex);
-				Log.Error(ex);
-			}
-			catch(Exception ex)
-			{
-				Status.OnFailed(ex);
-				Log.Error(ex);
-			}
+			await Task.CompletedTask;
 		}
 
 		private const string DevReleaseUrl = "https://github.com/HearthSim/HDT-dev-builds";

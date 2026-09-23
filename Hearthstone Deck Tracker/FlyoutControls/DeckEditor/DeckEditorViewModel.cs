@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -275,11 +275,13 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.DeckEditor
 
 		public ICommand SaveCommand => new Command(SaveDeck);
 
-		public bool CanSave => Errors == 0;
+		public bool CanSave => Errors == 0 && Deck.StandardViable;
 
 		public event Action? DeckSaved;
 		private void SaveDeck()
 		{
+			if(!CanSave)
+				return;
 			if(SelectedSaveOperation != null)
 			{
 				if(!SelectedSaveOperation.IsCurrent && SelectedSaveOperation.Version != null)

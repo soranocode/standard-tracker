@@ -1,79 +1,33 @@
-# Standard Tracker
+# Standard Tracker — checkpoint 2026-09-23
 
-Рабочий репозиторий нового трекера: `C:\Users\user\standard-tracker`.
-Исходная база и справочник: `C:\Users\user\automation`.
+Stopped at user-requested quota threshold (4% remaining). Branch standard-tracker.
+Remote: https://github.com/soranocode/standard-tracker.
 
-## Первая версия
+Implemented: fixed isolated %APPDATA%/StandardTracker profile; no portable/original config,
+no deck/stat/replay/plugin migration; separate activation ID and startup registry key.
+Visible title Standard Tracker. OAuth credentials/client and HSReplay API fetching removed;
+analytics, uploads, Sentry initialization, plugins, streaming, online import disabled.
+Shared HTTP is offline; card definitions are bundled HearthDb data. Bootstrap no longer
+fetches upstream dependencies/translations. Local lib and localization payload still required.
+Standard Ranked/Casual/Friendly only; unknown/Wild/Twist do not get recorded. UI hides
+cloud and unsupported mode sections, deck picker only exposes Standard.
 
-Поддерживаем только формат Standard. Ranked и Casual являются очередями, а не
-отдельными форматами. Не подменять проверку Standard проверкой IsConstructedMatch:
-общий Constructed-пайплайн также обслуживает Wild и Twist.
+Verified: Debug build; test-standard.ps1 passed 3/3 isolation tests; Windows PowerShell
+build-scripts/smoke-standard.ps1 loaded WPF window/options with empty test profile.
+Original HDT data was not deleted: it is no longer used. No personal data files were found
+under bin. Internal assembly name remains HearthstoneDeckTracker.exe for WPF resources.
 
-Нужны: начало/конец матча, выбор и импорт своей колоды, оставшиеся карты и шансы
-добора, известные карты соперника, локальные возможные секреты, результат матча
-и локальная статистика. Скрытые карты соперника не считаются известными.
+UNFINISHED (do not call this a finished release):
+- Rerun checks after last SaveDeck Standard guard and capturable overlay format gate.
+- Build/package Release and test a real Standard match, secrets/cards/stats and mode changes.
+- Audit auxiliary player/opponent/timer windows and remaining scene handler side effects.
+- Remove dormant HSReplay/BobsBuddy/Sentry/Squirrel binaries and callers together; references
+  remain for retained WPF models even though cloud access is disabled.
+- Inspect offline card art/language presentation; downloads are disabled.
+- Pin/provision ignored lib/localizations for fresh checkout.
+- Legacy packaging/release scripts and GitHub workflows still target HearthSim. DO NOT use
+  them unchanged. Auto-review rejected renaming workflows to disable them, requiring explicit
+  user approval because it affects CI. No workflow changes were made.
 
-Сохраняем общий разбор логов, состояние партии, HearthDb и HearthMirror.
-Существующий интерфейс пока используем; новый интерфейс не разрабатываем.
-Позже убираем из него неподдерживаемые разделы вместе с соответствующими функциями.
-
-Арена, Поля сражений, другие форматы, BobsBuddy и облачные функции HSReplay
-не входят в первую версию. Общие модели и теги других режимов не удаляем вслепую.
-Лицензии и сведения о происхождении заимствованного кода сохраняем.
-
-## Где продолжать
-
-Локальная копия: `C:\Users\user\standard-tracker`, ветка `standard-tracker`.
-Удалённый репозиторий продукта: https://github.com/soranocode/standard-tracker
-(ветка `standard-tracker`). Это отдельный проект на базе локального форка
-`automation`, а не продолжение веток того форка.
-
-Репозиторий https://github.com/soranocode/automation остаётся исходным
-снимком HearthSim (ветка `master`, коммит `e8732a07` / v1.57.7) и для
-нового продукта не используется. Его ветки из этой линии не меняем.
-
-Папка `knowledge/` по-прежнему только на диске и в git не входит. Новый
-чат начинает с этого файла, затем с `knowledge/INDEX.md`, и открывает
-только нужный брифинг.
-
-## Состояние на 2026-09-22
-
-Репозиторий собран из полной истории исходной базы. Автоматический remote на
-локальную папку `automation` снят, чтобы эта линия не путалась с исходным форком.
-
-В ветке подготовлена локальная сборка, сам продукт всё ещё исходное приложение.
-Ограничение только Стандартом и удаление облака не сделаны.
-
-Сделано в коде:
-
-- `bootstrap.ps1` ищет Visual Studio MSBuild, принимает локальный .NET SDK
-  через `-DotNetRoot` и останавливается на первой ошибке.
-- Bootstrap умеет `-UseLocalDependencies` и больше не делает `git reset --hard`
-  для переводов. Явное обновление строк — `-UpdateLocalizations`.
-- Генерация `Strings.resx` не вызывает внешний `resgen.exe`: используется
-  компилятор SDK (`ExecuteAsTool=false`, `GenerateSatelliteAssembliesForCore`).
-- В Battlegrounds идентификатор карты приведён к `DarkGifts` из текущего HearthDb.
-  Это правка сборки, не поддержка Полей сражений в первой версии.
-- `BUILDING.md` описывает эти команды.
-
-Скопированы игнорируемые локальные зависимости и база `knowledge/`. Переводы
-лежат файлами, без вложенного Git-репозитория. HSReplay и BobsBuddy DLL пока
-нужны контрольной сборке и снимаются только вместе с кодом, который их вызывает.
-
-Контрольная сборка после правки `resgen.exe` в этом репозитории ещё не
-подтверждена. Предыдущая сборка в `automation` прошла Bootstrap и NuGet restore,
-затем остановилась на MSB3091 из-за отсутствующего `resgen.exe`. В игре работа
-не проверялась. Системная установка Visual Studio не менялась.
-
-## Следующие шаги
-
-1. Довести контрольную сборку до успеха и проверить стандартный матч.
-2. Ограничить продукт Стандартом, сохранив общий парсер и модели.
-3. Убрать HSReplay/телеметрию/чужие обновления и остальные режимные функции;
-   удалять бинарные ссылки только вместе с использующим их кодом.
-4. Проверить колоды, шансы, секреты и статистику без аккаунта HSReplay.
-5. Отдельно определить название продукта и изолировать его пользовательские данные.
-
-Для навигации сначала читать knowledge/INDEX.md, затем только нужный брифинг.
-Исторические описания knowledge относятся к исходному проекту; этот файл
-фиксирует актуальный объём нового продукта.
+Local logs: tests.log, smoke.log. Temporary editing scripts are not product files.
+No reset credits used. Preserve original HDT profile and licenses/provenance.

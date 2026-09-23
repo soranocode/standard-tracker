@@ -1,4 +1,4 @@
-#region
+﻿#region
 
 using System;
 using System.Collections.Generic;
@@ -22,31 +22,7 @@ namespace Hearthstone_Deck_Tracker.HsReplay
 
 		public static async Task<bool> Upload(string[] logLines, GameMetaData? gameMetaData, GameStats? game)
 		{
-			var uploadId = game?.GameId.GetHashCode() ?? string.Join("", logLines.Take(100)).GetHashCode();
-			var item = new UploaderItem(uploadId);
-			if(InProgress.Contains(item))
-			{
-				Log.Info($"{item.Id} already in progress. Waiting for it to complete...");
-				InProgress.Add(item);
-				return await item.Success;
-			}
-			InProgress.Add(item);
-			Log.Info($"Uploading {item.Id}...");
-			var success = false;
-			try
-			{
-				success = await TryUpload(logLines, gameMetaData, game, true);
-			}
-			catch(Exception ex)
-			{
-				Log.Error(ex);
-				Influx.OnGameUploadFailed();
-			}
-			Log.Info($"{item.Id} complete. Success={success}");
-			foreach(var waiting in InProgress.Where(x => x.Id == item.Id))
-				waiting.Complete(success);
-			InProgress.RemoveAll(x => x.Id == item.Id);
-			return success;
+			return await Task.FromResult(false);
 		}
 
 		private static async Task<bool> TryUpload(string[] logLines, GameMetaData? gameMetaData, GameStats? game, bool submitFailure)

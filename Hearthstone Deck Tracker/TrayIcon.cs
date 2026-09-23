@@ -1,4 +1,4 @@
-#region
+﻿#region
 
 using System;
 using System.Drawing;
@@ -33,7 +33,7 @@ namespace Hearthstone_Deck_Tracker
 			{
 				Visible = true,
 				ContextMenu = new ContextMenu(),
-				Text = "Hearthstone Deck Tracker"
+				Text = "Standard Tracker"
 			};
 
 			var iconFile = new FileInfo("Images/HearthstoneDeckTracker16.ico");
@@ -90,7 +90,7 @@ namespace Hearthstone_Deck_Tracker
 				DeckList.Instance.ActiveDeck = null;
 		}
 
-		public void ShowMessage(string text, string title = "Hearthstone Deck Tracker", int duration = 5, ToolTipIcon icon = ToolTipIcon.Info)
+		public void ShowMessage(string text, string title = "Standard Tracker", int duration = 5, ToolTipIcon icon = ToolTipIcon.Info)
 			=> NotifyIcon.ShowBalloonTip(duration, title, text, icon);
 	}
 }

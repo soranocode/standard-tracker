@@ -1,4 +1,4 @@
-#region
+﻿#region
 
 using System;
 using System.Collections.Generic;
@@ -91,7 +91,7 @@ namespace Hearthstone_Deck_Tracker.LogReader.Handlers
 					gameState.GameHandler?.HandleInMenu();
 
 				if(game.CurrentMode == Mode.PACKOPENING)
-					Watchers.PackWatcher.Run();
+					Watchers.PackWatcher.Stop();
 				else
 					Watchers.PackWatcher.Stop();
 
@@ -118,12 +118,12 @@ namespace Hearthstone_Deck_Tracker.LogReader.Handlers
 				}
 
 				if(game.CurrentMode == Mode.ADVENTURE || game.PreviousMode == Mode.ADVENTURE && game.CurrentMode == Mode.GAMEPLAY)
-					Watchers.DungeonRunWatcher.Run();
+					Watchers.DungeonRunWatcher.Stop();
 				else
 					Watchers.DungeonRunWatcher.Stop();
 
 				if(game.CurrentMode == Mode.PVP_DUNGEON_RUN || game.PreviousMode == Mode.PVP_DUNGEON_RUN && game.CurrentMode == Mode.GAMEPLAY)
-					Watchers.PVPDungeonRunWatcher.Run();
+					Watchers.PVPDungeonRunWatcher.Stop();
 				else
 					Watchers.PVPDungeonRunWatcher.Stop();
 

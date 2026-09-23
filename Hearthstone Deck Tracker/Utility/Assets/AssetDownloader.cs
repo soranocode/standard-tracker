@@ -234,14 +234,7 @@ namespace Hearthstone_Deck_Tracker.Utility.Assets
 		/// <exception cref="ArgumentNullException">Thrown if obj is null</exception>
 		private Task<bool> DownloadAsset(T obj)
 		{
-			if(obj == null)
-				throw new ArgumentNullException();
-			var filename = _getFilename(obj);
-			ManageLRUCache();
-			if(_inProgressDownloads.TryGetValue(filename, out var inProgressDownload))
-				return inProgressDownload;
-			_inProgressDownloads[filename] = DownloadFileAsync(obj);
-			return _inProgressDownloads[filename];
+			return Task.FromResult(false); // Offline: never download art or upstream tools.
 		}
 
 		/// <exception cref="ArgumentNullException">Thrown if obj is null</exception>

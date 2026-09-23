@@ -26,7 +26,7 @@ namespace Hearthstone_Deck_Tracker
 		private static bool _loaded;
 
 		public static readonly string AppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)
-		                                            + @"\HearthstoneDeckTracker";
+		                                            + @"\StandardTracker";
 
 
 #if(!SQUIRREL)
@@ -143,8 +143,8 @@ namespace Hearthstone_Deck_Tracker
 		[DefaultValue(false)]
 		public bool AutoUseDeck = false;
 
-		[DefaultValue(true)]
-		public bool AutoShowMulliganGuide = true;
+		[XmlIgnore]
+		public bool AutoShowMulliganGuide { get => false; set { } }
 
 		[DefaultValue(true)]
 		public bool DeckPickerCaps = true;
@@ -179,11 +179,11 @@ namespace Hearthstone_Deck_Tracker
 		[DefaultValue(HsActionType.Flash)]
 		public HsActionType ChallengeAction = HsActionType.Flash;
 
-		[DefaultValue(false)]
-		public bool CheckForDevUpdates = false;
+		[XmlIgnore]
+		public bool CheckForDevUpdates { get => false; set { } }
 
-		[DefaultValue(true)]
-		public bool CheckForUpdates = true;
+		[XmlIgnore]
+		public bool CheckForUpdates { get => false; set { } }
 
 		[DefaultValue(ClassColorScheme.Classic)]
 		public ClassColorScheme ClassColorScheme = ClassColorScheme.Classic;
@@ -197,11 +197,11 @@ namespace Hearthstone_Deck_Tracker
 		[DefaultValue(true)]
 		public bool CardDbIncludeWildOnlyCards = true;
 
-		[DefaultValue(true)]
-		public bool ConstructedAutoImportNew = true;
+		[XmlIgnore]
+		public bool ConstructedAutoImportNew { get => false; set { } }
 
-		[DefaultValue(true)]
-		public bool ConstructedAutoUpdate = true;
+		[XmlIgnore]
+		public bool ConstructedAutoUpdate { get => false; set { } }
 
 		[DefaultValue(false)]
 		public bool ConstructedStatsAsPercent = false;
@@ -326,8 +326,8 @@ namespace Hearthstone_Deck_Tracker
 		[DefaultValue(DisplayedTimeFrame.AllTime)]
 		public DisplayedTimeFrame DisplayedTimeFrame = DisplayedTimeFrame.AllTime;
 
-		[DefaultValue(true)]
-		public bool DungeonAutoImport = true;
+		[XmlIgnore]
+		public bool DungeonAutoImport { get => false; set { } }
 
 		[DefaultValue(true)]
 		public bool DungeonRunIncludePassiveCards = true;
@@ -335,11 +335,11 @@ namespace Hearthstone_Deck_Tracker
 		[DefaultValue(true)]
 		public bool EnterToSaveNote = true;
 
-		[DefaultValue(true)]
-		public bool EnableMulliganGuide = true;
+		[XmlIgnore]
+		public bool EnableMulliganGuide { get => false; set { } }
 
-		[DefaultValue(true)]
-		public bool EnableMulliganGV2 = true;
+		[XmlIgnore]
+		public bool EnableMulliganGV2 { get => false; set { } }
 
 		[DefaultValue(false)]
 		public bool MulliganGV2OnboardingSeen = false;
@@ -353,8 +353,8 @@ namespace Hearthstone_Deck_Tracker
 		[DefaultValue(false)]
 		public bool ExportIncludeVersion = false;
 
-		[DefaultValue(true)]
-		public bool GoogleAnalytics = true;
+		[XmlIgnore]
+		public bool GoogleAnalytics { get => false; set { } }
 
 		[DefaultValue(@"C:\Program Files (x86)\Hearthstone")]
 		public string HearthstoneDirectory = @"C:\Program Files (x86)\Hearthstone";
@@ -504,35 +504,35 @@ namespace Hearthstone_Deck_Tracker
 		[DefaultValue(true)]
 		public bool HighlightLastDrawn = true;
 
-		[DefaultValue(true)]
-		public bool HsReplayAutoUpload = true;
+		[XmlIgnore]
+		public bool HsReplayAutoUpload { get => false; set { } }
 
-		[DefaultValue(true)]
-		public bool HsReplayUploadRanked = true;
+		[XmlIgnore]
+		public bool HsReplayUploadRanked { get => false; set { } }
 
-		[DefaultValue(true)]
-		public bool HsReplayUploadCasual = true;
+		[XmlIgnore]
+		public bool HsReplayUploadCasual { get => false; set { } }
 
-		[DefaultValue(true)]
-		public bool HsReplayUploadArena = true;
+		[XmlIgnore]
+		public bool HsReplayUploadArena { get => false; set { } }
 
-		[DefaultValue(true)]
-		public bool HsReplayUploadBrawl = true;
+		[XmlIgnore]
+		public bool HsReplayUploadBrawl { get => false; set { } }
 
-		[DefaultValue(true)]
-		public bool HsReplayUploadFriendly = true;
+		[XmlIgnore]
+		public bool HsReplayUploadFriendly { get => false; set { } }
 
-		[DefaultValue(true)]
-		public bool HsReplayUploadPractice = true;
+		[XmlIgnore]
+		public bool HsReplayUploadPractice { get => false; set { } }
 
-		[DefaultValue(true)]
-		public bool HsReplayUploadSpectator = true;
+		[XmlIgnore]
+		public bool HsReplayUploadSpectator { get => false; set { } }
 
-		[DefaultValue(true)]
-		public bool HsReplayUploadBattlegrounds = true;
+		[XmlIgnore]
+		public bool HsReplayUploadBattlegrounds { get => false; set { } }
 
-		[DefaultValue(true)]
-		public bool HsReplayUploadMercenaries = true;
+		[XmlIgnore]
+		public bool HsReplayUploadMercenaries { get => false; set { } }
 
 		[DefaultValue("00000000-0000-0000-0000-000000000000")]
 		public string Id = Guid.Empty.ToString();
@@ -688,8 +688,8 @@ namespace Hearthstone_Deck_Tracker
 		[DefaultValue(false)]
 		public bool RarityCardGems = false;
 
-		[DefaultValue(true)]
-		public bool RecordArena = true;
+		[XmlIgnore]
+		public bool RecordArena { get => false; set { } }
 
 		[DefaultValue(true)]
 		public bool RecordCasual = true;
@@ -697,23 +697,23 @@ namespace Hearthstone_Deck_Tracker
 		[DefaultValue(true)]
 		public bool RecordFriendly = true;
 
-		[DefaultValue(false)]
-		public bool RecordOther = false;
+		[XmlIgnore]
+		public bool RecordOther { get => false; set { } }
 
-		[DefaultValue(true)]
-		public bool RecordBrawl = true;
+		[XmlIgnore]
+		public bool RecordBrawl { get => false; set { } }
 
-		[DefaultValue(false)]
-		public bool RecordPractice = false;
+		[XmlIgnore]
+		public bool RecordPractice { get => false; set { } }
 
 		[DefaultValue(true)]
 		public bool RecordRanked = true;
 
-		[DefaultValue(true)]
-		public bool RecordReplays = true;
+		[XmlIgnore]
+		public bool RecordReplays { get => false; set { } }
 
-		[DefaultValue(false)]
-		public bool RecordSpectator = false;
+		[XmlIgnore]
+		public bool RecordSpectator { get => false; set { } }
 
 		[DefaultValue(false)]
 		public bool RemoveCardsFromDeck = false;
@@ -840,8 +840,8 @@ namespace Hearthstone_Deck_Tracker
 		[DefaultValue(false)]
 		public bool DismissedAutoEnablePopup = false;
 
-		[DefaultValue(true)]
-		public bool RunBobsBuddy = true;
+		[XmlIgnore]
+		public bool RunBobsBuddy { get => false; set { } }
 
 		[DefaultValue(true)]
 		public bool ShowBobsBuddyDuringCombat = true;
@@ -861,8 +861,8 @@ namespace Hearthstone_Deck_Tracker
 		[DefaultValue(false)]
 		public bool SeenMulliganGuideTrialsExhausted = false;
 
-		[DefaultValue(true)]
-		public bool ShowMulliganGuidePreLobby = true;
+		[XmlIgnore]
+		public bool ShowMulliganGuidePreLobby { get => false; set { } }
 
 		[DefaultValue(15)]
 		public double SessionRecapTop = 15;
@@ -894,8 +894,8 @@ namespace Hearthstone_Deck_Tracker
 		[DefaultValue(null)]
 		public bool? ShowChinaModuleOverlay = null;
 
-		[DefaultValue(false)]
-		public bool BattlegroundsSessionRecapWindowOnStart = false;
+		[XmlIgnore]
+		public bool BattlegroundsSessionRecapWindowOnStart { get => false; set { } }
 
 		[DefaultValue(100)]
 		public double OverlaySessionRecapScaling = 100;
@@ -963,8 +963,8 @@ namespace Hearthstone_Deck_Tracker
 		[DefaultValue(true)]
 		public bool ShowBattlegroundsToast = true;
 
-		[DefaultValue(true)]
-		public bool ShowMulliganToast = true;
+		[XmlIgnore]
+		public bool ShowMulliganToast { get => false; set { } }
 
 		[DefaultValue(true)]
 		public bool ShowLeagueFilterHint = true;
@@ -1063,8 +1063,8 @@ namespace Hearthstone_Deck_Tracker
 		[DefaultValue("#FF00FF")]
 		public string StreamingOverlayBackground = "#FF00FF";
 
-		[DefaultValue(true)]
-		public bool SyncCollection = true;
+		[XmlIgnore]
+		public bool SyncCollection { get => false; set { } }
 
 		[DefaultValue(true)]
 		public bool TagDecksOnImport = true;
@@ -1222,14 +1222,7 @@ namespace Hearthstone_Deck_Tracker
 		[Obsolete]
 		public string HomeDir
 		{
-			get
-			{
-#if(SQUIRREL)
-				return AppDataPath + "\\";
-#else
-				return Instance.SaveInAppData ? AppDataPath + "\\" : string.Empty;
-#endif
-			}
+			get => AppDataPath + "\\";
 		}
 
 		public string BackupDir => Path.Combine(DataDir, "Backups");
@@ -1238,26 +1231,12 @@ namespace Hearthstone_Deck_Tracker
 
 		public string ConfigDir
 		{
-			get
-			{
-#if(SQUIRREL)
-				return AppDataPath + "\\";
-#else
-				return Instance.SaveConfigInAppData == false ? string.Empty : AppDataPath + "\\";
-#endif
-			}
+			get => AppDataPath + "\\";
 		}
 
 		public string DataDir
 		{
-			get
-			{
-#if(SQUIRREL)
-				return AppDataPath + "\\";
-#else
-				return Instance.SaveDataInAppData == false ? DataDirPath + "\\" : AppDataPath + "\\";
-#endif
-			}
+			get => AppDataPath + "\\";
 		}
 
 		public string ReplayDir => Path.Combine(DataDir, "Replays");
@@ -1292,7 +1271,9 @@ namespace Hearthstone_Deck_Tracker
 			var fields = GetType().GetFields();
 			foreach(var warning in configWarnings)
 			{
-				var prop = fields.First(x => x.Name == warning.ToString());
+				var prop = fields.FirstOrDefault(x => x.Name == warning.ToString());
+				if(prop == null)
+					continue; // Removed product capabilities are not user configuration warnings.
 				var defaultValue = (DefaultValueAttribute)prop.GetCustomAttributes(typeof(DefaultValueAttribute), false).First();
 				var value = prop.GetValue(this);
 				if(!value.Equals(defaultValue.Value))
@@ -1365,86 +1346,23 @@ namespace Hearthstone_Deck_Tracker
 		public static void Load()
 		{
 			_loaded = true;
-			var foundConfig = false;
-			Environment.CurrentDirectory = AppDomain.CurrentDomain.BaseDirectory;
+			Directory.CreateDirectory(AppDataPath);
+			var path = Path.Combine(AppDataPath, "config.xml");
 			try
 			{
-				var config = Path.Combine(AppDataPath, "config.xml");
-#if(SQUIRREL)
-				if(File.Exists(config))
-				{
-					_config = XmlManager<Config>.Load(config);
-					foundConfig = true;
-				}
-#else
-				if(File.Exists("config.xml"))
-				{
-					_config = XmlManager<Config>.Load("config.xml");
-					foundConfig = true;
-				}
-				else if(File.Exists(config))
-				{
-					_config = XmlManager<Config>.Load(config);
-					foundConfig = true;
-				}
-				else if(!Directory.Exists(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)))
-					//save locally if appdata doesn't exist (when e.g. not on C)
-					Instance.SaveConfigInAppData = false;
-#endif
+				if(File.Exists(path))
+					_config = XmlManager<Config>.Load(path);
 			}
 			catch(Exception ex)
 			{
 				Log.Error(ex);
-				try
-				{
-					if(File.Exists("config.xml"))
-					{
-						File.Move("config.xml", Helper.GetValidFilePath(".", "config_corrupted", "xml"));
-					}
-					else if(File.Exists(AppDataPath + @"\config.xml"))
-					{
-						File.Move(AppDataPath + @"\config.xml", Helper.GetValidFilePath(AppDataPath, "config_corrupted", "xml"));
-					}
-				}
-				catch(Exception ex1)
-				{
-					Log.Error(ex1);
-				}
-				_config = BackupManager.TryRestore<Config>("config.xml");
+				File.Move(path, Helper.GetValidFilePath(AppDataPath, "config_corrupted", "xml"));
+				_config = null;
 			}
-
-			if(!foundConfig)
-			{
-				if(Instance.ConfigDir != string.Empty)
-					Directory.CreateDirectory(Instance.ConfigDir);
-				Save();
-			}
-#if(!SQUIRREL)
-			else if(Instance.SaveConfigInAppData != null)
-			{
-				if(Instance.SaveConfigInAppData.Value) //check if config needs to be moved
-				{
-					if(File.Exists("config.xml"))
-					{
-						Directory.CreateDirectory(Instance.ConfigDir);
-						SaveBackup(true); //backup in case the file already exists
-						File.Move("config.xml", Instance.ConfigPath);
-						Log.Info("Moved config to appdata");
-					}
-				}
-				else if(File.Exists(AppDataPath + @"\config.xml"))
-				{
-					SaveBackup(true); //backup in case the file already exists
-					File.Move(AppDataPath + @"\config.xml", Instance.ConfigPath);
-					Log.Info("Moved config to local");
-				}
-			}
-#endif
+			// Never discover, migrate, or restore a profile from the original tracker.
 			if(Instance.Id == Guid.Empty.ToString())
-			{
 				Instance.Id = Guid.NewGuid().ToString();
-				Save();
-			}
+			Save();
 		}
 
 		public void ResetAll()

@@ -60,26 +60,7 @@ namespace Hearthstone_Deck_Tracker.Utility.Analytics
 
 		public static void Initialize()
 		{
-			SentrySdk.Init(options =>
-			{
-				options.Dsn = GetBuildMetadata("SentryDsn") ?? "";
-				// Release is left unset so the SDK resolves it from InformationalVersion, which the csproj
-				// composes the sentry-cli release name from at build time
-				options.Distribution = Helper.GetCurrentVersion().Revision.ToString();
-				options.Environment = GetBuildMetadata("SentryEnvironment");
-				if(string.IsNullOrWhiteSpace(options.Environment))
-				{
-#if(SQUIRREL)
-					options.Environment = "Squirrel";
-#else
-					options.Environment = "Portable";
-#endif
-				}
-				options.IsGlobalModeEnabled = true;
-#if(SQUIRREL)
-				options.AutoSessionTracking = true;
-#endif
-			});
+			// Remote reporting is not part of this product.
 		}
 
 		public static SentryId CaptureException(Exception ex)

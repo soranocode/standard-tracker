@@ -1,4 +1,4 @@
-#region
+﻿#region
 
 using System;
 using System.Collections.Generic;
@@ -138,15 +138,7 @@ namespace Hearthstone_Deck_Tracker.Controls.DeckPicker
 
 		public Visibility VisibilitySearchBar => SearchBarVisibile ? Visible : Collapsed;
 
-		public ObservableCollection<DeckType> DeckTypeItems => _deckTypeItems ??= new ObservableCollection<DeckType>(new() {
-			DeckType.All,
-			DeckType.Standard,
-			DeckType.Wild,
-			DeckType.Twist,
-			DeckType.Arena,
-			DeckType.Dungeon,
-			DeckType.Brawl,
-		});
+		public ObservableCollection<DeckType> DeckTypeItems => _deckTypeItems ??= new ObservableCollection<DeckType> { DeckType.Standard };
 
 		public Deck? ActiveDeck => DeckList.Instance.ActiveDeck;
 
@@ -654,7 +646,7 @@ namespace Hearthstone_Deck_Tracker.Controls.DeckPicker
 
 		public void SelectDeckType(DeckType selectedDeckType, bool ignoreSelectionChange = false)
 		{
-			var index = DeckTypeItems.IndexOf(selectedDeckType);
+			var index = DeckTypeItems.IndexOf(DeckType.Standard);
 			if(ListViewDeckType.SelectedIndex == index)
 				return;
 			if(ignoreSelectionChange)

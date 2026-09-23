@@ -40,13 +40,7 @@ namespace Hearthstone_Deck_Tracker.HsReplay
 
 		public static async void Initialize()
 		{
-			HSReplayNetHelper.Authenticating += OnAuthenticating;
-			HSReplayNetHelper.CollectionUploaded += CollectionUploaded;
-			OnboardingViewModel.Continue += () => RunOnboarding("https://hsreplay.net/hdt/installed/").Forget();
-			OnboardingComplete += () => OnAppStart();
-
-			if(await EnsureOnboarded())
-				OnAppStart();
+			await Task.CompletedTask;
 		}
 
 		private static readonly Queue<VMAction> _actionBuffer = new();

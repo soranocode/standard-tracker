@@ -43,105 +43,14 @@ public static class HDTToolsManager
 
     public static List<string> GetRecentLogs()
     {
-	    var logsDir = Path.Combine(
-		    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-		    "HearthstoneDeckTracker", "HDTTools", "logs");
-
-	    var dirInfo = new DirectoryInfo(logsDir);
-	    var logFile = dirInfo.GetFiles().OrderByDescending(f => f.LastWriteTime).FirstOrDefault();
-
-	    if (logFile == null)
-			return new List<string>();
-
-	    try
-	    {
-		    var allLines = File.ReadAllLines(logFile.FullName);
-		    return allLines.Skip(Math.Max(0, allLines.Length - 100)).ToList();
-	    }
-	    catch (Exception ex)
-	    {
-		    Log.Error($"Error reading HDTTools log file: {ex.Message}");
-		    return new List<string>();
-	    }
-    }
+		return new List<string>();
+		}
 
     private static bool _loading;
     public static async Task<bool> EnsureLatestHDTTools()
     {
-	    if(_loading)
-		    return false;
-        _loading = true;
-
-        try
-        {
-            if (Downloader == null)
-            {
-                Log.Warn("No HDTTools downloader available");
-                return false;
-            }
-
-            Downloader.InvalidateCachedAssets();
-
-	        LRUCache<byte[]>.Entry? asset = null;
-
-	        for (var attempt = 1; attempt <= DownloadMaxRetries; attempt++)
-	        {
-	            try
-	            {
-	                Log.Info($"Downloading HDTTools.zip (attempt {attempt}/{DownloadMaxRetries})...");
-	                asset = await Task.Run(async () => await Downloader.GetAssetEntry("HDTTools", true));
-
-	                if (asset?.Data != null)
-	                    break;
-
-	                Log.Warn($"Download attempt {attempt} returned null data");
-	            }
-	            catch (Exception downloadEx)
-	            {
-	                Log.Warn($"Download attempt {attempt} failed: {downloadEx.Message}");
-
-	                if (attempt >= DownloadMaxRetries)
-	                    throw;
-
-	                var delay = TimeSpan.FromSeconds(DownloadDelaySeconds);
-	                Log.Info($"Waiting {delay.TotalSeconds}s before retry...");
-	                await Task.Delay(delay);
-	            }
-	        }
-
-	        if (asset?.Data == null)
-	        {
-	            Log.Warn("Could not download HDTTools.zip after all retries");
-	            return false;
-			}
-
-            var exePath = Path.Combine(ExtractedToolsDir, "HDTTools.exe");
-            var needExtract = !File.Exists(exePath) || !asset.NotModified;
-
-            if (!needExtract)
-            {
-                Log.Info("HDTTools is up to date, no extraction needed");
-                return true;
-            }
-
-            Log.Info("Extracting HDTTools.zip...");
-	        await Task.Run(() => ExtractHDTToolsZip(asset.Data));
-            Log.Info("HDTTools.zip updated and extracted successfully");
-            return true;
-        }
-        catch (Exception ex)
-        {
-	        // Important to clear cached etag and zip.
-	        // This way we make sure all files are present and correct.
-	        Downloader?.ClearStorage();
-            Log.Error($"Error in EnsureLatestHDTTools: {ex.Message}");
-            return false;
-        }
-        finally
-        {
-            _loading = false;
-        }
-    }
+		return await Task.FromResult(false);
+		}
 
     private static async Task ExtractHDTToolsZip(byte[] zipData)
     {

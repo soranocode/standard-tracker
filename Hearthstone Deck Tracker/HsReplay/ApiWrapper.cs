@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -16,535 +16,86 @@ namespace Hearthstone_Deck_Tracker.HsReplay
 {
 	internal class ApiWrapper
 	{
-		private static readonly HsReplayClient Client = new HsReplayClient("089b2bc6-3c26-4aab-adbe-bcfd5bb48671", Helper.GetUserAgent(), config: TryGetConfig());
-		private static bool _requestedNewToken;
+		public static Task PostBattlegroundsHeroPickFeedback(BattlegroundsHeroPickFeedbackParams parameters, bool isDuos) => Task.CompletedTask;
+		public static Task PostBattlegroundsTrinketFeedback(BattlegroundsTrinketPickFeedbackParams parameters) => Task.CompletedTask;
+		public static Task<T?> GetArenaHeroPickStats<T>(ArenaHeroPickParams parameters) where T : class => Task.FromResult<T?>(null);
+		public static Task<T?> GetArenaCardPickStats<T>(ArenaCardPickParams parameters) where T : class => Task.FromResult<T?>(null);
+		public static Task<T?> ScoreArenaDeck<T>(ArenaScoreDeckParams parameters) where T : class => Task.FromResult<T?>(null);
 
-		private static async Task<string> GetUploadToken()
-		{
-			if(!string.IsNullOrEmpty(Account.Instance.UploadToken))
-				return Account.Instance.UploadToken!;
-			UploadTokenHistory.Write("Trying to request new token");
-			string token;
-			try
-			{
-				Log.Info("Requesting new upload token...");
-				token = await Client.CreateUploadToken();
-				if(string.IsNullOrEmpty(token))
-					throw new Exception("Reponse contained no upload-token.");
-			}
-			catch(Exception e)
-			{
-				Log.Error(e);
-				UploadTokenHistory.Write("Requesting new token failed:\n" + e);
-				throw new Exception("Webrequest to obtain upload-token failed.", e);
-			}
-			Account.Instance.UploadToken = token;
-			Account.Instance.TokenClaimed = false;
-			Account.Save();
-			UploadTokenHistory.Write("Received " + token);
-			Log.Info("Received new upload-token.");
-			return token;
-		}
+		// Offline compatibility surface for the retained local UI. No network client.
+		public static Task UpdateUploadTokenStatus()
+			=> Task.CompletedTask;
 
-		public static async Task UpdateUploadTokenStatus()
-		{
-			Log.Info("Checking token status...");
-			try
-			{
-				var token = await GetUploadToken();
-				var accountStatus = await Client.GetAccountStatus(token);
-				Account.Instance.TokenClaimed = accountStatus?.User != null;
-				Account.Save();
-				Log.Info($"Token is {(Account.Instance.TokenClaimed == true ? "" : "not ")}claimed");
-			}
-			catch(WebException ex)
-			{
-				Log.Error(ex);
-				var response = ex.Response as HttpWebResponse;
-				if(response?.StatusCode == HttpStatusCode.NotFound && !_requestedNewToken)
-				{
-					Log.Info("Requesting new token");
-					_requestedNewToken = true;
-					Account.Instance.Reset();
-					await UpdateUploadTokenStatus();
-				}
-			}
-			catch(Exception ex)
-			{
-				Log.Error(ex);
-			}
-		}
+		public static Task<LogUploadRequest> CreateUploadRequest(UploadMetaData metaData)
+			=> Task.FromException<LogUploadRequest>(new NotSupportedException("Cloud services are unavailable in Standard Tracker."));
 
-		public static async Task<LogUploadRequest> CreateUploadRequest(UploadMetaData metaData)
-			=> await Client.CreateUploadRequest(metaData, await GetUploadToken());
+		public static Task UploadLog(LogUploadRequest uploadRequest, string[] logLines)
+			=> Task.CompletedTask;
 
+		public static Task<DecksData?> GetAvailableDecks()
+			=> Task.FromResult<DecksData?>(null);
 
-		public static async Task UploadLog(LogUploadRequest uploadRequest, string[] logLines)
-			=> await Client.UploadLog(uploadRequest, logLines);
+		public static Task<DeckWinrateData?> GetDeckWinrates(string deckId, bool wild)
+			=> Task.FromResult<DeckWinrateData?>(null);
 
-		private static ClientConfig? TryGetConfig()
-		{
-			var file = new FileInfo(Path.Combine(Config.AppDataPath, "hsreplaynet.xml"));
-			if(!file.Exists)
-				return null;
-			try
-			{
-				Log.Warn("Loading custom hsreplaynet config!");
-				return XmlManager<ClientConfig>.Load(file.FullName);
-			}
-			catch(Exception ex)
-			{
-				Log.Error(ex);
-				return null;
-			}
-		}
+		public static Task<BattlegroundsCompStats?> GetTier7CompStats(string token, BattlegroundsCompStatsParams parameters)
+			=> Task.FromResult<BattlegroundsCompStats?>(null);
 
-		internal static async Task<DecksData?> GetAvailableDecks()
-		{
-			Log.Info("Fetching available decks...");
-			try
-			{
-				var token = await GetUploadToken();
-				var data = await Client.GetAvailableDecks(token);
-				if(data == null)
-					return null;
-				return new DecksData
-				{
-					ClientTimeStamp = DateTime.Now,
-					ServerTimeStamp = data.ServerTimeStamp,
-					Decks = data.Data.Properties().Select(p => p.Name).ToArray()
-				};
-			}
-			catch(Exception e)
-			{
-				Log.Error(e);
-				return null;
-			}
-		}
+		public static Task<PlayerTrialStatus?> GetPlayerTrialStatus(string name, ulong accountHi, ulong accountLo)
+			=> Task.FromResult<PlayerTrialStatus?>(null);
 
-		// Todo: Add classic support
-		internal static async Task<DeckWinrateData?> GetDeckWinrates(string deckId, bool wild)
-		{
-			Log.Info("Fetching winrates for deck " + deckId);
-			try
-			{
-				var token = await GetUploadToken();
-				var data = await Client.GetDeckWinrates(deckId, wild, token);
-				if(data == null)
-					return null;
+		public static Task<string?> ActivatePlayerTrial(string name, ulong accountHi, ulong accountLo)
+			=> Task.FromResult<string?>(null);
 
-				var winrates = data.Data["data"]?.Children().OfType<JProperty>().Where(x => x.Values().Any());
-				var dict = winrates.ToDictionary(
-					x => x.Name,
-					x => x.Value[0]?["winrate"]?.Value<double>() ?? 0.0
-				);
+		public static Task<BattlegroundsQuestPickStats[]?> GetTier7QuestStats(string token, BattlegroundsQuestPickParams parameters)
+			=> Task.FromResult<BattlegroundsQuestPickStats[]?>(null);
 
-				var totalWinrate = data.Data?.SelectToken("metadata.total_winrate")?.Value<double>();
+		public static Task<BattlegroundsTrinketPickStats?> GetTier7TrinketPickStats(string token, BattlegroundsTrinketPickParams parameters)
+			=> Task.FromResult<BattlegroundsTrinketPickStats?>(null);
 
-				return new DeckWinrateData
-				{
-					ClientTimeStamp = DateTime.Now,
-					ServerTimeStamp = data.ServerTimeStamp,
-					TotalWinrate = totalWinrate ?? 0.0,
-					ClassWinrates = dict
-				};
-			}
-			catch(Exception e)
-			{
-				Log.Error(e);
-				return null;
-			}
-		}
+		public static Task<BattlegroundsHeroPickStats?> GetTier7HeroPickStats(string token, BattlegroundsHeroPickStatsParams parameters)
+			=> Task.FromResult<BattlegroundsHeroPickStats?>(null);
 
-		internal static async Task<BattlegroundsCompStats?> GetTier7CompStats(string token, BattlegroundsCompStatsParams parameters)
-		{
-			Log.Info("Fetching tier7 comp stats");
-			try
-			{
-				return await Client.GetTier7CompStats(token, parameters);
+		public static Task<BattlegroundsHeroPickStats?> GetTier7DuosHeroPickStats(string token, BattlegroundsHeroPickStatsParams parameters)
+			=> Task.FromResult<BattlegroundsHeroPickStats?>(null);
 
-			}
-			catch(Exception e)
-			{
-				Log.Error(e);
-				return null;
-			}
-		}
+		public static Task<MulliganGuideData?> GetConstructedMulliganGuide(string token, MulliganGuideParams parameters)
+			=> Task.FromResult<MulliganGuideData?>(null);
 
-		public static async Task<PlayerTrialStatus?> GetPlayerTrialStatus(string name, ulong accountHi, ulong accountLo)
-		{
-			try
-			{
-				return await Client.GetPlayerTrialStatus(name, accountHi, accountLo);
-			}
-			catch(Exception e)
-			{
-				Log.Error(e);
-				return null;
-			}
-		}
+		public static Task<MulliganV2Data?> GetConstructedMulliganV2(string token, MulliganV2Params parameters)
+			=> Task.FromResult<MulliganV2Data?>(null);
 
-		public static async Task<string?> ActivatePlayerTrial(string name, ulong accountHi, ulong accountLo)
-		{
-			try
-			{
-				var response = await Client.ActivatePlayerTrial(name, accountHi, accountLo);
-				return response?.Token;
-			}
-			catch(Exception e)
-			{
-				Log.Error(e);
-				return null;
-			}
-		}
+		public static Task<Dictionary<string, string[]>?> GetDiscoverPoolKeywords(string token)
+			=> Task.FromResult<Dictionary<string, string[]>?>(null);
 
-		public static async Task<BattlegroundsQuestPickStats[]?> GetTier7QuestStats(string token, BattlegroundsQuestPickParams parameters)
-		{
-			try
-			{
-				return await Client.GetTier7QuestPickStats(token, parameters);
-			}
-			catch(Exception e)
-			{
-				Log.Error(e);
-				return null;
-			}
-		}
+		public static Task<Dictionary<string, string[]>?> GetDiscoverPoolKeywords()
+			=> Task.FromResult<Dictionary<string, string[]>?>(null);
 
-		public static async Task<BattlegroundsTrinketPickStats?> GetTier7TrinketPickStats(string token, BattlegroundsTrinketPickParams parameters)
-		{
-			try
-			{
-				return await Client.GetTier7TrinketPickStats(token, parameters);
-			}
-			catch(Exception e)
-			{
-				Log.Error(e);
-				return null;
-			}
-		}
+		public static Task PostMulliganGuideFeedback(MulliganGuideFeedbackParams parameters)
+			=> Task.CompletedTask;
 
-		public static async Task<BattlegroundsHeroPickStats?> GetTier7HeroPickStats(string token, BattlegroundsHeroPickStatsParams parameters)
-		{
-			try
-			{
-				return await Client.GetTier7HeroPickStats(token, parameters);
-			}
-			catch(Exception e)
-			{
-				Log.Error(e);
-				return null;
-			}
-		}
+		public static Task PostMulliganGuideFeedback(MulliganV2FeedbackParams parameters)
+			=> Task.CompletedTask;
 
-		public static async Task<BattlegroundsHeroPickStats?> GetTier7DuosHeroPickStats(string token, BattlegroundsHeroPickStatsParams parameters)
-		{
-			try
-			{
-				return await Client.GetTier7DuosHeroPickStats(token, parameters);
-			}
-			catch(Exception e)
-			{
-				Log.Error(e);
-				return null;
-			}
-		}
+		public static Task<MulliganGuideStatusData?> GetMulliganGuideStatus(MulliganGuideStatusParams parameters)
+			=> Task.FromResult<MulliganGuideStatusData?>(null);
 
-		public static async Task<MulliganGuideData?> GetConstructedMulliganGuide(string token, MulliganGuideParams parameters)
-		{
-			try
-			{
-				return await Client.GetConstructedMulliganGuide(token, parameters);
-			}
-			catch(Exception e)
-			{
-				Log.Error(e);
-				return null;
-			}
-		}
+		public static Task<MulliganV2StatusData?> GetMulliganGuideStatus(MulliganV2StatusParams parameters)
+			=> Task.FromResult<MulliganV2StatusData?>(null);
 
-		public static async Task<MulliganV2Data?> GetConstructedMulliganV2(string token, MulliganV2Params parameters)
-		{
-			try
-			{
-				return await Client.GetConstructedMulliganV2(token, parameters);
-			}
-			catch(Exception e)
-			{
-				Log.Error(e);
-				return null;
-			}
-		}
+		public static Task<BattlegroundsCompsGuidesData?> GetCompsGuides(string gameLanguage)
+			=> Task.FromResult<BattlegroundsCompsGuidesData?>(null);
 
-		public static async Task<Dictionary<string, string[]>?> GetDiscoverPoolKeywords(string token)
-		{
-			try
-			{
-				return await Client.GetDiscoverPoolKeywords(token);
-			}
-			catch(Exception e)
-			{
-				Log.Error(e);
-				return null;
-			}
-		}
+		public static Task<BattlegroundsTier7CompsGuidesData?> GetPremiumCompsGuides(string token, string gameLanguage, int[] availableRaces)
+			=> Task.FromResult<BattlegroundsTier7CompsGuidesData?>(null);
 
-		public static async Task<Dictionary<string, string[]>?> GetDiscoverPoolKeywords()
-		{
-			try
-			{
-				var userOwnsPremium = HSReplayNetOAuth.AccountData?.IsPremium ?? false;
-				if(userOwnsPremium)
-					return await HSReplayNetOAuth.MakeRequest(c => c.GetDiscoverPoolKeywords());
+		public static Task<ArenaTrialStatus?> GetArenaTrialStatus(ulong accountHi, ulong accountLo)
+			=> Task.FromResult<ArenaTrialStatus?>(null);
 
-				// Free arena trial (whether or not logged in): fetch through the
-				// unauthenticated arena endpoint, gated on the drafted deck being registered
-				// for an arenasmith trial.
-				var deckId = Reflection.Client.GetArenaDeck()?.Deck.Id;
-				var accountId = Reflection.Client.GetAccountId();
-				if(accountId == null || !deckId.HasValue)
-					return null;
+		public static Task<ArenasmithStatus?> GetArenasmithStatus()
+			=> Task.FromResult<ArenasmithStatus?>(null);
 
-				await ArenaTrial.EnsureLoaded(accountId.Hi, accountId.Lo);
-				if(!ArenaTrial.IsDeckResumable(deckId.Value))
-				{
-					Log.Info("Current deck is not registered for trials, aborting");
-					return null;
-				}
-
-				return await Client.GetDiscoverPoolKeywords(new ArenaPackagesParams {
-					DeckId = deckId.Value, AccountLo = accountId.Lo, PlayerRegion = (int)Helper.GetRegion(accountId.Hi)
-				});
-			}
-			catch(Exception e)
-			{
-				Log.Error(e);
-				return null;
-			}
-		}
-
-		public static async Task PostMulliganGuideFeedback(MulliganGuideFeedbackParams parameters)
-		{
-			try
-			{
-				await Client.PostMulliganGuideFeedback(parameters);
-			}
-			catch(Exception e)
-			{
-#if(DEBUG)
-				Log.Error(e);
-#endif
-			}
-		}
-
-		public static async Task PostMulliganGuideFeedback(MulliganV2FeedbackParams parameters)
-		{
-			try
-			{
-				await Client.PostMulliganV2Feedback(parameters);
-			}
-			catch(Exception e)
-			{
-#if(DEBUG)
-				Log.Error(e);
-#endif
-			}
-		}
-
-		public static async Task PostBattlegroundsHeroPickFeedback(
-			BattlegroundsHeroPickFeedbackParams parameters, bool isDuos
-		)
-		{
-			try
-			{
-				if(isDuos)
-					await Client.PostBattlegroundsDuosHeroPickFeedback(parameters);
-				else
-					await Client.PostBattlegroundsHeroPickFeedback(parameters);
-			}
-			catch(Exception e)
-			{
-#if(DEBUG)
-				Log.Error(e);
-#endif
-			}
-		}
-
-		public static async Task PostBattlegroundsTrinketFeedback(
-			BattlegroundsTrinketPickFeedbackParams parameters
-		)
-		{
-			try
-			{
-				await Client.PostBattlegroundsTrinketFeedback(parameters);
-			}
-			catch(Exception e)
-			{
-#if(DEBUG)
-				Log.Error(e);
-#endif
-			}
-		}
-
-		public static async Task<MulliganGuideStatusData?> GetMulliganGuideStatus(MulliganGuideStatusParams parameters)
-		{
-			try
-			{
-				return await Client.GetMulliganGuideStatus(parameters);
-			}
-			catch(Exception e)
-			{
-				Log.Error(e);
-				return null;
-			}
-		}
-
-		public static async Task<MulliganV2StatusData?> GetMulliganGuideStatus(MulliganV2StatusParams parameters)
-		{
-			try
-			{
-				return await Client.GetMulliganV2Status(parameters);
-			}
-			catch(Exception e)
-			{
-				Log.Error(e);
-				return null;
-			}
-		}
-
-		public static async Task<BattlegroundsCompsGuidesData?> GetCompsGuides(string gameLanguage)
-		{
-			try
-			{
-				return await Client.GetCompsGuides(gameLanguage);
-			}
-			catch(Exception e)
-			{
-				Log.Error(e);
-				return null;
-			}
-		}
-
-		public static async Task<BattlegroundsTier7CompsGuidesData?> GetPremiumCompsGuides(string token, string gameLanguage, int[] availableRaces)
-		{
-		    try
-		    {
-			    return await Client.GetTier7CompsGuides(token, gameLanguage, availableRaces);
-		    }
-		    catch(Exception e)
-		    {
-		        Log.Error(e);
-		        return null;
-		    }
-		}
-
-		// TODO get rid of generic type param and defer to the HSReplay lib once the response payload is stable
-		public async static Task<T?> GetArenaHeroPickStats<T>(ArenaHeroPickParams parameters)
-			where T : class
-		{
-			try
-			{
-				if(HSReplayNetOAuth.AccountData != null)
-					return await HSReplayNetOAuth.MakeRequest<T>(c => c.GetArenaHeroPickStats<T>(parameters));
-				return await Client.GetArenaHeroPickStats<T>(parameters);
-			}
-			catch(Exception e)
-			{
-				Log.Error(e);
-				return null;
-			}
-		}
-
-		// TODO get rid of generic type param and defer to the HSReplay lib once the response payload is stable
-		public async static Task<T?> GetArenaCardPickStats<T>(ArenaCardPickParams parameters)
-			where T : class
-		{
-			try
-			{
-				if(HSReplayNetOAuth.AccountData != null)
-					return await HSReplayNetOAuth.MakeRequest<T>(c => c.GetArenaCardPickStats<T>(parameters));
-				return await Client.GetArenaCardPickStats<T>(parameters);
-			}
-			catch (Exception e)
-			{
-				Log.Error(e);
-				return null;
-			}
-		}
-
-		// TODO get rid of generic type param and defer to the HSReplay lib once the response payload is stable
-		public async static Task<T?> ScoreArenaDeck<T>(ArenaScoreDeckParams parameters)
-			where T : class
-		{
-			try
-			{
-				if(HSReplayNetOAuth.AccountData != null)
-					return await HSReplayNetOAuth.MakeRequest<T>(c => c.ScoreArenaDeck<T>(parameters));
-				return await Client.ScoreArenaDeck<T>(parameters);
-			}
-			catch (Exception e)
-			{
-				Log.Error(e);
-				return null;
-			}
-		}
-
-		public static async Task<ArenaTrialStatus?> GetArenaTrialStatus(ulong accountHi, ulong accountLo)
-		{
-			try
-			{
-				return await Client.GetArenaTrialStatus(accountHi, accountLo);
-			}
-			catch(Exception e)
-			{
-				Log.Error(e);
-				return null;
-			}
-		}
-
-		public static async Task<ArenasmithStatus?> GetArenasmithStatus()
-		{
-			try
-			{
-				return await Client.GetArenasmithStatus();
-			}
-			catch(Exception e)
-			{
-				Log.Error(e);
-				return null;
-			}
-		}
-
-		public static async Task<ArenaPackages?> GetArenaPackages()
-		{
-			try
-			{
-				if(HSReplayNetOAuth.AccountData != null)
-					return  await HSReplayNetOAuth.MakeRequest(c => c.GetArenaPackages());
-
-				// Check if the deck is registered for trials
-				var deckId = Reflection.Client.GetArenaDeck()?.Deck.Id;
-				var accountId = Reflection.Client.GetAccountId();
-				if(accountId == null || !deckId.HasValue)
-					return null;
-
-				await ArenaTrial.EnsureLoaded(accountId.Hi, accountId.Lo);
-				if(!ArenaTrial.IsDeckResumable(deckId.Value))
-				{
-					Log.Info("Current deck is not registered for trials, aborting");
-					return null;
-				}
-
-				return await Client.GetArenaPackages(new ArenaPackagesParams {
-					DeckId = deckId.Value, AccountLo = accountId.Lo, PlayerRegion = (int)Helper.GetRegion(accountId.Hi)
-				});
-			}
-			catch (Exception e)
-			{
-				Log.Error(e);
-				return null;
-			}
-
-		}
+		public static Task<ArenaPackages?> GetArenaPackages()
+			=> Task.FromResult<ArenaPackages?>(null);
 	}
 }

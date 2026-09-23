@@ -69,37 +69,7 @@ namespace Hearthstone_Deck_Tracker.Stats
 #if(!SQUIRREL)
 		internal static void SetupDefaultDeckStatsFile()
 		{
-			if(Config.Instance.SaveDataInAppData == null)
-				return;
-			var appDataPath = Config.AppDataPath + @"\DefaultDeckStats.xml";
-			var dataDirPath = Config.Instance.DataDirPath + @"\DefaultDeckStats.xml";
-			if(Config.Instance.SaveDataInAppData.Value)
-			{
-				if(File.Exists(dataDirPath))
-				{
-					if(File.Exists(appDataPath))
-					{
-						//backup in case the file already exists
-						var time = DateTime.Now.ToFileTime();
-						File.Move(appDataPath, appDataPath + time);
-						Log.Info("Created backups of DefaultDeckStats in appdata");
-					}
-					File.Move(dataDirPath, appDataPath);
-					Log.Info("Moved DefaultDeckStats to appdata");
-				}
-			}
-			else if(File.Exists(appDataPath))
-			{
-				if(File.Exists(dataDirPath))
-				{
-					//backup in case the file already exists
-					var time = DateTime.Now.ToFileTime();
-					File.Move(dataDirPath, dataDirPath + time);
-					Log.Info("Created backups of DefaultDeckStats locally");
-				}
-				File.Move(appDataPath, dataDirPath);
-				Log.Info("Moved DefaultDeckStats to local");
-			}
+			// Profiles are isolated. Legacy file migration is intentionally unavailable.
 		}
 #endif
 

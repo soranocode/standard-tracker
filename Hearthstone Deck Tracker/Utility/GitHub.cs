@@ -40,47 +40,12 @@ namespace Hearthstone_Deck_Tracker.Utility
 
 		private static async Task<Release?> GetLatestRelease(string user, string repo, bool preRelease)
 		{
-			try
-			{
-				string json;
-				using(var wc = new WebClient())
-				{
-					wc.Headers.Add(HttpRequestHeader.UserAgent, user);
-					var url = $"https://api.github.com/repos/{user}/{repo}/releases";
-					if(!preRelease)
-						url += "/latest";
-					json = await wc.DownloadStringTaskAsync(url);
-				}
-				return preRelease ? JsonConvert.DeserializeObject<Release[]>(json)?.FirstOrDefault()
-								  : JsonConvert.DeserializeObject<Release>(json);
-			}
-			catch(Exception ex)
-			{
-				throw ex;
-			}
+			return await Task.FromResult<Release?>(null);
 		}
 
 		public static async Task<string?> DownloadRelease(Release release, string downloadDirectory)
 		{
-			try
-			{
-				if(release.Assets == null || release.Assets.Count == 0)
-					throw new Exception("No assets found");
-				var asset = release.Assets[0];
-				if(asset.Name == null)
-					throw new Exception("Asset does not have a name");
-				if(asset.Url == null)
-					throw new Exception("Asset does not have an url");
-				var path = Path.Combine(downloadDirectory, asset.Name);
-				using(var wc = new WebClient())
-					await wc.DownloadFileTaskAsync(asset.Url, path);
-				return path;
-			}
-			catch(Exception e)
-			{
-				Log.Error(e);
-				return null;
-			}
+			return await Task.FromResult<string?>(null);
 		}
 
 		public class Release

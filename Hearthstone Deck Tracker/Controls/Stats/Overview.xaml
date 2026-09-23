@@ -1,4 +1,4 @@
-<UserControl x:Class="Hearthstone_Deck_Tracker.Controls.Stats.Overview"
+﻿<UserControl x:Class="Hearthstone_Deck_Tracker.Controls.Stats.Overview"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -15,10 +15,10 @@
                 <TreeView Name="TreeViewStats" Height="200" SelectedItemChanged="TreeViewStats_OnSelectedItemChanged">
                     <TreeViewItem Name="TreeViewItemArenaRuns" IsExpanded="True"
                                   Selected="TreeViewItemArenaRuns_OnSelected" Header="{lex:Loc Stats_Overview_Tree_Label_Arena}"
-                                  DataContext="{Binding ArenaStatsSummary, RelativeSource={RelativeSource AncestorType=UserControl}}">
+                                  DataContext="{Binding ArenaStatsSummary, RelativeSource={RelativeSource AncestorType=UserControl}}" Visibility="Collapsed">
                         <TreeViewItem Name="TreeViewItemArenaRunsSummary"
                                       Selected="TreeViewItemArenaRunsSummary_OnSelected" Header="{lex:Loc Stats_Overview_Tree_Label_Arena_Summary}"
-                                      IsSelected="True"
+                                      IsSelected="False"
                                       DataContext="{Binding ArenaStatsSummary, RelativeSource={RelativeSource AncestorType=UserControl}}" />
                         <TreeViewItem Name="TreeViewItemArenaRunsOverview"
                                       Selected="TreeViewItemArenaRunsOverview_OnSelected" Header="{lex:Loc Stats_Overview_Tree_Label_Arena_Runs}"
@@ -30,7 +30,7 @@
                     <TreeViewItem Name="TreeViewItemConstructed" Header="{lex:Loc Stats_Overview_Tree_Label_Constructed}" IsExpanded="True"
                                       Selected="TreeViewItemConstructedSummary_OnSelected"
                                       DataContext="{Binding ConstructedSummary, RelativeSource={RelativeSource AncestorType=UserControl}}" >
-                        <TreeViewItem Name="TreeViewItemConstructedSummary" 
+                        <TreeViewItem Name="TreeViewItemConstructedSummary" IsSelected="True" 
                                       Selected="TreeViewItemConstructedSummary_OnSelected" Header="{lex:Loc Stats_Overview_Tree_Label_Constructed_Summary}"
                                       DataContext="{Binding ConstructedSummary, RelativeSource={RelativeSource AncestorType=UserControl}}" />
                         <TreeViewItem Name="TreeViewItemConstructedGames" 

@@ -58,7 +58,7 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls
 			{
 				foreach(var treeItem in TreeViewOptions.Items.Cast<TreeViewItem>())
 					treeItem.ExpandSubtree();
-				TreeViewOptions.Items.Cast<TreeViewItem>().ToArray()[1].Items.Cast<TreeViewItem>().First().IsSelected = true;
+				TreeViewItemOverlayGeneral.IsSelected = true;
 			}
 			catch(Exception ex)
 			{

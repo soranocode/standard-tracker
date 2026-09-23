@@ -9,13 +9,21 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+# The standalone product always uses explicitly provisioned dependencies.
+if ($UpdateLocalizations) { throw 'Automatic upstream localization updates are disabled.' }
+if (!$DotNetRoot) {
+    $dotnetCommand = Get-Command dotnet -ErrorAction Stop
+    $DotNetRoot = Split-Path -Parent $dotnetCommand.Source
+}
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 if ($DotNetRoot) {
     $DotNetRoot = (Resolve-Path -LiteralPath $DotNetRoot).Path
     $env:DOTNET_ROOT = $DotNetRoot
     $env:DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR = $DotNetRoot
-    $env:PATH = "$DotNetRoot;$env:PATH"
+    $buildPath = "$DotNetRoot;$env:PATH"
+    Remove-Item Env:PATH -ErrorAction SilentlyContinue
+    $env:Path = $buildPath
     $sdkVersion = & (Join-Path $DotNetRoot 'dotnet.exe') --version
     if ($LASTEXITCODE -ne 0) { throw 'Could not resolve a .NET SDK in DotNetRoot.' }
     # This net472 solution does not use optional .NET workloads.
@@ -59,7 +67,7 @@ try {
     if ($DisableCrashReporting) {
         $common += '/p:SentryDsn='
     }
-    Invoke-BuildStep (@('Bootstrap/Bootstrap.csproj', '/t:Bootstrap', "/p:UseLocalDependencies=$($UseLocalDependencies.IsPresent)", "/p:UpdateLocalizations=$($UpdateLocalizations.IsPresent)") + $common)
+    Invoke-BuildStep (@('Bootstrap/Bootstrap.csproj', '/t:Bootstrap', "/p:UseLocalDependencies=true", "/p:UpdateLocalizations=$($UpdateLocalizations.IsPresent)") + $common)
     Invoke-BuildStep (@('Hearthstone Deck Tracker/Hearthstone Deck Tracker.csproj', '/restore') + $common)
 } finally {
     Pop-Location

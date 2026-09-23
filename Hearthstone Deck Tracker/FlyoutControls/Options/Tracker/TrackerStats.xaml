@@ -21,11 +21,11 @@
                 <CheckBox x:Name="CheckboxRecordArena" Content="{lex:Loc Options_Tracker_Stats_CheckBox_Arena}"
                           HorizontalAlignment="Left" Margin="0,5,0,0"
                           VerticalAlignment="Top" Checked="CheckboxRecordArena_Checked"
-                          Unchecked="CheckboxRecordArena_Unchecked" />
+                          Unchecked="CheckboxRecordArena_Unchecked"  Visibility="Collapsed"/>
                 <CheckBox x:Name="CheckboxRecordBrawl" Content="{lex:Loc Options_Tracker_Stats_CheckBox_Brawl}"
                           HorizontalAlignment="Left" Margin="0,5,0,0"
                           VerticalAlignment="Top" Checked="CheckboxRecordBrawl_Checked"
-                          Unchecked="CheckboxRecordBrawl_Unchecked" />
+                          Unchecked="CheckboxRecordBrawl_Unchecked"  Visibility="Collapsed"/>
                 <CheckBox x:Name="CheckboxRecordCasual" Content="{lex:Loc Options_Tracker_Stats_CheckBox_Casual}"
                           HorizontalAlignment="Left" Margin="0,5,0,0"
                           VerticalAlignment="Top" Checked="CheckboxRecordCasual_Checked"
@@ -37,15 +37,15 @@
                 <CheckBox x:Name="CheckboxRecordPractice" Content="{lex:Loc Options_Tracker_Stats_CheckBox_AdventurePractive}"
                           HorizontalAlignment="Left" Margin="0,5,0,0"
                           VerticalAlignment="Top" Checked="CheckboxRecordPractice_Checked"
-                          Unchecked="CheckboxRecordPractice_Unchecked" />
+                          Unchecked="CheckboxRecordPractice_Unchecked"  Visibility="Collapsed"/>
                 <CheckBox x:Name="CheckboxRecordSpectator" Content="{lex:Loc Options_Tracker_Stats_CheckBox_Spectator}"
                           HorizontalAlignment="Left" Margin="0,5,0,0"
                           VerticalAlignment="Top" Checked="CheckboxRecordSpectator_Checked"
-                          Unchecked="CheckboxRecordSpectator_Unchecked" />
+                          Unchecked="CheckboxRecordSpectator_Unchecked"  Visibility="Collapsed"/>
                 <CheckBox x:Name="CheckboxRecordOther" Content="{lex:Loc Options_Tracker_Stats_CheckBox_Other}"
                           HorizontalAlignment="Left" Margin="0,5,0,0"
                           VerticalAlignment="Top" Checked="CheckboxRecordOther_Checked"
-                          Unchecked="CheckboxRecordOther_Unchecked" />
+                          Unchecked="CheckboxRecordOther_Unchecked"  Visibility="Collapsed"/>
             </StackPanel>
         </GroupBox>
         <GroupBox Header="{lex:Loc Options_Tracker_Stats_Label_DecksMyGames}">

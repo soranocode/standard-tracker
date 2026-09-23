@@ -96,14 +96,14 @@ namespace Hearthstone_Deck_Tracker
 
 		private void App_OnStartup(object sender, StartupEventArgs e)
 		{
-			Shell32.SetCurrentProcessExplicitAppUserModelID("com.squirrel.HearthstoneDeckTracker.HearthstoneDeckTracker");
+			Shell32.SetCurrentProcessExplicitAppUserModelID("StandardTracker.Desktop");
 			ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
 #if(SQUIRREL)
-			Utility.Updating.Updater.SquirrelInit();
+			// No upstream installer/update hooks.
 #endif
 
-			SentryReporter.Initialize();
+			// No remote crash reporting.
 
 			Core.Initialize();
 		}

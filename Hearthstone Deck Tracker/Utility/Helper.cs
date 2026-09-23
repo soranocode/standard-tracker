@@ -1,4 +1,4 @@
-#region
+﻿#region
 
 using System;
 using System.Collections;
@@ -383,46 +383,7 @@ namespace Hearthstone_Deck_Tracker
 #if(!SQUIRREL)
 		public static void CopyReplayFiles()
 		{
-			if(Config.Instance.SaveDataInAppData == null)
-				return;
-			var appDataReplayDirPath = Config.AppDataPath + @"\Replays";
-			var dataReplayDirPath = Config.Instance.DataDirPath + @"\Replays";
-			if(Config.Instance.SaveDataInAppData.Value)
-			{
-				if(Directory.Exists(dataReplayDirPath))
-				{
-					//backup in case the file already exists
-					var time = DateTime.Now.ToFileTime();
-					if(Directory.Exists(appDataReplayDirPath))
-					{
-						CopyFolder(appDataReplayDirPath, appDataReplayDirPath + time);
-						Directory.Delete(appDataReplayDirPath, true);
-						Log.Info("Created backups of replays in appdata");
-					}
-
-
-					CopyFolder(dataReplayDirPath, appDataReplayDirPath);
-					Directory.Delete(dataReplayDirPath, true);
-
-					Log.Info("Moved replays to appdata");
-				}
-			}
-			else if(Directory.Exists(appDataReplayDirPath)) //Save in DataDir and AppData Replay dir still exists
-			{
-				//backup in case the file already exists
-				var time = DateTime.Now.ToFileTime();
-				if(Directory.Exists(dataReplayDirPath))
-				{
-					CopyFolder(dataReplayDirPath, dataReplayDirPath + time);
-					Directory.Delete(dataReplayDirPath, true);
-				}
-				Log.Info("Created backups of replays locally");
-
-
-				CopyFolder(appDataReplayDirPath, dataReplayDirPath);
-				Directory.Delete(appDataReplayDirPath, true);
-				Log.Info("Moved replays to appdata");
-			}
+			// Profiles are isolated. Legacy file migration is intentionally unavailable.
 		}
 #endif
 

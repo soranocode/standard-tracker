@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,19 +18,8 @@ public static class CardLegalityChecker
 
 	public static async Task LoadCardsByFormat(GameType gameType, FormatType format)
 	{
-		try
-		{
-			var legalCards = await MakeRequest(gameType, format);
-			if(legalCards.Length == 0)
-				return;
-
-			LegalCardsByFormat[(gameType, format)] = new HashSet<string>(legalCards);
+		await Task.CompletedTask; // Legality uses the bundled set definitions below.
 		}
-		catch (Exception e)
-		{
-			Log.Error($"Error fetching legal cards: {e.Message}");
-		}
-	}
 
 	private const string Url = "https://hsreplay.net/api/v1/live/legal_cards/";
 	private static async Task<string[]> MakeRequest(GameType gameType, FormatType format)

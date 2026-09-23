@@ -149,6 +149,11 @@ namespace Hearthstone_Deck_Tracker.Windows
 
 		private async Task ShowImportingChoice(Deck deck)
 		{
+			if(!deck.StandardViable)
+			{
+				await this.ShowMessageAsync("Standard Tracker", "This deck is not a Standard deck according to the bundled card database.");
+				return;
+			}
 			var choice = Config.Instance.PasteImportingChoice == ImportingChoice.Manual
 				? await this.ShowImportingChoiceDialog() : Config.Instance.PasteImportingChoice;
 			if(choice.HasValue)

@@ -47,8 +47,7 @@ namespace Hearthstone_Deck_Tracker.Importing
 
 		public static async Task<Deck?> Import(string url)
 		{
-			Log.Info("Importing deck from " + url + " using meta tags importer");
-			return await MetaTagImporter.TryFindDeck(url);
+			return await Task.FromResult<Deck?>(null);
 		}
 
 		public static List<ImportedDeck> FromConstructed(bool refreshCache = true)
@@ -79,7 +78,7 @@ namespace Hearthstone_Deck_Tracker.Importing
 
 		private static bool IsValidDeck(HearthMirror.Objects.Deck deck)
 		{
-			if(deck.Type == BrawlDeckType)
+			if(deck.Type == BrawlDeckType || deck.Cards.Any(c => !new Hearthstone.Card(c.Id).IsCardLegal(HearthDb.Enums.GameType.GT_RANKED, HearthDb.Enums.FormatType.FT_STANDARD)))
 				return false;
 			try
 			{

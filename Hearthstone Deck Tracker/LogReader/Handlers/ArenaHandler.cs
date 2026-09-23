@@ -1,4 +1,4 @@
-#region
+﻿#region
 
 using Hearthstone_Deck_Tracker.Enums.Hearthstone;
 using Hearthstone_Deck_Tracker.Hearthstone;
@@ -19,7 +19,7 @@ namespace Hearthstone_Deck_Tracker.LogReader.Handlers
 			}
 			else if((logLine.Line.Contains("DRAFTING") || logLine.Line.Contains("REDRAFTING")) && game.CurrentMode == Mode.DRAFT)
 			{
-				Watchers.ArenaWatcher.Run();
+				Watchers.ArenaWatcher.Stop();
 			}
 		}
 	}
