@@ -122,6 +122,9 @@ namespace Hearthstone_Deck_Tracker.Controls.DeckPicker
 
 		public void RefreshProperties()
 		{
+			OnPropertyChanged(nameof(Archetype));
+			OnPropertyChanged(nameof(LibraryGroup));
+			OnPropertyChanged(nameof(FavoriteGlyph));
 			OnPropertyChanged(nameof(FontWeightActiveDeck));
 			OnPropertyChanged(nameof(TextUseButton));
 			OnPropertyChanged(nameof(LastPlayed));
@@ -132,6 +135,10 @@ namespace Hearthstone_Deck_Tracker.Controls.DeckPicker
 		#region sorting properties
 
 		public string Class => Deck.GetClass;
+
+		public string Archetype => string.IsNullOrWhiteSpace(Deck.Archetype) ? "Без архетипа" : Deck.Archetype;
+		public string LibraryGroup => Class + " · " + Archetype;
+		public string FavoriteGlyph => Favorite ? "★" : "☆";
 
 		public string DeckId => Deck.DeckId.ToString();
 

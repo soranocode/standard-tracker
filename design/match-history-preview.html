@@ -1,0 +1,133 @@
+<div id="st-history-preview" aria-label="Макет истории игр Standard Tracker">
+  <style>
+    #st-history-preview{--st-bg:#121721;--st-surface:#1c2533;--st-stroke:#34445a;--st-text:#edf2fa;--st-muted:#a3b0c4;--st-blue:#79b4ff;--st-green:#80d8b0;--st-red:#ed939e;color:var(--st-text);background:var(--st-bg);font:14px/1.45 'Segoe UI',sans-serif;border:1px solid var(--st-stroke);border-radius:14px;overflow:hidden;color-scheme:dark}
+    #st-history-preview *{box-sizing:border-box}
+    #st-history-preview button,#st-history-preview select{font:inherit;color:inherit}
+    #st-history-preview button:focus-visible,#st-history-preview select:focus-visible{outline:2px solid var(--st-blue);outline-offset:3px}
+    #st-history-preview .st-chrome{padding:14px 22px;border-bottom:1px solid var(--st-stroke);display:flex;justify-content:space-between;align-items:center;gap:12px}
+    #st-history-preview .st-brand{font-weight:600;letter-spacing:.2px}
+    #st-history-preview .st-demo{font-size:11px;letter-spacing:.7px;color:var(--st-muted);text-transform:uppercase}
+    #st-history-preview .st-workspace{display:grid;grid-template-columns:270px minmax(0,1fr)}
+    #st-history-preview .st-library{padding:26px 20px;border-right:1px solid var(--st-stroke)}
+    #st-history-preview h2{font-size:23px;line-height:1.25;font-weight:600;margin:0 0 7px;color:var(--st-text)}
+    #st-history-preview h3{font-size:14px;font-weight:600;margin:0;color:var(--st-text)}
+    #st-history-preview .st-muted{color:var(--st-muted);font-size:12px}
+    #st-history-preview .st-section-label{font-size:11px;color:var(--st-muted);text-transform:uppercase;letter-spacing:.8px;margin:26px 0 10px}
+    #st-history-preview .st-deck{padding:15px 13px;background:var(--st-surface);border:1px solid transparent;border-radius:12px;margin:9px 0}
+    #st-history-preview .st-deck-active{border-color:var(--st-blue);background:#21334a}
+    #st-history-preview .st-deck-title{display:flex;gap:9px;align-items:center;font-weight:600}
+    #st-history-preview .st-dot{width:8px;height:8px;border-radius:50%;background:var(--st-blue);flex-shrink:0}
+    #st-history-preview .st-deck-meta{padding-left:17px;margin-top:7px;font-size:12px;color:var(--st-muted)}
+    #st-history-preview .st-tag{display:inline-block;padding:2px 7px;border:1px solid #3f5673;background:#29384e;border-radius:6px;font-size:11px;color:#b4c8e2;margin-bottom:8px}
+    #st-history-preview .st-deck-other{opacity:.66}
+    #st-history-preview .st-active-label{color:var(--st-blue);font-size:11px;margin-top:12px}
+    #st-history-preview .st-history{padding:26px 26px 20px;min-width:0}
+    #st-history-preview .st-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;margin-bottom:23px}
+    #st-history-preview .st-mode{color:var(--st-muted);font-size:11px;border:1px solid var(--st-stroke);border-radius:6px;padding:4px 7px;white-space:nowrap}
+    #st-history-preview .st-summary{background:var(--st-surface);border-radius:12px;padding:18px 20px;margin-bottom:19px}
+    #st-history-preview .st-numbers{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:14px}
+    #st-history-preview .st-value{font-size:27px;font-weight:600;letter-spacing:-.5px;margin-bottom:1px;font-variant-numeric:tabular-nums}
+    #st-history-preview .st-record{display:flex;align-items:center;gap:8px;margin-top:16px}
+    #st-history-preview .st-segment{height:4px;border-radius:3px;flex:1;background:var(--st-green)}
+    #st-history-preview .st-segment.loss{background:var(--st-red)}
+    #st-history-preview .st-summary-caption{display:flex;justify-content:space-between;gap:12px;margin-top:8px;font-size:11px;color:var(--st-muted)}
+    #st-history-preview .st-toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:21px}
+    #st-history-preview .st-segmented{display:flex;gap:4px;background:#19212d;border-radius:8px;padding:3px}
+    #st-history-preview .st-filter{padding:6px 10px;border:1px solid transparent;border-radius:6px;background:transparent;color:var(--st-muted)}
+    #st-history-preview .st-filter[aria-pressed="true"]{background:#395578;color:var(--st-text);border-color:#648fbe}
+    #st-history-preview select{padding:8px 10px;background:var(--st-surface);border:1px solid var(--st-stroke);border-radius:7px;font-size:12px}
+    #st-history-preview .st-day{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:20px 1px 10px}
+    #st-history-preview .st-day-count{font-size:11px;color:var(--st-muted)}
+    #st-history-preview .st-match{margin-bottom:8px;border-radius:10px;background:var(--st-surface);border:1px solid transparent;overflow:hidden}
+    #st-history-preview .st-match.open{border-color:#52769e;background:#203047}
+    #st-history-preview .st-match-button{display:grid;grid-template-columns:32px minmax(0,1fr) auto 12px;align-items:center;gap:12px;width:100%;padding:14px;border:0;text-align:left;background:transparent}
+    #st-history-preview .st-match-button:hover{background:#29394e}
+    #st-history-preview .st-outcome-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--st-green);background:#213a35}
+    #st-history-preview .st-outcome-icon.loss{color:var(--st-red);background:#3a2933}
+    #st-history-preview .st-opponent{font-weight:600;font-size:14px}
+    #st-history-preview .st-subline{color:var(--st-muted);font-size:11px;margin-top:3px}
+    #st-history-preview .st-result{text-align:right;white-space:nowrap;font-size:12px}
+    #st-history-preview .st-result strong{font-weight:500;color:var(--st-green)}
+    #st-history-preview .st-result.loss strong{color:var(--st-red)}
+    #st-history-preview .st-chevron{color:var(--st-muted)}
+    #st-history-preview .st-details{padding:0 15px 16px 58px;font-size:12px}
+    #st-history-preview .st-details-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;border-top:1px solid #3a4e68;padding-top:14px}
+    #st-history-preview .st-detail-label{display:block;color:var(--st-muted);font-size:11px;margin-bottom:4px}
+    #st-history-preview .st-note{margin:14px 0 0;padding:9px 11px;background:#192637;border-radius:7px;color:#c5d3e5}
+    #st-history-preview .st-footer{display:flex;justify-content:space-between;gap:12px;padding-top:16px;color:var(--st-muted);font-size:11px}
+    #st-history-preview .st-empty{padding:25px 10px;color:var(--st-muted);text-align:center}
+    #st-history-preview [hidden]{display:none!important}
+    #st-history-preview[data-density="compact"] .st-match-button{padding-top:9px;padding-bottom:9px}
+    #st-history-preview[data-density="compact"] .st-subline{display:none!important}
+    @media(max-width:760px){#st-history-preview .st-workspace{grid-template-columns:minmax(0,1fr)}#st-history-preview .st-library{display:none}#st-history-preview .st-history{padding:22px 18px}#st-history-preview .st-chrome{padding:12px 18px}}
+    @media(max-width:400px){#st-history-preview .st-history{padding:20px 12px}#st-history-preview .st-mode{display:none}#st-history-preview .st-chrome{flex-wrap:wrap}#st-history-preview .st-match-button{gap:8px;padding:12px 10px;grid-template-columns:26px minmax(0,1fr) auto}#st-history-preview .st-chevron{display:none}#st-history-preview .st-details{padding-left:12px}#st-history-preview .st-value{font-size:24px}#st-history-preview .st-summary{padding:14px}#st-history-preview .st-filter{padding:6px 8px}}
+  </style>
+  <div class="st-chrome"><span class="st-brand">Standard Tracker</span><span class="st-demo">Макет · демонстрационные матчи</span></div>
+  <div class="st-workspace">
+    <aside class="st-library" aria-label="Контекст: существующая библиотека колод">
+      <h2>Библиотека колод</h2><div class="st-muted">Ваши колоды · Standard</div>
+      <div class="st-section-label">Друид · Драконы</div>
+      <div class="st-deck st-deck-active"><div class="st-deck-title"><span class="st-dot"></span>Драконы на рассвете</div><div class="st-deck-meta"><span class="st-tag">Драконы</span><br>5 побед · 3 поражения<div class="st-active-label">Выбранная колода</div></div></div>
+      <div class="st-section-label">Маг · Контроль</div>
+      <div class="st-deck st-deck-other"><div class="st-deck-title">Ледяной контроль</div><div class="st-muted" style="margin-top:8px">Контроль</div></div>
+      <div class="st-section-label">Маг · Темпо</div>
+      <div class="st-deck st-deck-other"><div class="st-deck-title">Темпо маг</div><div class="st-muted" style="margin-top:8px">Темпо</div></div>
+    </aside>
+    <section class="st-history" aria-label="История игр">
+      <div class="st-head"><div><h2>История игр</h2><div class="st-muted">Драконы на рассвете</div></div><span class="st-mode">Standard · Рейтинг</span></div>
+      <div class="st-summary">
+        <div class="st-numbers"><div><div class="st-value" data-value="rate">62,5%</div><div class="st-muted">Победы</div></div><div><div class="st-value" data-value="record">5 — 3</div><div class="st-muted">Победы / поражения</div></div><div><div class="st-value" data-value="total">8</div><div class="st-muted">Всего игр</div></div></div>
+        <div class="st-record" aria-label="Результаты матчей по времени"></div><div class="st-summary-caption"><span>Последние матчи</span><span>Старые → новые</span></div>
+      </div>
+      <div class="st-toolbar"><div class="st-segmented" role="group" aria-label="Результат матча"><button class="st-filter cursor-interaction" data-filter="all" aria-pressed="true">Все</button><button class="st-filter cursor-interaction" data-filter="win" aria-pressed="false">Победы</button><button class="st-filter cursor-interaction" data-filter="loss" aria-pressed="false">Поражения</button></div><select aria-label="Период истории"><option value="all">За 7 дней</option><option value="today">Сегодня</option></select></div>
+      <div class="st-games" aria-live="polite"></div>
+      <div class="st-footer"><span data-count></span><span>Новые матчи сверху</span></div>
+    </section>
+  </div>
+  <script>
+  (() => {
+    const root = document.getElementById('st-history-preview');
+    const games = [
+      {id:1,day:'Сегодня',time:'21:42',hero:'Маг',result:'win',duration:'8 мин',turns:9,coin:true,rank:'Алмаз 4',version:'1.2',note:'Удалось сохранить ответ на большую угрозу.'},
+      {id:2,day:'Сегодня',time:'21:28',hero:'Воин',result:'loss',duration:'12 мин',turns:14,coin:false,rank:'Алмаз 4',version:'1.2',note:''},
+      {id:3,day:'Сегодня',time:'21:10',hero:'Чернокнижник',result:'win',duration:'7 мин',turns:8,coin:true,rank:'Алмаз 5',version:'1.2',note:''},
+      {id:4,day:'Вчера',time:'22:16',hero:'Паладин',result:'win',duration:'6 мин',turns:7,coin:false,rank:'Алмаз 5',version:'1.2',note:''},
+      {id:5,day:'Вчера',time:'22:02',hero:'Разбойник',result:'loss',duration:'9 мин',turns:10,coin:true,rank:'Алмаз 5',version:'1.2',note:''},
+      {id:6,day:'Вчера',time:'21:47',hero:'Друид',result:'win',duration:'10 мин',turns:11,coin:false,rank:'Алмаз 5',version:'1.1',note:''},
+      {id:7,day:'Вчера',time:'21:31',hero:'Охотник',result:'loss',duration:'5 мин',turns:6,coin:false,rank:'Алмаз 5',version:'1.1',note:''},
+      {id:8,day:'Вчера',time:'21:20',hero:'Жрец',result:'win',duration:'11 мин',turns:12,coin:true,rank:'Алмаз 5',version:'1.1',note:''}
+    ];
+    const state={filter:'all',period:'all',open:1};
+    const design={density:'comfortable',summary:true};
+    const saved=window.openai?.widgetState?.modelContent;
+    if(saved){if(['all','win','loss'].includes(saved.filter))state.filter=saved.filter;if(['all','today'].includes(saved.period))state.period=saved.period;if(games.some(g=>g.id===saved.open)||saved.open===null)state.open=saved.open;}
+    function remember(){window.openai?.setWidgetState?.({modelContent:{...state},privateContent:null})?.catch(()=>{});}
+    function render(){
+      root.dataset.density=design.density;
+      root.querySelector('.st-summary').hidden=!design.summary;
+      root.querySelector('select').value=state.period;
+      root.querySelectorAll('[data-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.filter===state.filter)));
+      const periodGames=games.filter(g=>state.period==='all'||g.day==='Сегодня');
+      const visible=periodGames.filter(g=>state.filter==='all'||g.result===state.filter);
+      const wins=periodGames.filter(g=>g.result==='win').length;
+      root.querySelector('[data-value="rate"]').textContent=(100*wins/periodGames.length).toLocaleString('ru-RU',{maximumFractionDigits:1})+'%';
+      root.querySelector('[data-value="record"]').textContent=wins+' — '+(periodGames.length-wins);
+      root.querySelector('[data-value="total"]').textContent=periodGames.length;
+      root.querySelector('.st-record').innerHTML=[...periodGames].reverse().map(g=>'<span class="st-segment '+(g.result==='loss'?'loss':'')+'" aria-label="'+g.day+' '+g.time+': '+(g.result==='win'?'победа':'поражение')+'"></span>').join('');
+      root.querySelector('[data-count]').textContent='Показано '+visible.length+' из '+periodGames.length;
+      root.querySelector('.st-games').innerHTML=['Сегодня','Вчера'].map(day=>{
+        const list=visible.filter(g=>g.day===day);if(!list.length)return '';
+        return '<div class="st-day"><h3>'+day+'</h3><span class="st-day-count">'+list.length+' матч'+(list.length===1?'':list.length<5?'а':'ей')+'</span></div>'+list.map(g=>{
+          const open=state.open===g.id,win=g.result==='win';
+          return '<article class="st-match '+(open?'open':'')+'"><button type="button" class="st-match-button cursor-interaction" data-game="'+g.id+'" aria-expanded="'+open+'" aria-controls="st-match-detail-'+g.id+'"><span class="st-outcome-icon '+(win?'':'loss')+'" aria-hidden="true">'+(win?'✓':'−')+'</span><span><span class="st-opponent">'+g.hero+'</span><span class="st-subline" style="display:block">'+g.turns+' ходов · '+g.duration+'</span></span><span class="st-result '+(win?'':'loss')+'"><strong>'+(win?'Победа':'Поражение')+'</strong><span class="st-subline" style="display:block">'+g.time+'</span></span><span class="st-chevron" aria-hidden="true">'+(open?'⌃':'⌄')+'</span></button><div id="st-match-detail-'+g.id+'" class="st-details" '+(open?'':'hidden')+'><div class="st-details-grid"><div><span class="st-detail-label">Ваш ранг</span>'+g.rank+'</div><div><span class="st-detail-label">Первый ход</span>'+(g.coin?'Соперник':'Вы')+'</div><div><span class="st-detail-label">Версия колоды</span>v'+g.version+'</div></div>'+(g.note?'<div class="st-note"><span class="st-detail-label">Заметка к матчу</span>'+g.note+'</div>':'')+'</div></article>';
+        }).join('');
+      }).join('')||'<div class="st-empty">За этот период таких матчей нет</div>';
+    }
+    root.addEventListener('click',e=>{const filter=e.target.closest('[data-filter]');const match=e.target.closest('[data-game]');if(filter)state.filter=filter.dataset.filter;else if(match)state.open=state.open===Number(match.dataset.game)?null:Number(match.dataset.game);else return;render();remember();});
+    root.querySelector('select').addEventListener('change',e=>{state.period=e.target.value;render();remember();});
+    window.addEventListener('openai:set_globals',e=>{const s=e.detail?.globals?.widgetState?.modelContent;if(!s)return;if(['all','win','loss'].includes(s.filter))state.filter=s.filter;if(['all','today'].includes(s.period))state.period=s.period;if(games.some(g=>g.id===s.open)||s.open===null)state.open=s.open;render();});
+    render();
+    if(globalThis.Tweak){const tweak=new Tweak({container:root,onChange:render});tweak.addSelect(design,'density',{label:'Плотность списка',options:[{label:'Комфортная',value:'comfortable'},{label:'Компактная',value:'compact'}]});tweak.addToggle(design,'summary',{label:'Сводка над историей'});}
+  })();
+  </script>
+</div>

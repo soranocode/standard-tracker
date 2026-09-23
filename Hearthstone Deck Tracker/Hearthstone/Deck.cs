@@ -243,6 +243,8 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 			set { _deckId = value; }
 		}
 
+		public string Archetype { get; set; } = "";
+
 		public string Name
 		{
 			get { return _name; }
@@ -428,7 +430,7 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 		public List<Mechanic> Mechanics => _relevantMechanics.Select(x => new Mechanic(x, this)).Where(m => m.Count > 0).ToList();
 
 		public object Clone() => new Deck(Name, Class, Cards, Sideboards, Tags, Note, Url, LastEdited, Archived, MissingCards, Version, Versions,
-										  DeckId, HsId, SelectedVersion, _isArenaDeck, ArenaReward);
+										  DeckId, HsId, SelectedVersion, _isArenaDeck, ArenaReward) { Archetype = Archetype };
 
 		public event PropertyChangedEventHandler? PropertyChanged;
 

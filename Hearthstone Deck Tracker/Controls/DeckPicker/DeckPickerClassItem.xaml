@@ -3,9 +3,21 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:enums="clr-namespace:Hearthstone_Deck_Tracker.Enums"
              mc:Ignorable="d"
              Width="38" Height="38">
-    <Image Name="ImageIcon" Source="{Binding ClassImage, RelativeSource={RelativeSource AncestorType=UserControl}}"
-           Width="36" Height="36" RenderOptions.BitmapScalingMode="Fant" Margin="1" />
+    <Grid ToolTip="{Binding}">
+        <Image Name="ImageIcon" Source="{Binding ClassImage, RelativeSource={RelativeSource AncestorType=UserControl}}"
+               Width="32" Height="32" RenderOptions.BitmapScalingMode="Fant" Margin="1">
+            <Image.Style><Style TargetType="Image"><Style.Triggers>
+                <DataTrigger Binding="{Binding}" Value="{x:Static enums:HeroClassAll.All}"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger>
+            </Style.Triggers></Style></Image.Style>
+        </Image>
+        <TextBlock Text="Все" Foreground="#EDF2FA" FontSize="11" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers>
+                <DataTrigger Binding="{Binding}" Value="{x:Static enums:HeroClassAll.All}"><Setter Property="Visibility" Value="Visible"/></DataTrigger>
+            </Style.Triggers></Style></TextBlock.Style>
+        </TextBlock>
+    </Grid>
 
 </UserControl>

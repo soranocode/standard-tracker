@@ -1,7 +1,27 @@
 # Standard Tracker — checkpoint 2026-09-23
 
-Stopped at user-requested quota threshold (4% remaining). Branch standard-tracker.
+Paused at user request while waiting for token limits to reset. Branch standard-tracker.
 Remote: https://github.com/soranocode/standard-tracker.
+
+## UI checkpoint — 2026-09-23
+
+- Implemented and user-approved: modern dark deck library, always-visible live search
+  across name/class/archetype/tags, favorites, class/archetype grouping, editable
+  archetypes persisted in deck XML and preserved when cloning, refreshed active-deck panel.
+- Adjusted main-window layout and default dimensions. Library preview with synthetic
+  decks: `library-preview.png`.
+- Verified Debug build and `build-scripts/smoke-standard.ps1 -LibraryPreview`:
+  WPF main window/options load, archetype search/grouping, favorites, cloning and XML round trip.
+- User also approved the per-deck game-history concept in `design/match-history-preview.html`.
+  It uses demo data and contains expandable matches, day groups, outcome/period filters
+  and a compact summary matching the library palette. This is a standalone preview,
+  NOT integrated into the WPF application yet. Preserve that distinction.
+- Next requested design direction: implement the approved per-deck history when work resumes.
+  Current turn only saves/pushes progress; do not start implementation while paused.
+- Local SDK used for builds: `C:\Users\user\Documents\Codex\2026-09-22\new-chat\work\toolchain\sdk`.
+  Build command: `./bootstrap.ps1 -UseLocalDependencies -DotNetRoot <sdk-path>`.
+
+## Earlier isolation checkpoint
 
 Implemented: fixed isolated %APPDATA%/StandardTracker profile; no portable/original config,
 no deck/stat/replay/plugin migration; separate activation ID and startup registry key.

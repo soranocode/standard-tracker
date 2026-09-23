@@ -21,7 +21,7 @@
                       lex:LocalizeDictionary.DesignCulture="en"
                       lex:ResxLocalizationProvider.DefaultAssembly="HearthstoneDeckTracker"
                       lex:ResxLocalizationProvider.DefaultDictionary="Strings"
-                      Title="Standard Tracker" Height="603" Width="1200"
+                      Title="Standard Tracker" Height="820" Width="1440"
                       MinHeight="584" MinWidth="1200"
                       Closing="Window_Closing"
                       Icon="{StaticResource AppIcon}"
@@ -231,7 +231,7 @@
             <mainWindowControls:NewsBarView x:Name="NewsBar" DockPanel.Dock="Top" Visibility="Collapsed"/>
             <mainWindowControls:MainWindowMenuView x:Name="MainWindowMenu" DockPanel.Dock="Top"/>
             <Separator DockPanel.Dock="Top" Panel.ZIndex="2" Margin="0,-1,0,0"/>
-            <DockPanel Margin="5">
+            <DockPanel Margin="16">
                 <DockPanel Width="236" DockPanel.Dock="Right" Margin="5,0,0,0">
                     <controls1:StartHearthstoneButton DockPanel.Dock="Top" Margin="0,0,0,5"/>
                     <Border Name="PanelVersionComboBox" BorderThickness="1" BorderBrush="{DynamicResource TextBrush}" Visibility="Collapsed" Margin="0,0,0,5" DockPanel.Dock="Top">
@@ -262,7 +262,7 @@
                         </StackPanel>
                     </ScrollViewer>
                 </DockPanel>
-                <DockPanel Name="MyGamesPanel" Width="380" DockPanel.Dock="Right" Margin="5,0,0,0">
+                <DockPanel Name="MyGamesPanel" Width="300" DockPanel.Dock="Right" Margin="16,0,12,0">
                     <GroupBox x:Name="GroupBoxHsReplayDeckInfo" Header="{lex:LocTextUpper MainWindow_Header_GlobalDeckStatistics}" DockPanel.Dock="Top" Margin="0,0,0,5" Visibility="Collapsed">
                         <mainWindowControls:HsReplayDeckInfoView x:Name="HsReplayDeckInfo"/>
                     </GroupBox>
@@ -305,7 +305,7 @@
                         <deckPicker:DeckPicker x:Name="DeckPickerList" OnSelectedDeckChanged="DeckPickerList_OnSelectedDeckChanged" />
                         <Label Content="{Binding IntroductionLabelText, RelativeSource={RelativeSource AncestorType=controls:MetroWindow}}" Foreground="DarkGray"
                                FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center"
-                               Visibility="{Binding IntroductionLabelVisibility, RelativeSource={RelativeSource AncestorType=controls:MetroWindow}}" />
+                               Visibility="Collapsed" />
                     </Grid>
                 </DockPanel>
             </DockPanel>

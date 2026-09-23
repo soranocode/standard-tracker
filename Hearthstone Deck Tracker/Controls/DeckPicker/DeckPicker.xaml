@@ -11,9 +11,53 @@
            lex:ResxLocalizationProvider.DefaultAssembly="HearthstoneDeckTracker"
            lex:ResxLocalizationProvider.DefaultDictionary="Strings"
            Loaded="DeckPicker_OnLoaded"
+           Background="#121721" TextElement.FontFamily="Segoe UI"
            mc:Ignorable="d"
            d:DesignHeight="500" d:DesignWidth="300">
     <DockPanel.Resources>
+        <SolidColorBrush x:Key="TextBrush" Color="#EDF2FA"/>
+        <SolidColorBrush x:Key="GrayTextColorBrush" Color="#A3B0C4"/>
+        <SolidColorBrush x:Key="ControlBackgroundBrush" Color="#1C2533"/>
+        <SolidColorBrush x:Key="AccentColorBrush" Color="#79B4FF"/>
+        <Style TargetType="CheckBox">
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <Border x:Name="FilterSurface" CornerRadius="7" BorderBrush="#3F5673" BorderThickness="1" Background="#1C2533" Padding="10,6">
+                            <ContentPresenter/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True"><Setter TargetName="FilterSurface" Property="Background" Value="#395578"/><Setter TargetName="FilterSurface" Property="BorderBrush" Value="#79B4FF"/></Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="FilterSurface" Property="BorderBrush" Value="White"/></Trigger>
+                            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="FilterSurface" Property="BorderBrush" Value="#79B4FF"/></Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style TargetType="Button">
+            <Setter Property="Foreground" Value="#EAF2FF"/>
+            <Setter Property="Background" Value="#29384E"/>
+            <Setter Property="BorderBrush" Value="#3F5673"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ButtonSurface" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="7" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="ButtonSurface" Property="Background" Value="#3B5271"/></Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="ButtonSurface" Property="BorderBrush" Value="#A5CDFF"/></Trigger>
+                            <Trigger Property="IsPressed" Value="True"><Setter TargetName="ButtonSurface" Property="Background" Value="#446B9B"/></Trigger>
+                            <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.4"/></Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
         <Canvas x:Key="mode_all" Clip="M 72,72 L 200,72 200,200 72,200 72,72 Z">
             <Path Fill="{DynamicResource TextBrush}" Data="m96.92 97.413l-4.277-13.028c1.592-2.26 2.925-4.714 3.96-7.32l22.487-13.425-22.758-13.408c-0.941-2.233-2.108-4.347-3.466-6.319l3.755-14.792-14.339 4.707c-1.707-1.057-3.511-1.97-5.395-2.729l-13.247-22.189-13.019 22.098c-2.123 0.839-4.144 1.875-6.043 3.088l-16.25-4.677 4.83 16.452c-0.931 1.563-1.742 3.206-2.428 4.912l-21.82 12.857 21.545 12.863c0.732 1.942 1.63 3.801 2.676 5.563l-4.503 15.646 15.042-4.416c2.154 1.471 4.481 2.704 6.94 3.676l13.03 22.118 13.258-22.207c2.071-0.836 4.044-1.861 5.899-3.055l14.123 3.585zm-49.192-15.152c-0.297-0.404-0.73-1.866-0.73-1.866l-0.812-1.704s-0.73-1.217 0.812-0.974 7.141 2.434 10.224 2.516c3.084 0.081 4.707-1.542 5.275-1.704s3.895-1.461 4.869-1.623 6.979-3.836 7.871-12.67c0.893-8.834-7.06-14.027-11.604-14.108 0 0-2.84-0.081-3.489 0.325s-4.869 2.353-6.735 2.597c0 0-1.542 1.461-1.298 3.246 0.243 1.785 0.243 7.93 6.735 7.941 0 0 1.55-0.837 1.384-6.904 0 0 8.08-0.672 8.29 6.904s-7.24 8.625-11.857 8.416-14.377-6.613-13.642-16.791l0.569-3.625 1.623-1.866s3.733-7.547 12.253-9.819c0 0 0.73-1.217 1.623-1.217s1.623 0.974 2.921 1.136 1.785-1.217 3.002-1.136 1.298 0.974 2.597 1.217c1.298 0.243 7.628 0.974 12.74 7.952 0 0 0.243 1.785 0.974 2.11 0.73 0.325 2.434 1.055 2.678 1.623 0.243 0.568 1.948 6.654 1.785 9.251s-0.893 14.688-8.926 18.42l-0.162 2.191s-6.005 5.356-15.175 4.707c-9.169-0.65-11.638-1.615-13.795-4.545z" RenderTransform="1,0,0,1,72,72"/>
         </Canvas>
@@ -51,7 +95,18 @@
             <Path Fill="{StaticResource TextBrush}" Data="F1 M128,128z M0,0z M72.235,79.21C73.0695,76.488 73.3789,74.7684 72.9561,71.9516 72.4948,68.8782 71.8963,66.8896 69.711,64.6933 67.25,62.2199 60.6967,61.427 60.6967,61.427 60.6967,61.427 60.6967,69.285 58.5333,70.1371 57.4512,70.5632 51.5224,65.8501 51.3218,61.427 51.2811,60.5298 57.3469,52.6993 63.2208,51.9911 64.6627,51.8172 78.1658,58.8699 79.4468,67.5971 80.2304,72.9361 78.9604,76.3974 76.2017,81.0251 74.0383,84.6543 52.4037,101.7121 52.4037,101.7121 52.4037,101.7121 55.4531,103.6071 63.2207,102.8001 70.7181,102.0221 82.9067,98.5642 84.8547,97.3566 88.8207,94.8979 102.8837,76.3076 103.9647,63.2426 105.0467,50.1776 80.5277,21.2666 74.0377,20.0556 69.7108,19.2477 43.3887,27.5962 38.7017,32.0316 36.0172,34.572 24.9997,54.5326 24.9997,58.8876 24.9997,61.0651 32.2111,78.3646 35.0957,81.0256 37.9803,83.6871 58.5337,92.0876 60.6967,91.1876 63.2207,90.1376 71.4007,81.9333 72.2347,79.2116z" />
         </Canvas>
     </DockPanel.Resources>
-    <DockPanel DockPanel.Dock="Top">
+    <StackPanel DockPanel.Dock="Top" Margin="8,4,8,12">
+        <TextBlock Text="Библиотека колод" FontSize="28" FontWeight="SemiBold" Foreground="{DynamicResource TextBrush}"/>
+        <TextBlock x:Name="LibraryCount" Text="Ваши колоды · Standard" Foreground="{DynamicResource GrayTextColorBrush}" Margin="0,3,0,18"/>
+        <TextBox x:Name="LibrarySearch" FontSize="14" MinHeight="38" Padding="10,6" Background="#1C2533" Foreground="#EDF2FA" CaretBrush="White" BorderBrush="#3F5673" TextChanged="LibrarySearch_OnTextChanged"
+                 controls1:TextBoxHelper.Watermark="Найти колоду, класс, архетип или тег"/>
+        <WrapPanel Margin="0,12,0,0">
+            <CheckBox x:Name="FavoritesFilter" Foreground="#EDF2FA" Content="Избранное" Margin="0,0,18,8" Checked="LibraryFilter_OnChanged" Unchecked="LibraryFilter_OnChanged"/>
+            <CheckBox x:Name="GroupArchetypes" Foreground="#EDF2FA" Content="По архетипам" IsChecked="True" Margin="0,0,18,8" Checked="LibraryFilter_OnChanged" Unchecked="LibraryFilter_OnChanged"/>
+            <Button Content="Фильтры и сортировка" Padding="10,4" Click="LibrarySort_OnClick"/>
+        </WrapPanel>
+    </StackPanel>
+    <DockPanel DockPanel.Dock="Top" Visibility="Collapsed">
         <Border
             Visibility="{Binding VisibilitySearchBar, RelativeSource={RelativeSource AncestorType=deckPicker:DeckPicker}}"
             BorderThickness="1" DockPanel.Dock="Top" Margin="0,0,0,2" BorderBrush="{DynamicResource TextBrush}">
@@ -198,79 +253,59 @@
             </ListView.ItemTemplate>
         </ListView>
     </DockPanel>
-    <ListView Name="ListViewClasses" Height="40" DockPanel.Dock="Top" SelectionChanged="Selector_OnSelectionChanged"
-              BorderThickness="1" Margin="0,0,0,2"
-              ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled"
+    <ListView Name="ListViewClasses" Height="58" DockPanel.Dock="Top" SelectionChanged="Selector_OnSelectionChanged"
+              BorderThickness="0" Background="Transparent" Margin="8,0,8,12"
+              ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Disabled"
               ScrollViewer.CanContentScroll="True">
+        <ListView.Template>
+            <ControlTemplate TargetType="ListView">
+                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" Background="Transparent"><ItemsPresenter/></ScrollViewer>
+            </ControlTemplate>
+        </ListView.Template>
         <ListView.Resources>
             <Style TargetType="GridViewColumnHeader">
                 <Setter Property="Visibility" Value="Collapsed" />
             </Style>
-            <Style TargetType="ListViewItem" BasedOn="{StaticResource MetroListViewItem}">
+            <Style TargetType="ListViewItem">
                 <Setter Property="Padding" Value="0"/>
+                <Setter Property="Margin" Value="2,0"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ListViewItem">
+                            <Border x:Name="ClassTile" Background="#1C2533" BorderBrush="#34445A" BorderThickness="1" CornerRadius="8"><ContentPresenter/></Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsSelected" Value="True"><Setter TargetName="ClassTile" Property="BorderBrush" Value="#79B4FF"/><Setter TargetName="ClassTile" Property="Background" Value="#395578"/></Trigger>
+                                <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="ClassTile" Property="Background" Value="#395578"/></Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
             </Style>
         </ListView.Resources>
         <ListView.ItemsPanel>
             <ItemsPanelTemplate>
-                <UniformGrid Rows="1" />
+                <StackPanel Orientation="Horizontal" />
             </ItemsPanelTemplate>
         </ListView.ItemsPanel>
     </ListView>
-    <DockPanel DockPanel.Dock="Bottom">
-        <Border BorderThickness="1" Height="26" DockPanel.Dock="Right" Margin="2,2,0,0" Background="{Binding BorderDeckModeBackground, RelativeSource={RelativeSource AncestorType=deckPicker:DeckPicker}}"
-                BorderBrush="{DynamicResource TextBrush}" PreviewMouseLeftButtonUp="RectangleUseNoDeckIcon_OnPreviewMouseLeftButtonUp">
-            <Grid>
-                <Grid.Style>
-                    <Style>
-                        <Style.Triggers>
-                            <Trigger Property="Border.IsMouseOver" Value="True">
-                                <Setter Property="Border.Background" Value="{DynamicResource AccentColorBrush3}" />
-                            </Trigger>
-                        </Style.Triggers>
-                    </Style>
-                </Grid.Style>
-                <TextBlock Text="{lex:LocTextUpper DeckPicker_Button_NoDeckMode}" Margin="6,0" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-            </Grid>
-        </Border>
-        <Border BorderThickness="1" Margin="0,2,0,0" BorderBrush="{DynamicResource TextBrush}"
-            PreviewMouseDown="ActiveDeckPanel_OnPreviewMouseDown" Height="26">
-            <DockPanel>
-                <TextBlock Name="TextBlockLabelActiveDeck" Text="{lex:LocTextUpper DeckPicker_Label_ActiveDeck}" FontWeight="SemiBold" FontSize="14"
-                       VerticalAlignment="Center" Margin="5,0,0,0" DockPanel.Dock="Left" />
-                <Image
-                Source="{Binding ActiveDeck.ClassImage, RelativeSource={RelativeSource AncestorType=deckPicker:DeckPicker}}"
-                DockPanel.Dock="Left" Margin="5,1" RenderOptions.BitmapScalingMode="Fant" />
-                <Grid Margin="0,0,5,0">
-                    <TextBlock Text="{lex:LocTextUpper DeckPicker_ActiveDeck_Label_None}" FontSize="14" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
-                           HorizontalAlignment="Left" Visibility="{Binding VisibilityNoDeck, RelativeSource={RelativeSource AncestorType=deckPicker:DeckPicker}}"
-                               ToolTip="{lex:Loc DeckPicker_ActiveDeck_Label_None_Tooltip}"/>
-                    <DockPanel>
-                        <DockPanel.Resources>
-                            <deckPicker:MarginConverterNegativeLeft x:Key="MarginConverterLeft" />
-                            <deckPicker:MarginConverterRight x:Key="MarginConverterRight" />
-                        </DockPanel.Resources>
-                        <TextBlock Name="TextBlockName" Background="{DynamicResource ControlBackgroundBrush}"
-                               Text="{Binding ActiveDeck.NameAndVersion, RelativeSource={RelativeSource AncestorType=deckPicker:DeckPicker}}"
-                               Margin="{Binding ElementName=TextBlockStats, Path=ActualWidth, Converter={StaticResource MarginConverterRight}}"
-                               FontSize="14" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
-                               DockPanel.Dock="Left" />
-                        <TextBlock Name="TextBlockStats" VerticalAlignment="Center"
-                               Foreground="{DynamicResource GrayTextColorBrush}"
-                               Text="{Binding ActiveDeck.StatsString, RelativeSource={RelativeSource AncestorType=deckPicker:DeckPicker}}"
-                               Margin="{Binding ElementName=TextBlockStats, Path=ActualWidth, Converter={StaticResource MarginConverterLeft}}" />
-                        <Grid />
-                    </DockPanel>
-                </Grid>
-            </DockPanel>
-        </Border>
-    </DockPanel>
-    <ListView Name="ListViewDecks" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling" KeyUp="ListViewDecks_OnKeyUp"
+    <Border DockPanel.Dock="Bottom" Background="#1C2533" CornerRadius="9" Padding="12" Margin="6,12,6,0">
+        <DockPanel>
+            <Button DockPanel.Dock="Right" Content="Без колоды" Padding="10,5" Margin="12,0,0,0" Click="LibraryNoDeck_OnClick"/>
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock Text="АКТИВНАЯ КОЛОДА" FontSize="10" Foreground="#A3B0C4"/>
+                <TextBlock Text="{Binding ActiveDeck.Name, RelativeSource={RelativeSource AncestorType=deckPicker:DeckPicker}, TargetNullValue=Не выбрана}" Foreground="#EDF2FA" TextTrimming="CharacterEllipsis" Margin="0,3,0,0"/>
+            </StackPanel>
+        </DockPanel>
+    </Border>
+    <Grid>
+    <ListView Name="ListViewDecks" Background="Transparent" VirtualizingPanel.IsVirtualizingWhenGrouping="True" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling" KeyUp="ListViewDecks_OnKeyUp"
               ItemsSource="{Binding DisplayedDecks, RelativeSource={RelativeSource AncestorType=deckPicker:DeckPicker}}"
               ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="ListViewDecks_OnSelectionChanged"
               ScrollViewer.CanContentScroll="True"
-              SelectionMode="Extended" BorderThickness="1" MouseDoubleClick="ListViewDecks_OnMouseDoubleClick" PreviewMouseRightButtonUp="ListViewDecks_OnPreviewMouseRightButtonUp">
+              SelectionMode="Extended" BorderThickness="0" MouseDoubleClick="ListViewDecks_OnMouseDoubleClick" PreviewMouseRightButtonUp="ListViewDecks_OnPreviewMouseRightButtonUp">
         <ListView.ContextMenu>
             <ContextMenu Opened="ContextMenu_OnOpened">
+                <MenuItem Header="Задать архетип…" Click="SetArchetype_OnClick"/>
                 <MenuItem Name="MenuItemExportDeck" Header="{lex:LocTextUpper DeckPicker_ContextMenu_Export}" Click="BtnExportDeck_Click" />
                 <MenuItem Header="{lex:LocTextUpper DeckPicker_ContextMenu_Screenshot}" Click="BtnScreenshotCards_Click"/>
                 <Separator/>
@@ -312,15 +347,61 @@
             <Style TargetType="GridViewColumnHeader">
                 <Setter Property="Visibility" Value="Collapsed" />
             </Style>
-            <Style TargetType="ListViewItem" BasedOn="{StaticResource MetroListViewItem}">
-                <Setter Property="Padding" Value="0"/>
+            <Style TargetType="ListViewItem">
+                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                <Setter Property="Margin" Value="6,4"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ListViewItem">
+                            <Border x:Name="Card" CornerRadius="12" Background="{DynamicResource ControlBackgroundBrush}" BorderBrush="#304F6782" BorderThickness="1" Padding="16">
+                                <ContentPresenter/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Card" Property="BorderBrush" Value="#7398BD"/></Trigger>
+                                <Trigger Property="IsSelected" Value="True"><Setter TargetName="Card" Property="BorderBrush" Value="{DynamicResource AccentColorBrush}"/><Setter TargetName="Card" Property="Background" Value="#244D91C9"/></Trigger>
+                                <Trigger Property="IsKeyboardFocusWithin" Value="True"><Setter TargetName="Card" Property="BorderBrush" Value="{DynamicResource AccentColorBrush}"/></Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
             </Style>
         </ListView.Resources>
+        <ListView.GroupStyle>
+            <GroupStyle>
+                <GroupStyle.HeaderTemplate>
+                    <DataTemplate>
+                        <DockPanel Margin="10,18,10,7">
+                            <TextBlock Text="{Binding ItemCount}" DockPanel.Dock="Right" Foreground="{DynamicResource GrayTextColorBrush}"/>
+                            <TextBlock Text="{Binding Name}" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextBrush}"/>
+                        </DockPanel>
+                    </DataTemplate>
+                </GroupStyle.HeaderTemplate>
+            </GroupStyle>
+        </ListView.GroupStyle>
         <ListView.ItemTemplate>
             <DataTemplate>
-                <deckPicker:DeckPickerItem/>
+                <Grid>
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="56"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                    <Border Width="44" Height="56" CornerRadius="8" Background="{Binding Deck.ClassColorBrush}" VerticalAlignment="Top">
+                        <Image Source="{Binding Deck.ClassImage}" Width="40" Height="40" RenderOptions.BitmapScalingMode="HighQuality"/>
+                    </Border>
+                    <StackPanel Grid.Column="1" Margin="8,0,12,0">
+                        <TextBlock Text="{Binding Deck.NameAndVersion}" FontSize="18" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource TextBrush}" ToolTip="{Binding Deck.NameAndVersion}"/>
+                        <Button Content="{Binding Archetype}" Click="SetArchetype_OnClick" HorizontalAlignment="Left" Padding="7,2" Margin="0,5,0,10" Foreground="#B4C8E2" FontSize="11" ToolTip="Изменить архетип колоды"/>
+                        <TextBlock Text="{Binding Deck.StatsString}" FontSize="13" Foreground="{DynamicResource TextBrush}"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2">
+                        <Button Content="{Binding FavoriteGlyph}" Click="Favorite_OnClick" FontSize="22" Padding="6,0" HorizontalAlignment="Right" ToolTip="Добавить или убрать из избранного"/>
+                        <Button Content="{Binding TextUseButton}" Click="UseLibraryDeck_OnClick" Padding="12,5" Margin="0,10,0,0" ToolTip="Использовать колоду в игре"/>
+                    </StackPanel>
+                </Grid>
             </DataTemplate>
         </ListView.ItemTemplate>
     </ListView>
+        <StackPanel x:Name="LibraryEmpty" Visibility="Collapsed" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="24" IsHitTestVisible="False">
+            <TextBlock Text="Здесь пока нет колод" FontSize="22" TextAlignment="Center" Foreground="{DynamicResource TextBrush}"/>
+            <TextBlock Text="Добавьте колоду через меню «Импорт» или измените фильтры." TextWrapping="Wrap" TextAlignment="Center" MaxWidth="340" Margin="0,12,0,0" Foreground="{DynamicResource GrayTextColorBrush}"/>
+        </StackPanel>
+    </Grid>
 
 </DockPanel>

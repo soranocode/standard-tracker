@@ -1138,11 +1138,11 @@ namespace Hearthstone_Deck_Tracker
 		[DefaultValue(true)]
 		public bool WindowCardToolTips = true;
 
-		[DefaultValue(620)]
-		public int WindowHeight = 620;
+		[DefaultValue(820)]
+		public int WindowHeight = 820;
 
-		[DefaultValue(550)]
-		public int WindowWidth = 550;
+		[DefaultValue(1440)]
+		public int WindowWidth = 1440;
 
 		[DefaultValue("#696969")]
 		public string WindowsBackgroundHex = "#696969";

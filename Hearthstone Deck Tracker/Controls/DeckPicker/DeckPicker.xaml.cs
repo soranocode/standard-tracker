@@ -26,6 +26,7 @@ using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using ListView = System.Windows.Controls.ListView;
 using Hearthstone_Deck_Tracker.Windows;
 using MahApps.Metro;
+using MahApps.Metro.Controls.Dialogs;
 using DeckType = Hearthstone_Deck_Tracker.Enums.DeckType;
 
 #endregion
@@ -52,6 +53,60 @@ namespace Hearthstone_Deck_Tracker.Controls.DeckPicker
 		public bool ChangedSelection;
 		private bool _searchBarVisibile;
 		private bool _archivedClassVisible;
+		private bool _favoritesOnly;
+		private bool _groupByArchetype = true;
+
+		private void LibraryNoDeck_OnClick(object sender, RoutedEventArgs e) => DeckList.Instance.ActiveDeck = null;
+
+		private void LibrarySort_OnClick(object sender, RoutedEventArgs e)
+		{
+			if(this.ParentMainWindow() is {} window) window.FlyoutSortFilter.IsOpen = !window.FlyoutSortFilter.IsOpen;
+		}
+
+		private void LibrarySearch_OnTextChanged(object sender, TextChangedEventArgs e)
+		{
+			if(!IsLoaded) return;
+			DeckNameFilter = ((System.Windows.Controls.TextBox)sender).Text.Trim();
+			UpdateDecks();
+		}
+
+		private void LibraryFilter_OnChanged(object sender, RoutedEventArgs e)
+		{
+			if(!IsLoaded) return;
+			_favoritesOnly = FavoritesFilter.IsChecked == true;
+			_groupByArchetype = GroupArchetypes.IsChecked == true;
+			UpdateDecks();
+		}
+
+		private async void SetArchetype_OnClick(object sender, RoutedEventArgs e)
+		{
+			var decks = ((FrameworkElement)sender).DataContext is DeckPickerItemViewModel item ? new List<Deck> { item.Deck } : SelectedDecks;
+			var window = this.ParentMainWindow();
+			if(window == null || decks.Count == 0) return;
+			var value = await window.ShowInputAsync("Архетип колоды", "Например: Темпо, Контроль или Драконы. Пустое поле убирает архетип.",
+				new MetroDialogSettings { DefaultText = decks[0].Archetype });
+			if(value == null) return;
+			foreach(var deck in decks) deck.Archetype = value.Trim();
+			DeckList.Save();
+			RefreshDisplayedDecks();
+			UpdateDecks();
+		}
+
+		private void Favorite_OnClick(object sender, RoutedEventArgs e)
+		{
+			if(!(((FrameworkElement)sender).DataContext is DeckPickerItemViewModel item)) return;
+			if(item.Favorite) item.Deck.Tags.RemoveAll(x => x.Equals("Favorite", StringComparison.OrdinalIgnoreCase));
+			else item.Deck.Tags.Add("Favorite");
+			DeckList.Save();
+			item.RefreshProperties();
+			UpdateDecks();
+		}
+
+		private void UseLibraryDeck_OnClick(object sender, RoutedEventArgs e)
+		{
+			if(((FrameworkElement)sender).DataContext is DeckPickerItemViewModel item)
+				DeckList.Instance.ActiveDeck = item.Deck;
+		}
 
 		public DeckPicker()
 		{
@@ -326,7 +381,8 @@ namespace Hearthstone_Deck_Tracker.Controls.DeckPicker
 				DeckList.Instance.Decks.Where(
 				                              d =>
 				                              (string.IsNullOrEmpty(DeckNameFilter)
-				                               || d.Name.ToLowerInvariant().Contains(DeckNameFilter!.ToLowerInvariant()))
+				                               || (d.Name + " " + d.GetClass + " " + d.Archetype + " " + d.TagList).IndexOf(DeckNameFilter!, StringComparison.OrdinalIgnoreCase) >= 0)
+				                              && (!_favoritesOnly || d.Tags.Any(t => t.Equals("Favorite", StringComparison.OrdinalIgnoreCase)))
 				                              && DeckMatchesSelectedDeckType(d) && DeckMatchesSelectedTags(d)
 				                              && (SelectedClasses.Any(
 				                                                      c =>
@@ -348,6 +404,8 @@ namespace Hearthstone_Deck_Tracker.Controls.DeckPicker
 				}
 			}
 			Sort();
+			LibraryCount.Text = $"{DisplayedDecks.Count} колод · Standard";
+			LibraryEmpty.Visibility = DisplayedDecks.Count == 0 ? Visible : Collapsed;
 			if(selectedDeck != null && reselectActiveDeck && decks.Contains(selectedDeck))
 				SelectDeck(selectedDeck);
 		}
@@ -444,6 +502,11 @@ namespace Hearthstone_Deck_Tracker.Controls.DeckPicker
 		private void Sort(bool refresh = false)
 		{
 			var view = (CollectionView)CollectionViewSource.GetDefaultView(DisplayedDecks);
+			using(view.DeferRefresh())
+			{
+				view.GroupDescriptions.Clear();
+				if(_groupByArchetype) view.GroupDescriptions.Add(new PropertyGroupDescription(nameof(DeckPickerItemViewModel.LibraryGroup)));
+			}
 
 			var sorting = new List<SortDescription>();
 			if(Config.Instance.SortDecksFavoritesFirst)
