@@ -402,6 +402,33 @@ namespace Hearthstone_Deck_Tracker.Stats
 		}
 
 		[XmlIgnore]
+		public SolidColorBrush ResultAccentBrush
+		{
+			get
+			{
+				var c = Result == GameResult.Win
+					? Color.FromRgb(0x80, 0xD8, 0xB0)
+					: Color.FromRgb(0xED, 0x93, 0x9E);
+				return new SolidColorBrush(c);
+			}
+		}
+
+		[XmlIgnore]
+		public SolidColorBrush ResultIconBackground
+		{
+			get
+			{
+				var c = Result == GameResult.Win
+					? Color.FromRgb(0x21, 0x3A, 0x35)
+					: Color.FromRgb(0x3A, 0x29, 0x33);
+				return new SolidColorBrush(c);
+			}
+		}
+
+		[XmlIgnore]
+		public string ResultGlyph => Result == GameResult.Win ? "✓" : "−";
+
+		[XmlIgnore]
 		public string RegionString => Region == Region.UNKNOWN ? "-" : Region.ToString();
 
 		[XmlIgnore]

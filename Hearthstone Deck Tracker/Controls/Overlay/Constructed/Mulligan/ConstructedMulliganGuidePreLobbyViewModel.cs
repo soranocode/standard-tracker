@@ -383,6 +383,9 @@ public class ConstructedMulliganGuidePreLobbyViewModel : ViewModel
 
 	public async Task EnsureLoaded()
 	{
+		if(!Config.MulliganGuideEnabled)
+			return;
+
 		try
 		{
 			await Update(true);

@@ -982,6 +982,14 @@ namespace Hearthstone_Deck_Tracker.Windows
 
 		public async void UpdateMulliganGuidePreLobbyVisibility()
 		{
+			if(!Config.MulliganGuideEnabled)
+			{
+				HideMulliganGuideTrialsExhausted();
+				_constructedMulliganGuidePreLobbyBehaviour.Hide();
+				_constructedPreLobbyWidgetBehavior.Hide();
+				return;
+			}
+
 			var acc = Reflection.Client.GetAccountId();
 			if(acc != null)
 			{

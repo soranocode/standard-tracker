@@ -143,8 +143,14 @@ namespace Hearthstone_Deck_Tracker
 		[DefaultValue(false)]
 		public bool AutoUseDeck = false;
 
+		/// <summary>
+		/// Mulligan Guide (in-game keep/replace percentages + pre-lobby deck status) is parked.
+		/// Flip to true to restore; related toggles below follow this flag while parked.
+		/// </summary>
+		public const bool MulliganGuideEnabled = false;
+
 		[XmlIgnore]
-		public bool AutoShowMulliganGuide { get => false; set { } }
+		public bool AutoShowMulliganGuide { get => MulliganGuideEnabled; set { } }
 
 		[DefaultValue(true)]
 		public bool DeckPickerCaps = true;
@@ -336,10 +342,10 @@ namespace Hearthstone_Deck_Tracker
 		public bool EnterToSaveNote = true;
 
 		[XmlIgnore]
-		public bool EnableMulliganGuide { get => false; set { } }
+		public bool EnableMulliganGuide { get => MulliganGuideEnabled; set { } }
 
 		[XmlIgnore]
-		public bool EnableMulliganGV2 { get => false; set { } }
+		public bool EnableMulliganGV2 { get => MulliganGuideEnabled; set { } }
 
 		[DefaultValue(false)]
 		public bool MulliganGV2OnboardingSeen = false;
@@ -862,7 +868,7 @@ namespace Hearthstone_Deck_Tracker
 		public bool SeenMulliganGuideTrialsExhausted = false;
 
 		[XmlIgnore]
-		public bool ShowMulliganGuidePreLobby { get => false; set { } }
+		public bool ShowMulliganGuidePreLobby { get => MulliganGuideEnabled; set { } }
 
 		[DefaultValue(15)]
 		public double SessionRecapTop = 15;
@@ -964,7 +970,7 @@ namespace Hearthstone_Deck_Tracker
 		public bool ShowBattlegroundsToast = true;
 
 		[XmlIgnore]
-		public bool ShowMulliganToast { get => false; set { } }
+		public bool ShowMulliganToast { get => MulliganGuideEnabled; set { } }
 
 		[DefaultValue(true)]
 		public bool ShowLeagueFilterHint = true;

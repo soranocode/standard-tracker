@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Библиотека колод — макет</title>
+<style>
+  :root {
+    --bg: #121721;
+    --surface: #1c2533;
+    --text: #edf2fa;
+    --muted: #a3b0c4;
+    --accent: #79b4ff;
+    --line: #34445a;
+    --chip: #3f5673;
+    --button: #29384e;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: #0c1016;
+    color: var(--text);
+    font: 14px/1.4 "Segoe UI", sans-serif;
+    display: flex;
+    justify-content: center;
+  }
+  button, input { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .library {
+    width: min(520px, 100%);
+    height: 100%;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    border-left: 1px solid #1e2836;
+    border-right: 1px solid #1e2836;
+  }
+  .head { padding: 16px 14px 0; }
+  h1 { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -0.3px; }
+  .count { margin: 3px 0 16px; color: var(--muted); font-size: 13px; }
+  .search {
+    width: 100%;
+    min-height: 38px;
+    padding: 8px 12px;
+    background: var(--surface);
+    border: 1px solid var(--chip);
+    border-radius: 6px;
+    caret-color: #fff;
+  }
+  .search::placeholder { color: #7e8da3; }
+  .toggles { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 0; }
+  .pill, .sort-btn {
+    border: 1px solid var(--chip);
+    background: var(--surface);
+    border-radius: 7px;
+    padding: 6px 10px;
+  }
+  .pill[aria-pressed="true"], .sort-btn[aria-expanded="true"] {
+    background: #395578;
+    border-color: var(--accent);
+  }
+  .pill:hover, .sort-btn:hover, .star:hover, .use:hover, .clear:hover, .archetype:hover { border-color: var(--accent); }
+  .classes {
+    display: flex;
+    gap: 4px;
+    overflow: hidden;
+    padding: 12px 12px 4px;
+  }
+  .class-btn {
+    flex: 1 1 0;
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    padding: 0;
+    display: grid;
+    place-items: center;
+    color: var(--text);
+  }
+  .class-btn[aria-pressed="true"] { background: #395578; border-color: var(--accent); }
+  .class-btn:hover { background: #395578; }
+  .class-btn img { width: 30px; height: 30px; display: block; border-radius: 50%; }
+  .class-btn.all { font-size: 11px; }
+  .list {
+    flex: 1;
+    overflow: auto;
+    padding: 0 8px 8px;
+    scrollbar-color: #c5cdd8 transparent;
+    scrollbar-width: thin;
+  }
+  .list::-webkit-scrollbar { width: 10px; }
+  .list::-webkit-scrollbar-thumb { background: #d5dbe3; border-radius: 6px; }
+  .group {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 16px 8px 6px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .group span:last-child { color: var(--muted); font-weight: 400; }
+  .deck {
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr) auto;
+    gap: 8px;
+    margin: 4px 6px;
+    padding: 16px;
+    background: var(--surface);
+    border: 1px solid #4f6782;
+    border-radius: 12px;
+  }
+  .deck:hover { border-color: #7398bd; }
+  .deck.selected { border-color: var(--accent); background: #1d2c3d; }
+  .portrait {
+    width: 44px;
+    height: 56px;
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+  }
+  .portrait img { width: 40px; height: 40px; display: block; }
+  .name {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .archetype, .archetype-input {
+    margin-top: 5px;
+    border: 1px solid var(--chip);
+    background: var(--button);
+    color: #b4c8e2;
+    border-radius: 7px;
+    font-size: 11px;
+    padding: 2px 7px;
+  }
+  .archetype-input { color: var(--text); width: 140px; }
+  .stats { margin: 10px 0 0; font-size: 13px; }
+  .actions { display: flex; flex-direction: column; align-items: flex-end; }
+  .star, .use, .clear {
+    border: 1px solid var(--chip);
+    background: var(--button);
+    border-radius: 7px;
+  }
+  .star { font-size: 20px; line-height: 1; padding: 2px 8px; color: #d7e4f5; }
+  .star.on { color: #f3d27a; border-color: #8d7340; }
+  .use { margin-top: 10px; padding: 5px 12px; letter-spacing: 0.4px; }
+  .use.on { background: #395578; border-color: var(--accent); }
+  .active {
+    margin: 0 6px 8px;
+    padding: 12px;
+    background: var(--surface);
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .active-label { font-size: 10px; letter-spacing: 0.6px; color: var(--muted); }
+  .active-name { margin-top: 3px; }
+  .active-name.empty { color: var(--muted); }
+  .clear { padding: 5px 10px; white-space: nowrap; }
+  .empty { text-align: center; padding: 48px 24px; }
+  .empty h2 { margin: 0; font-size: 22px; font-weight: 600; }
+  .empty p { margin: 12px auto 0; max-width: 340px; color: var(--muted); }
+  .sort-panel {
+    position: absolute;
+    z-index: 2;
+    top: 148px;
+    left: 14px;
+    width: min(280px, calc(100% - 28px));
+    background: #18202c;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+  }
+  .sort-panel[hidden] { display: none; }
+  .sort-panel h2 { margin: 0 0 8px; font-size: 13px; font-weight: 600; }
+  .choice { display: flex; align-items: center; gap: 8px; margin: 6px 0; color: var(--text); }
+  .sort-panel .checks { margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+</style>
+</head>
+<body>
+  <main class="library" aria-label="Макет библиотеки колод">
+    <div class="head">
+      <h1>Библиотека колод</h1>
+      <div class="count" data-count>4 колод · Standard</div>
+      <input class="search" type="search" placeholder="Найти колоду, класс, архетип или тег" aria-label="Поиск колод">
+      <div class="toggles">
+        <button type="button" class="pill" data-toggle="favorites" aria-pressed="false">Избранное</button>
+        <button type="button" class="pill" data-toggle="group" aria-pressed="true">По архетипам</button>
+        <button type="button" class="sort-btn" aria-expanded="false" aria-controls="sort-panel">Фильтры и сортировка</button>
+      </div>
+    </div>
+    <div class="classes" role="group" aria-label="Класс" data-classes></div>
+    <div class="list" data-list></div>
+    <div class="active">
+      <div>
+        <div class="active-label">АКТИВНАЯ КОЛОДА</div>
+        <div class="active-name empty" data-active-name>Не выбрана</div>
+      </div>
+      <button type="button" class="clear">Без колоды</button>
+    </div>
+    <div id="sort-panel" class="sort-panel" hidden>
+      <div class="checks">
+        <label class="choice"><input type="checkbox" data-sort-flag="favoritesFirst"> Сначала избранные</label>
+        <label class="choice"><input type="checkbox" data-sort-flag="byClass"> По классу</label>
+      </div>
+      <h2>Сортировка</h2>
+      <label class="choice"><input type="radio" name="sort" value="library" checked> Как на макете</label>
+      <label class="choice"><input type="radio" name="sort" value="name"> По имени</label>
+      <label class="choice"><input type="radio" name="sort" value="played"> Последняя игра</label>
+    </div>
+  </main>
+  <script>
+  (() => {
+    const root = document.querySelector(".library");
+    const classes = [
+      { id: "all", label: "Все", en: "" },
+      { id: "deathknight", label: "Рыцарь смерти", en: "Death Knight", color: "#8b1538" },
+      { id: "demonhunter", label: "Охотник на демонов", en: "Demon Hunter", color: "#6e2b8a" },
+      { id: "druid", label: "Друид", en: "Druid", color: "#e06a12" },
+      { id: "hunter", label: "Охотник", en: "Hunter", color: "#6f9a3a" },
+      { id: "mage", label: "Маг", en: "Mage", color: "#3aa4c9" },
+      { id: "paladin", label: "Паладин", en: "Paladin", color: "#c56b93" },
+      { id: "priest", label: "Жрец", en: "Priest", color: "#8d97a8" },
+      { id: "rogue", label: "Разбойник", en: "Rogue", color: "#b7a63a" },
+      { id: "shaman", label: "Шаман", en: "Shaman", color: "#1d6fbe" },
+      { id: "warlock", label: "Чернокнижник", en: "Warlock", color: "#6a58a8" },
+      { id: "warrior", label: "Воин", en: "Warrior", color: "#a78456" }
+    ];
+    const decks = [
+      { id: 1, name: "ДРАКОНЫ НА РАССВЕТЕ", classId: "druid", archetype: "Драконы", tags: ["рассвет", "дракон"], favorite: false, played: 4 },
+      { id: 2, name: "ЛЕДЯНОЙ КОНТРОЛЬ", classId: "mage", archetype: "Контроль", tags: ["лёд", "контроль"], favorite: false, played: 3 },
+      { id: 3, name: "ТЕМПО МАГ", classId: "mage", archetype: "Темпо", tags: ["темпо", "агрессия"], favorite: false, played: 2 },
+      { id: 4, name: "КОНТРОЛЬ ВОИН", classId: "warrior", archetype: "Контроль", tags: ["контроль", "воин"], favorite: false, played: 1 }
+    ];
+    const state = {
+      query: "",
+      favorites: false,
+      group: true,
+      classes: new Set(["all"]),
+      sort: "library",
+      favoritesFirst: false,
+      byClass: false,
+      activeId: null,
+      selectedId: null,
+      editingId: null
+    };
+    const icon = (id) => `<img src="../Hearthstone%20Deck%20Tracker/Resources/ClassIcons/Round/${id}.png" alt="">`;
+    const classOf = (id) => classes.find((c) => c.id === id);
+    const escape = (value) => value.replace(/[&<>"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
+
+    root.querySelector("[data-classes]").innerHTML = classes.map((c) => {
+      const inner = c.id === "all" ? "Все" : icon(c.id);
+      return `<button type="button" class="class-btn${c.id === "all" ? " all" : ""}" data-class="${c.id}" aria-pressed="${c.id === "all"}" title="${escape(c.label)}">${inner}</button>`;
+    }).join("");
+
+    function visibleDecks() {
+      const q = state.query.trim().toLowerCase();
+      return decks.filter((deck) => {
+        const hero = classOf(deck.classId);
+        const haystack = [deck.name, hero.label, hero.en, deck.archetype, ...deck.tags].join(" ").toLowerCase();
+        const classOk = state.classes.has("all") || state.classes.has(deck.classId);
+        return classOk && (!state.favorites || deck.favorite) && (!q || haystack.includes(q));
+      });
+    }
+
+    function ordered(list) {
+      const copy = list.slice();
+      copy.sort((a, b) => {
+        if (state.favoritesFirst && a.favorite !== b.favorite) return a.favorite ? -1 : 1;
+        if (state.byClass && a.classId !== b.classId) return classOf(a.classId).label.localeCompare(classOf(b.classId).label, "ru");
+        if (state.sort === "name") return a.name.localeCompare(b.name, "ru");
+        if (state.sort === "played") return b.played - a.played;
+        return a.id - b.id;
+      });
+      return copy;
+    }
+
+    function deckCard(deck) {
+      const hero = classOf(deck.classId);
+      const selected = state.selectedId === deck.id ? " selected" : "";
+      const active = state.activeId === deck.id;
+      const archetype = state.editingId === deck.id
+        ? `<input class="archetype-input" data-edit="${deck.id}" value="${escape(deck.archetype)}" aria-label="Архетип колоды">`
+        : `<button type="button" class="archetype" data-edit="${deck.id}" title="Изменить архетип колоды">${escape(deck.archetype || "Без архетипа")}</button>`;
+      return `<article class="deck${selected}" data-deck="${deck.id}">
+        <div class="portrait" style="background:${hero.color}">${icon(deck.classId)}</div>
+        <div>
+          <h3 class="name">${escape(deck.name)}</h3>
+          ${archetype}
+          <div class="stats">NO STATS</div>
+        </div>
+        <div class="actions">
+          <button type="button" class="star${deck.favorite ? " on" : ""}" data-favorite="${deck.id}" aria-pressed="${deck.favorite}" title="Добавить или убрать из избранного">${deck.favorite ? "★" : "☆"}</button>
+          <button type="button" class="use${active ? " on" : ""}" data-use="${deck.id}" title="Использовать колоду в игре">${active ? "ACTIVE" : "USE"}</button>
+        </div>
+      </article>`;
+    }
+
+    function render() {
+      const list = ordered(visibleDecks());
+      root.querySelector("[data-count]").textContent = `${list.length} колод · Standard`;
+      root.querySelector('[data-toggle="favorites"]').setAttribute("aria-pressed", String(state.favorites));
+      root.querySelector('[data-toggle="group"]').setAttribute("aria-pressed", String(state.group));
+      root.querySelectorAll("[data-class]").forEach((button) => {
+        button.setAttribute("aria-pressed", String(state.classes.has(button.dataset.class)));
+      });
+      const active = decks.find((deck) => deck.id === state.activeId);
+      const name = root.querySelector("[data-active-name]");
+      name.textContent = active ? active.name : "Не выбрана";
+      name.classList.toggle("empty", !active);
+      if (!list.length) {
+        root.querySelector("[data-list]").innerHTML = '<div class="empty"><h2>Здесь пока нет колод</h2><p>Добавьте колоду через меню «Импорт» или измените фильтры.</p></div>';
+        return;
+      }
+      if (!state.group) {
+        root.querySelector("[data-list]").innerHTML = list.map(deckCard).join("");
+      } else {
+        const groups = [];
+        list.forEach((deck) => {
+          const hero = classOf(deck.classId);
+          const key = `${hero.en} · ${deck.archetype || "Без архетипа"}`;
+          const group = groups.find((item) => item.key === key);
+          if (group) group.decks.push(deck);
+          else groups.push({ key, decks: [deck] });
+        });
+        root.querySelector("[data-list]").innerHTML = groups.map((group) =>
+          `<div class="group"><span>(${escape(group.key.split(" · ")[0])}) · ${escape(group.key.split(" · ").slice(1).join(" · "))}</span><span>${group.decks.length}</span></div>${group.decks.map(deckCard).join("")}`
+        ).join("");
+      }
+      const editor = root.querySelector("[data-edit].archetype-input");
+      if (editor) {
+        editor.focus();
+        editor.setSelectionRange(editor.value.length, editor.value.length);
+      }
+    }
+
+    function setClasses(id) {
+      if (id === "all") {
+        state.classes = new Set(["all"]);
+        return;
+      }
+      state.classes.delete("all");
+      if (state.classes.has(id)) state.classes.delete(id);
+      else state.classes.add(id);
+      if (state.classes.size === 0) state.classes.add("all");
+    }
+
+    function finishEdit(input, save) {
+      if (input.dataset.done) return;
+      const deck = decks.find((item) => item.id === Number(input.dataset.edit));
+      if (save && deck) deck.archetype = input.value.trim();
+      input.dataset.done = "1";
+      state.editingId = null;
+    }
+
+    root.addEventListener("click", (event) => {
+      const toggle = event.target.closest("[data-toggle]");
+      const classButton = event.target.closest("[data-class]");
+      const favorite = event.target.closest("[data-favorite]");
+      const use = event.target.closest("[data-use]");
+      const edit = event.target.closest("button[data-edit]");
+      const deck = event.target.closest("[data-deck]");
+      if (toggle) {
+        state[toggle.dataset.toggle] = toggle.getAttribute("aria-pressed") !== "true";
+      } else if (classButton) {
+        setClasses(classButton.dataset.class);
+      } else if (favorite) {
+        const item = decks.find((entry) => entry.id === Number(favorite.dataset.favorite));
+        item.favorite = !item.favorite;
+      } else if (use) {
+        state.activeId = Number(use.dataset.use);
+        state.selectedId = state.activeId;
+      } else if (edit) {
+        state.editingId = Number(edit.dataset.edit);
+        state.selectedId = state.editingId;
+      } else if (event.target.closest(".clear")) {
+        state.activeId = null;
+      } else if (deck && !event.target.closest("input, button")) {
+        state.selectedId = Number(deck.dataset.deck);
+      } else if (event.target.closest(".sort-btn")) {
+        const panel = root.querySelector("#sort-panel");
+        const open = panel.hasAttribute("hidden");
+        panel.toggleAttribute("hidden", !open);
+        root.querySelector(".sort-btn").setAttribute("aria-expanded", String(open));
+        return;
+      } else {
+        return;
+      }
+      render();
+    });
+
+    root.querySelector(".search").addEventListener("input", (event) => {
+      state.query = event.target.value;
+      render();
+    });
+    root.querySelector("#sort-panel").addEventListener("change", (event) => {
+      if (event.target.name === "sort") state.sort = event.target.value;
+      if (event.target.dataset.sortFlag) state[event.target.dataset.sortFlag] = event.target.checked;
+      render();
+    });
+    root.addEventListener("focusout", (event) => {
+      if (!event.target.matches("[data-edit]")) return;
+      finishEdit(event.target, true);
+      setTimeout(render, 0);
+    });
+    root.addEventListener("keydown", (event) => {
+      if (!event.target.matches("[data-edit]")) return;
+      if (event.key === "Enter") { event.preventDefault(); finishEdit(event.target, true); render(); }
+      if (event.key === "Escape") { event.preventDefault(); finishEdit(event.target, false); render(); }
+    });
+    render();
+  })();
+  </script>
+</body>
+</html>

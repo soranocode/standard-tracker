@@ -223,6 +223,9 @@ public class ConstructedMulliganPreLobbyWidgetViewModel : ViewModel
 
 	public async Task Update()
 	{
+		if(!Config.MulliganGuideEnabled)
+			return;
+
 		if(UserState == UserState.Disabled)
 			return;
 

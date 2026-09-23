@@ -597,6 +597,9 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 
 		public void CacheMulliganGuideParams(bool isV2, int[]? dbfIds = null)
 		{
+			if(!Config.MulliganGuideEnabled)
+				return;
+
 			if(_mulliganGuideParams != null && dbfIds == null)
 				return;
 

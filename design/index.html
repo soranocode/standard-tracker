@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Standard Tracker — макеты</title>
+<style>
+  :root { --bg:#0c1016; --surface:#121721; --text:#edf2fa; --muted:#a3b0c4; --accent:#79b4ff; --line:#34445a; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.4 "Segoe UI", sans-serif; }
+  header { padding: 18px 22px; border-bottom: 1px solid var(--line); display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+  h1 { margin: 0; font-size: 20px; font-weight: 600; }
+  nav { display: flex; gap: 8px; flex-wrap: wrap; }
+  a { color: var(--text); text-decoration: none; border: 1px solid var(--line); background: var(--surface); border-radius: 7px; padding: 7px 12px; }
+  a:hover, a.active { border-color: var(--accent); background: #1d2c3d; }
+  .note { color: var(--muted); font-size: 12px; margin-left: auto; }
+  iframe { width: 100%; height: calc(100vh - 70px); border: 0; background: #0c1016; }
+</style>
+</head>
+<body>
+  <header>
+    <h1>Standard Tracker</h1>
+    <nav>
+      <a class="active" href="library-preview.html" target="preview">Библиотека</a>
+      <a href="deck-preview.html" target="preview">Колода</a>
+      <a href="match-history-page.html" target="preview">История игр</a>
+    </nav>
+    <div class="note">HTML-макеты · те же экраны встраиваются в WPF</div>
+  </header>
+  <iframe name="preview" src="library-preview.html" title="Макет"></iframe>
+  <script>
+    document.querySelectorAll("nav a").forEach((link) => {
+      link.addEventListener("click", () => {
+        document.querySelectorAll("nav a").forEach((item) => item.classList.remove("active"));
+        link.classList.add("active");
+      });
+    });
+  </script>
+</body>
+</html>

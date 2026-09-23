@@ -269,7 +269,7 @@ namespace Hearthstone_Deck_Tracker.Windows
 			SortFilterDecksFlyout.LoadTags(DeckList.Instance.AllTags);
 			SortFilterDecksFlyout.SetSelectedTags(Config.Instance.SelectedTags);
 			TagControlEdit.LoadTags(DeckList.Instance.AllTags.Where(tag => tag != "All" && tag != "None").ToList());
-			ManaCurveMyDecks.Visibility = Config.Instance.ManaCurveMyDecks ? Visibility.Visible : Visibility.Collapsed;
+			SelectedDeckPanel.ManaCurveMyDecks.Visibility = Config.Instance.ManaCurveMyDecks ? Visibility.Visible : Visibility.Collapsed;
 			Core.TrayIcon.MenuItemUseNoDeck.Checked = DeckList.Instance.ActiveDeck == null;
 			UpdateMyGamesPanelVisibility();
 			UpdateFlyoutAnimationsEnabled();
@@ -477,10 +477,9 @@ namespace Hearthstone_Deck_Tracker.Windows
 			var version = deck?.GetSelectedDeckVersion();
 			// always update the sideboard to ensure we hide the header if empty
 			PlayerSideboards.Update(version?.Sideboards, true);
-			if(version != null)
-				ListViewDeck.Update(Helper.ResolveZilliax3000(version.Cards, version.Sideboards).ToSortedCardList(), true);
-
-			ManaCurveMyDecks.SetDeck(deck);
+			SelectedDeckPanel.SetDeck(deck);
+			SelectedDeckName = deck?.NameAndVersion;
+			OnPropertyChanged(nameof(SelectedDeckName));
 
 			ComboBoxDeckVersion.ItemsSource = deck?.VersionsIncludingSelf;
 			ComboBoxDeckVersion.SelectedItem = deck?.SelectedVersion;
@@ -490,6 +489,10 @@ namespace Hearthstone_Deck_Tracker.Windows
 			DeckCharts.SetDeck(deck);
 			HsReplayDeckInfo.SetDeck(deck);
 		}
+
+		public string? SelectedDeckName { get; private set; }
+
+		public ManaCurve ManaCurveMyDecks => SelectedDeckPanel.ManaCurveMyDecks;
 
 #endregion
 

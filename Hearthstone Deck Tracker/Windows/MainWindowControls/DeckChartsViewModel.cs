@@ -1,14 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Media;
 using Hearthstone_Deck_Tracker.Enums;
 using Hearthstone_Deck_Tracker.Hearthstone;
 using Hearthstone_Deck_Tracker.Stats;
 using Hearthstone_Deck_Tracker.Utility.MVVM;
-using LiveCharts;
-using LiveCharts.Defaults;
-using LiveCharts.Wpf;
 
 namespace Hearthstone_Deck_Tracker.Windows.MainWindowControls
 {
@@ -18,14 +16,24 @@ namespace Hearthstone_Deck_Tracker.Windows.MainWindowControls
 		private double _winrateTotal;
 		private bool _hasData;
 		private List<GameStats> _games = new List<GameStats>();
+		private List<GameStats> _filteredGames = new List<GameStats>();
 		private int _wins;
 		private int _losses;
 		private bool _hasDeck;
+		private string _resultFilter = "all";
 
-		private readonly string[] _playerClasses =
-			{ "Deathknight", "DemonHunter", "Druid", "Hunter", "Mage", "Paladin", "Priest", "Shaman", "Rogue", "Warlock", "Warrior" };
+		private static readonly Brush WinSegment = new SolidColorBrush(Color.FromRgb(0x80, 0xD8, 0xB0));
+		private static readonly Brush LossSegment = new SolidColorBrush(Color.FromRgb(0xED, 0x93, 0x9E));
+		private static readonly Brush WinIconBg = new SolidColorBrush(Color.FromRgb(0x21, 0x3A, 0x35));
+		private static readonly Brush LossIconBg = new SolidColorBrush(Color.FromRgb(0x3A, 0x29, 0x33));
 
-		public SeriesCollection OpponentCollection { get; }
+		static DeckChartsViewModel()
+		{
+			WinSegment.Freeze();
+			LossSegment.Freeze();
+			WinIconBg.Freeze();
+			LossIconBg.Freeze();
+		}
 
 		public Deck? Deck
 		{
@@ -53,13 +61,27 @@ namespace Hearthstone_Deck_Tracker.Windows.MainWindowControls
 			}
 		}
 
+		public List<GameStats> FilteredGames
+		{
+			get => _filteredGames;
+			set
+			{
+				_filteredGames = value;
+				OnPropertyChanged();
+				OnPropertyChanged(nameof(ShownCountLabel));
+			}
+		}
+
+		public ObservableCollection<Brush> RecentResults { get; } = new();
+
 		public int Wins
 		{
 			get => _wins;
 			set
 			{
-				_wins = value; 
+				_wins = value;
 				OnPropertyChanged();
+				OnPropertyChanged(nameof(TotalGames));
 			}
 		}
 
@@ -68,17 +90,20 @@ namespace Hearthstone_Deck_Tracker.Windows.MainWindowControls
 			get => _losses;
 			set
 			{
-				_losses = value; 
+				_losses = value;
 				OnPropertyChanged();
+				OnPropertyChanged(nameof(TotalGames));
 			}
 		}
+
+		public int TotalGames => Wins + Losses;
 
 		public bool HasData
 		{
 			get => _hasData;
 			set
 			{
-				_hasData = value; 
+				_hasData = value;
 				OnPropertyChanged();
 			}
 		}
@@ -103,61 +128,96 @@ namespace Hearthstone_Deck_Tracker.Windows.MainWindowControls
 			}
 		}
 
-		public Func<ChartPoint, string> PointLabel { get; }
-
-		public Func<double, string> EmptyFormatter { get; } = val => string.Empty;
-
-		public DeckChartsViewModel()
+		public bool FilterAll
 		{
-			OpponentCollection = new SeriesCollection();
-
-			// % first because we have some nasty flow direction changing going on
-			// to make the chart resize properly, depending on the width of the legend
-			PointLabel = p => p.Participation == 0 ? "" : $"%{Math.Round(p.Participation * 100, 0)}";
-
-			var series = _playerClasses.Select(p => new PieSeries
+			get => _resultFilter == "all";
+			set
 			{
-				Title = p,
-				Values = new ChartValues<ObservableValue> { new ObservableValue(0) },
-				Fill = new SolidColorBrush(Helper.GetClassColor(p, true)),
-				Foreground = Brushes.Black,
-				LabelPoint = PointLabel,
-				DataLabels = true,
-			});
-			OpponentCollection.AddRange(series);
+				if(value)
+					SetResultFilter("all");
+			}
 		}
+
+		public bool FilterWins
+		{
+			get => _resultFilter == "win";
+			set
+			{
+				if(value)
+					SetResultFilter("win");
+			}
+		}
+
+		public bool FilterLosses
+		{
+			get => _resultFilter == "loss";
+			set
+			{
+				if(value)
+					SetResultFilter("loss");
+			}
+		}
+
+		public string ShownCountLabel => HasData
+			? $"Показано {FilteredGames.Count} из {Games.Count}"
+			: "";
+
+		public static Brush GetResultAccent(GameResult result)
+			=> result == GameResult.Win ? WinSegment : LossSegment;
+
+		public static Brush GetResultIconBackground(GameResult result)
+			=> result == GameResult.Win ? WinIconBg : LossIconBg;
+
+		public static string GetResultGlyph(GameResult result)
+			=> result == GameResult.Win ? "✓" : "−";
 
 		public void Update()
 		{
 			Games = _deck?.GetRelevantGames().OrderByDescending(x => x.StartTime).ToList() ?? new List<GameStats>();
-			HasData = Games?.Any() ?? false;
+			HasData = Games.Any();
 
 			if(!HasData)
-				return;
-
-			var wins = 0;
-			var losses = 0;
-			var opponents = _playerClasses.ToDictionary(x => x, x => 0);
-
-			foreach(var game in Games!)
 			{
-				if(game.OpponentHero == null)
-					continue;
-				if(opponents.ContainsKey(game.OpponentHero))
-					opponents[game.OpponentHero]++;
-				if(game.Result == GameResult.Win)
-					wins++;
-				else if(game.Result == GameResult.Loss)
-					losses++;
+				Wins = 0;
+				Losses = 0;
+				WinrateTotal = 0;
+				FilteredGames = new List<GameStats>();
+				RecentResults.Clear();
+				return;
 			}
 
-			foreach(var series in OpponentCollection)
-				((ObservableValue)series.Values[0]).Value = opponents[series.Title];
+			Wins = Games.Count(g => g.Result == GameResult.Win);
+			Losses = Games.Count(g => g.Result == GameResult.Loss);
+			var total = Wins + Losses;
+			WinrateTotal = total > 0 ? Math.Round(100.0 * Wins / total, 1) : 0;
 
-			var total = wins + losses;
-			Wins = wins;
-			Losses = losses;
-			WinrateTotal = total > 0 ? Math.Round(100.0 * wins/total) : 0;
+			RecentResults.Clear();
+			foreach(var game in Games.Take(24).Reverse())
+				RecentResults.Add(game.Result == GameResult.Loss ? LossSegment : WinSegment);
+
+			ApplyFilter();
+			OnPropertyChanged(nameof(FilterAll));
+			OnPropertyChanged(nameof(FilterWins));
+			OnPropertyChanged(nameof(FilterLosses));
+		}
+
+		private void SetResultFilter(string filter)
+		{
+			_resultFilter = filter;
+			ApplyFilter();
+			OnPropertyChanged(nameof(FilterAll));
+			OnPropertyChanged(nameof(FilterWins));
+			OnPropertyChanged(nameof(FilterLosses));
+		}
+
+		private void ApplyFilter()
+		{
+			IEnumerable<GameStats> query = Games;
+			if(_resultFilter == "win")
+				query = query.Where(g => g.Result == GameResult.Win);
+			else if(_resultFilter == "loss")
+				query = query.Where(g => g.Result == GameResult.Loss);
+			FilteredGames = query.ToList();
 		}
 	}
 }

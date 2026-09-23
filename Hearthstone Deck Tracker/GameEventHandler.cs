@@ -1798,6 +1798,9 @@ namespace Hearthstone_Deck_Tracker
 
 		private void CaptureMulliganGuideFeedback(FormatType format)
 		{
+			if(!Config.MulliganGuideEnabled)
+				return;
+
 			if(!Config.Instance.GoogleAnalytics || _game.Spectator)
 				return;
 

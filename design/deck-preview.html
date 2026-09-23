@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Колода — Zuramat Warlock</title>
+<style>
+  :root {
+    --bg: #121721;
+    --surface: #1c2533;
+    --text: #edf2fa;
+    --muted: #a3b0c4;
+    --accent: #79b4ff;
+    --line: #34445a;
+    --chip: #3f5673;
+    --button: #29384e;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: #0c1016;
+    color: var(--text);
+    font: 14px/1.4 "Segoe UI", sans-serif;
+    display: flex;
+    justify-content: center;
+  }
+  button, input { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .deck-view {
+    width: min(520px, 100%);
+    height: 100%;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid #1e2836;
+    border-right: 1px solid #1e2836;
+  }
+  .head { padding: 16px 14px 0; }
+  .title-row { display: flex; gap: 12px; align-items: center; min-width: 0; }
+  .class-icon { width: 44px; height: 44px; border-radius: 10px; background: #6a58a8; object-fit: cover; flex-shrink: 0; }
+  .title-text { min-width: 0; }
+  h1 { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -0.2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 4px; color: var(--muted); font-size: 12px; }
+  .tag {
+    border: 1px solid var(--chip);
+    background: var(--button);
+    color: #b4c8e2;
+    border-radius: 7px;
+    font-size: 11px;
+    padding: 2px 7px;
+  }
+  .deck-code {
+    margin-top: 10px;
+    padding: 7px 9px;
+    background: #18212d;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    color: #8fa1ba;
+    font-size: 10px;
+    font-family: Consolas, "Courier New", monospace;
+    word-break: break-all;
+    line-height: 1.35;
+  }
+  .summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 14px;
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .summary b { display: block; font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .summary span { color: var(--muted); font-size: 11px; }
+  .search {
+    width: 100%;
+    min-height: 38px;
+    margin-top: 12px;
+    padding: 8px 12px;
+    background: var(--surface);
+    border: 1px solid var(--chip);
+    border-radius: 6px;
+    caret-color: #fff;
+  }
+  .search::placeholder { color: #7e8da3; }
+  .toggles { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 0; }
+  .pill {
+    border: 1px solid var(--chip);
+    background: var(--surface);
+    border-radius: 7px;
+    padding: 6px 10px;
+  }
+  .pill[aria-pressed="true"] { background: #395578; border-color: var(--accent); }
+  .pill:hover { border-color: var(--accent); }
+  .list {
+    flex: 1;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px 14px;
+    scrollbar-color: #c5cdd8 transparent;
+    scrollbar-width: thin;
+  }
+  .card {
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1fr) auto;
+    gap: 10px;
+    align-items: center;
+    min-height: 34px;
+    flex-shrink: 0;
+    padding: 0 10px 0 0;
+    background: var(--surface);
+    border: 1px solid #30465f;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .cost {
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    background: #2a4568;
+    color: #d7e8ff;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .name {
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 600;
+  }
+  .count {
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .empty { text-align: center; padding: 48px 24px; }
+  .empty h2 { margin: 0; font-size: 22px; font-weight: 600; }
+  .empty p { margin: 12px auto 0; max-width: 320px; color: var(--muted); }
+  .curve {
+    margin: 0 6px 8px;
+    padding: 12px;
+    background: var(--surface);
+    border-radius: 9px;
+  }
+  .curve-label {
+    display: flex;
+    justify-content: space-between;
+    color: var(--muted);
+    font-size: 10px;
+    letter-spacing: 0.6px;
+    margin-bottom: 8px;
+  }
+  .bars { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; align-items: end; height: 72px; }
+  .bar {
+    border: 1px solid transparent;
+    background: transparent;
+    border-radius: 6px;
+    padding: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 4px;
+  }
+  .bar[aria-pressed="true"] { border-color: var(--accent); background: #24344a; }
+  .bar i {
+    display: block;
+    width: 100%;
+    max-width: 22px;
+    border-radius: 4px 4px 2px 2px;
+    background: #79b4ff;
+    min-height: 0;
+  }
+  .bar[data-empty="true"] i { background: #2a3546; height: 3px !important; }
+  .bar em { font-style: normal; color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+  .footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 0 14px 12px;
+    color: var(--muted);
+    font-size: 11px;
+  }
+</style>
+</head>
+<body>
+  <main class="deck-view" aria-label="Макет состава колоды">
+    <div class="head">
+      <div class="title-row">
+        <img class="class-icon" src="../Hearthstone%20Deck%20Tracker/Resources/ClassIcons/Round/warlock.png" alt="">
+        <div class="title-text">
+          <h1>Zuramat Warlock</h1>
+          <div class="meta"><span class="tag">Warlock</span><span>Standard</span></div>
+        </div>
+      </div>
+      <div class="deck-code" title="Deckstring">AAECAf0GCoOgBJKDB4OEB4adB6WtB5vUB63ZB6HcB9vgB4TpBwqPnwTnoATRggffggeEmQeprQeqrQfb1weN3AeO3AcAAA==</div>
+      <div class="summary">
+        <div><b data-total>30</b><span>Карт</span></div>
+        <div><b data-minions>0</b><span>Существ</span></div>
+        <div><b data-spells>0</b><span>Заклинаний</span></div>
+      </div>
+      <input class="search" type="search" placeholder="Найти карту" aria-label="Поиск карты">
+      <div class="toggles" role="group" aria-label="Тип карты">
+        <button type="button" class="pill" data-type="all" aria-pressed="true">Все</button>
+        <button type="button" class="pill" data-type="minion" aria-pressed="false">Существа</button>
+        <button type="button" class="pill" data-type="spell" aria-pressed="false">Заклинания</button>
+      </div>
+    </div>
+    <div class="list" data-list></div>
+    <div class="curve">
+      <div class="curve-label"><span>КРИВАЯ МАНЫ</span><span>Столбец — фильтр</span></div>
+      <div class="bars" data-curve></div>
+    </div>
+    <div class="footer"><span data-shown></span><span>Decoded via HearthDb</span></div>
+  </main>
+  <script>
+  (() => {
+    const root = document.querySelector(".deck-view");
+    // Decoded from AAECAf0G... with HearthDb.Deckstrings.DeckSerializer + Cards.GetBundledBaseData()
+    const cards = [
+      { id: 117892, cost: 0, name: "Cursed Catacombs", count: 2, type: "spell" },
+      { id: 115039, cost: 1, name: "Rotheart Dryad", count: 2, type: "minion" },
+      { id: 125915, cost: 2, name: "Demonic Confinement", count: 2, type: "spell" },
+      { id: 69735, cost: 2, name: "Drain Soul", count: 2, type: "spell" },
+      { id: 115025, cost: 2, name: "Rotten Apple", count: 2, type: "spell" },
+      { id: 126478, cost: 2, name: "Shadow Rounds", count: 2, type: "spell" },
+      { id: 120485, cost: 2, name: "Tachyon Barrage", count: 1, type: "spell" },
+      { id: 127067, cost: 3, name: "Godfather Kazakus", count: 1, type: "minion" },
+      { id: 69519, cost: 3, name: "Hellfire", count: 2, type: "spell" },
+      { id: 126125, cost: 4, name: "Godfrey the Betrayer", count: 1, type: "minion" },
+      { id: 120490, cost: 4, name: "RAFAAM LADDER!!", count: 2, type: "spell" },
+      { id: 120489, cost: 5, name: "Divergence", count: 2, type: "spell" },
+      { id: 126497, cost: 5, name: "Zuramat's Prison", count: 1, type: "location" },
+      { id: 118406, cost: 8, name: "Bat Mask", count: 1, type: "spell" },
+      { id: 115090, cost: 8, name: "Shaladrassil", count: 1, type: "spell" },
+      { id: 69635, cost: 8, name: "Twisting Nether", count: 1, type: "spell" },
+      { id: 128132, cost: 9, name: "M.O.T.H.E.R.", count: 1, type: "minion" },
+      { id: 115203, cost: 10, name: "Agamaggan", count: 1, type: "minion" },
+      { id: 125467, cost: 10, name: "Deathwing, Worldbreaker", count: 1, type: "hero" },
+      { id: 126477, cost: 10, name: "The Unseen Atlas", count: 2, type: "spell" }
+    ];
+    const state = { query: "", type: "all", cost: null };
+    const escape = (value) => String(value).replace(/[&<>"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
+    const copies = (list) => list.reduce((sum, card) => sum + card.count, 0);
+    const curveBucket = (cost) => Math.min(cost, 7);
+    const matchesCost = (card) => state.cost === null || curveBucket(card.cost) === state.cost;
+
+    function visible() {
+      const query = state.query.trim().toLowerCase();
+      return cards.filter((card) => {
+        const typeOk = state.type === "all" || card.type === state.type;
+        const textOk = !query || card.name.toLowerCase().includes(query);
+        return typeOk && matchesCost(card) && textOk;
+      });
+    }
+
+    function render() {
+      const list = visible();
+      const allCopies = copies(cards);
+      root.querySelector("[data-total]").textContent = allCopies;
+      root.querySelector("[data-minions]").textContent = copies(cards.filter((card) => card.type === "minion"));
+      root.querySelector("[data-spells]").textContent = copies(cards.filter((card) => card.type === "spell"));
+      root.querySelector("[data-shown]").textContent = "Показано " + copies(list) + " из " + allCopies;
+      root.querySelectorAll("[data-type]").forEach((button) => {
+        button.setAttribute("aria-pressed", String(button.dataset.type === state.type));
+      });
+      const curve = Array(8).fill(0);
+      cards.forEach((card) => { curve[curveBucket(card.cost)] += card.count; });
+      const max = Math.max(...curve, 1);
+      root.querySelector("[data-curve]").innerHTML = curve.map((count, cost) => {
+        const height = count ? Math.max(8, Math.round(46 * count / max)) : 3;
+        const label = cost === 7 ? "7+" : String(cost);
+        return `<button type="button" class="bar" data-cost="${cost}" aria-pressed="${state.cost === cost}" aria-label="${label}, ${count}" data-empty="${count === 0}"><i style="height:${height}px"></i><em>${label}</em></button>`;
+      }).join("");
+      if (!list.length) {
+        root.querySelector("[data-list]").innerHTML = '<div class="empty"><h2>Таких карт нет</h2><p>Измените поиск, тип или стоимость.</p></div>';
+        return;
+      }
+      root.querySelector("[data-list]").innerHTML = list.map((card) =>
+        `<div class="card"><span class="cost">${card.cost}</span><span class="name" title="${escape(card.name)}">${escape(card.name)}</span><span class="count">×${card.count}</span></div>`
+      ).join("");
+    }
+
+    root.addEventListener("click", (event) => {
+      const type = event.target.closest("[data-type]");
+      const cost = event.target.closest("[data-cost]");
+      if (type) state.type = type.dataset.type;
+      else if (cost) {
+        const next = Number(cost.dataset.cost);
+        state.cost = state.cost === next ? null : next;
+      } else return;
+      render();
+    });
+    root.querySelector(".search").addEventListener("input", (event) => {
+      state.query = event.target.value;
+      render();
+    });
+    render();
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>История игр — макет</title>
+<style>
+  html, body { height: 100%; margin: 0; background: #0c1016; }
+  body { display: flex; justify-content: center; padding: 16px; box-sizing: border-box; }
+  #host { width: min(980px, 100%); }
+</style>
+</head>
+<body>
+  <div id="host"></div>
+  <script>
+    fetch("match-history-preview.html")
+      .then((r) => r.text())
+      .then((html) => { document.getElementById("host").innerHTML = html; })
+      .catch(() => { document.getElementById("host").textContent = "Не удалось загрузить match-history-preview.html"; });
+  </script>
+</body>
+</html>

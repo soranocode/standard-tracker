@@ -7,8 +7,8 @@
              xmlns:local="clr-namespace:Hearthstone_Deck_Tracker.Controls"
              mc:Ignorable="d"
              d:DesignHeight="300" d:DesignWidth="300"
-             Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}"
-             BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrush}}" BorderThickness="1">
+             Background="Transparent"
+             BorderBrush="Transparent" BorderThickness="0">
     <UserControl.ToolTip>
         <local:ManaCostBarToolTip x:Name="McbToolTip" />
     </UserControl.ToolTip>
@@ -19,42 +19,30 @@
         </Style>
     </UserControl.Resources>
     <Grid>
-        <StackPanel Orientation="Vertical" VerticalAlignment="Bottom" Margin="0,1,0,0">
-            <Rectangle Name="WeaponsRect" Height="0" Stroke="#FFD7AABE" StrokeThickness="-1">
+        <StackPanel Orientation="Vertical" VerticalAlignment="Bottom" Margin="2,1,2,0">
+            <Rectangle Name="WeaponsRect" Height="0" RadiusX="3" RadiusY="3" StrokeThickness="0">
                 <Rectangle.Fill>
-                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                        <GradientStop Color="#FFAA1E28" Offset="0" />
-                        <GradientStop Color="#FFD7AABE" Offset="1" />
-                    </LinearGradientBrush>
+                    <SolidColorBrush Color="#79B4FF"/>
                 </Rectangle.Fill>
             </Rectangle>
-            <Rectangle Name="SpellsRect" Height="0" Stroke="#FFA0C8D7" StrokeThickness="-1">
+            <Rectangle Name="SpellsRect" Height="0" RadiusX="3" RadiusY="3" StrokeThickness="0">
                 <Rectangle.Fill>
-                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                        <GradientStop Color="#FF1E6EAA" Offset="0" />
-                        <GradientStop Color="#FFA0C8D7" Offset="1" />
-                    </LinearGradientBrush>
+                    <SolidColorBrush Color="#79B4FF"/>
                 </Rectangle.Fill>
             </Rectangle>
-            <Rectangle Name="MinionsRect" Height="0" Stroke="#FFC8D7A0" StrokeThickness="-1">
+            <Rectangle Name="MinionsRect" Height="0" RadiusX="3" RadiusY="3" StrokeThickness="0">
                 <Rectangle.Fill>
-                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                        <GradientStop Color="#FF6EAA1E" Offset="0.003" />
-                        <GradientStop Color="#FFC8D7A0" Offset="1" />
-                    </LinearGradientBrush>
+                    <SolidColorBrush Color="#79B4FF"/>
                 </Rectangle.Fill>
             </Rectangle>
-            <Rectangle Name="HeroesRect" Height="0" Stroke="#FFEAD595" StrokeThickness="-1">
+            <Rectangle Name="HeroesRect" Height="0" RadiusX="3" RadiusY="3" StrokeThickness="0">
                 <Rectangle.Fill>
-                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                        <GradientStop Color="#FF9E7E1F" Offset="0.003" />
-                        <GradientStop Color="#FFEAD595" Offset="1" />
-                    </LinearGradientBrush>
+                    <SolidColorBrush Color="#79B4FF"/>
                 </Rectangle.Fill>
             </Rectangle>
         </StackPanel>
-        <TextBlock Name="TextBlockCount" FontWeight="SemiBold" Text= "0" Height="26" Foreground="Black"
-               VerticalAlignment="Bottom" HorizontalAlignment="Center" FontSize="12"/>
+        <TextBlock Name="TextBlockCount" FontWeight="SemiBold" Text= "0" Height="18" Foreground="#A3B0C4"
+               VerticalAlignment="Bottom" HorizontalAlignment="Center" FontSize="11"/>
 
     </Grid>
 </UserControl>
