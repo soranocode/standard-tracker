@@ -173,6 +173,7 @@
   <ItemGroup>
     <Resource Include="Resources\**\*.*" />
     <Resource Include="Images\*.*" />
+    <Content Include="Utility\Assets\extract_card_tiles.py" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="Images\*.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

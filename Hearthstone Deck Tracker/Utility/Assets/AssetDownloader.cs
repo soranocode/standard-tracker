@@ -18,6 +18,7 @@ namespace Hearthstone_Deck_Tracker.Utility.Assets
 		private readonly string _storageDestination;
 		private readonly Func<T, string> _getUrl;
 		private readonly Func<T, string> _getFilename;
+		private readonly Func<T, Task<bool>>? _obtainMissingAsset;
 		private readonly Dictionary<string, Task<bool>> _inProgressDownloads = new();
 		private readonly long? _maxCacheSize;
 		private readonly Func<byte[], U> _dataConverter;
@@ -73,11 +74,13 @@ namespace Hearthstone_Deck_Tracker.Utility.Assets
 			Func<byte[], U> dataConverter,
 			long? maxCacheSize = null,
 			string? placeholderAsset = null,
-			HashSet<T>? alwaysKeepCached = null)
+			HashSet<T>? alwaysKeepCached = null,
+			Func<T, Task<bool>>? obtainMissingAsset = null)
 		{
 			_storageDestination = storageDestination;
 			_getFilename = fileNameConverter;
 			_getUrl = urlConverter;
+			_obtainMissingAsset = obtainMissingAsset;
 			_maxCacheSize = maxCacheSize;
 			_dataConverter = dataConverter;
 			_alwaysKeepCached = new HashSet<string>(alwaysKeepCached?.Select(_getFilename) ?? new List<string>());
@@ -348,18 +351,19 @@ namespace Hearthstone_Deck_Tracker.Utility.Assets
 				entry = TryAdoptFromDisk(obj);
 				if(entry == null)
 				{
-					var success = await DownloadAsset(obj);
+					var success = _obtainMissingAsset != null
+						? await _obtainMissingAsset(obj)
+						: await DownloadAsset(obj);
 					if(!success)
 						return default;
 					if(!_lruLookup.TryGetValue(filename, out entry))
 					{
-						// The entry was evicted between download and use. Recover from disk if the
-						// file survived, otherwise we would silently return null and the caller would
-						// be stuck on a placeholder with no indication of what went wrong.
+						// Generated assets and evicted downloads can exist on disk without an
+						// index entry. Adopt the file before giving up.
 						entry = TryAdoptFromDisk(obj);
 						if(entry == null)
 						{
-							Log.Error($"Downloaded {filename} but its cache entry was evicted before use");
+							Log.Error($"Obtained {filename} but no cached file was available");
 							return default;
 						}
 					}

@@ -46,7 +46,8 @@ namespace Hearthstone_Deck_Tracker.Utility.Assets
 					(Hearthstone.Card card) => $"{card.Id}.jpg",
 					Helper.BitmapImageFromBytes,
 					maxCacheSize: 10_000, // About 2KB per tile. Caching up to 20MB.
-					placeholderAsset: "pack://application:,,,/Resources/card-tile-placeholder.jpg"
+					placeholderAsset: "pack://application:,,,/Resources/card-tile-placeholder.jpg",
+					obtainMissingAsset: card => LocalCardTileExtractor.EnsureTileAsync(card.Id)
 				);
 			}
 			catch(ArgumentException e)
@@ -92,7 +93,8 @@ namespace Hearthstone_Deck_Tracker.Utility.Assets
 
 			// no downloads can be in flight yet, safe to sweep
 			cardPortraitDownloader?.CleanUpOrphanedFiles();
-			cardTileDownloader?.CleanUpOrphanedFiles();
+			// Local extraction may have produced files before they were added to Cache.xml.
+			// Keep them so the downloader can adopt them on first use.
 			cardImageDownloader?.CleanUpOrphanedFiles();
 			heroImageDownloader?.CleanUpOrphanedFiles();
 		}

@@ -43,7 +43,9 @@ UNFINISHED (do not call this a finished release):
 - Audit auxiliary player/opponent/timer windows and remaining scene handler side effects.
 - Remove dormant HSReplay/BobsBuddy/Sentry/Squirrel binaries and callers together; references
   remain for retained WPF models even though cloud access is disabled.
-- Inspect offline card art/language presentation; downloads are disabled.
+- Deck-list tiles now come from local Hearthstone Unity assets when Python, UnityPy,
+  and Pillow are available. Full rendered cards and language presentation still need
+  offline handling; downloads remain disabled.
 - Pin/provision ignored lib/localizations for fresh checkout.
 - Legacy packaging/release scripts and GitHub workflows still target HearthSim. DO NOT use
   them unchanged. Auto-review rejected renaming workflows to disable them, requiring explicit
