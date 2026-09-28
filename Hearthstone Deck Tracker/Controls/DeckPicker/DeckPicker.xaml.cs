@@ -28,6 +28,7 @@ using Hearthstone_Deck_Tracker.Windows;
 using MahApps.Metro;
 using MahApps.Metro.Controls.Dialogs;
 using DeckType = Hearthstone_Deck_Tracker.Enums.DeckType;
+using DeckCard = Hearthstone_Deck_Tracker.Hearthstone.Card;
 
 #endregion
 
@@ -57,6 +58,62 @@ namespace Hearthstone_Deck_Tracker.Controls.DeckPicker
 		private bool _groupByArchetype = true;
 
 		private void LibraryNoDeck_OnClick(object sender, RoutedEventArgs e) => DeckList.Instance.ActiveDeck = null;
+
+		private void LibraryAddDeck_OnClick(object sender, RoutedEventArgs e)
+		{
+			var dialog = new DeckCodeImportWindow();
+			if(this.ParentMainWindow() is { } window)
+				dialog.Owner = window;
+			if(dialog.ShowDialog() != true || dialog.ImportedDeck is not { } imported)
+				return;
+
+			var match = DeckList.Instance.Decks
+				.Where(d => string.Equals(d.Class, imported.Class, StringComparison.OrdinalIgnoreCase))
+				.SelectMany(d => d.VersionsIncludingSelf.Select(d.GetVersion)
+					.Where(v => SameDeckContents(v, imported))
+					.Select(v => new { Deck = d, Version = v }))
+				.OrderBy(x => x.Deck.Archived)
+				.ThenByDescending(x => ReferenceEquals(x.Deck, DeckList.Instance.ActiveDeck))
+				.FirstOrDefault();
+			var deck = match?.Deck ?? imported;
+			if(match != null)
+			{
+				deck.SelectVersion(match.Version);
+				if(deck.Name.StartsWith("You can view this deck at", StringComparison.OrdinalIgnoreCase))
+					deck.Name = imported.Name;
+				if(deck.Archived)
+					deck.Archive(false);
+			}
+			else
+			{
+				deck.Edited();
+				DeckList.Instance.Decks.Add(deck);
+			}
+			DeckList.Save();
+
+			// Reveal the saved deck even if the current library filters hid its class or name.
+			CloseSearchField();
+			LibrarySearch.Clear();
+			FavoritesFilter.IsChecked = false;
+			SelectDeckAndAppropriateView(deck, true);
+		}
+
+		private static bool SameDeckContents(Deck left, Deck right)
+		{
+			if(!SameCards(left.Cards, right.Cards) || left.Sideboards.Count != right.Sideboards.Count)
+				return false;
+			return left.Sideboards.All(sideboard => right.Sideboards.Any(other =>
+				string.Equals(sideboard.OwnerCardId, other.OwnerCardId, StringComparison.OrdinalIgnoreCase)
+				&& SameCards(sideboard.Cards, other.Cards)));
+		}
+
+		private static bool SameCards(IEnumerable<DeckCard> left, IEnumerable<DeckCard> right)
+		{
+			var leftCounts = left.GroupBy(c => c.Id).ToDictionary(g => g.Key, g => g.Sum(c => c.Count));
+			var rightCounts = right.GroupBy(c => c.Id).ToDictionary(g => g.Key, g => g.Sum(c => c.Count));
+			return leftCounts.Count == rightCounts.Count
+				&& leftCounts.All(card => rightCounts.TryGetValue(card.Key, out var count) && count == card.Value);
+		}
 
 		private void LibrarySort_OnClick(object sender, RoutedEventArgs e)
 		{
@@ -106,6 +163,15 @@ namespace Hearthstone_Deck_Tracker.Controls.DeckPicker
 		{
 			if(((FrameworkElement)sender).DataContext is DeckPickerItemViewModel item)
 				DeckList.Instance.ActiveDeck = item.Deck;
+		}
+
+		private void CopyLibraryDeckCode_OnClick(object sender, RoutedEventArgs e)
+		{
+			if(((FrameworkElement)sender).DataContext is not DeckPickerItemViewModel item)
+				return;
+			var copyText = DeckCodeUtility.CopyText(item.Deck);
+			if(!string.IsNullOrEmpty(copyText))
+				System.Windows.Clipboard.SetText(copyText);
 		}
 
 		public DeckPicker()

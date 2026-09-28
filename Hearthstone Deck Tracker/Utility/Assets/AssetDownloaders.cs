@@ -1,6 +1,7 @@
 ﻿using Hearthstone_Deck_Tracker.Utility.Logging;
 using System;
 using System.IO;
+using System.Net.Http;
 using System.Windows.Media.Imaging;
 
 namespace Hearthstone_Deck_Tracker.Utility.Assets
@@ -15,6 +16,12 @@ namespace Hearthstone_Deck_Tracker.Utility.Assets
 
 	public static class AssetDownloaders
 	{
+		// Only finished card renders may use the network. All other asset downloaders
+		// and the application's shared HTTP client remain offline.
+		private static readonly HttpClient RenderedCardClient = new()
+		{
+			Timeout = TimeSpan.FromSeconds(12)
+		};
 		public static AssetDownloader<Hearthstone.Card, BitmapImage>? cardPortraitDownloader;
 		public static AssetDownloader<Hearthstone.Card, BitmapImage>? cardTileDownloader;
 		public static AssetDownloader<Hearthstone.Card, BitmapImage>? cardImageDownloader;
@@ -65,7 +72,8 @@ namespace Hearthstone_Deck_Tracker.Utility.Assets
 					card => $"{card.Id}{(card.BaconTriple ? "_triple" : "")}.png",
 					Helper.BitmapImageFromBytes,
 					maxCacheSize: 1000,
-					placeholderAsset: "pack://application:,,,/Resources/faceless_manipulator.png"
+					placeholderAsset: "pack://application:,,,/Resources/faceless_manipulator.png",
+					remoteAssetClient: RenderedCardClient
 				);
 				ConfigWrapper.Bindable.CardResolutionChanged += () => cardImageDownloader.ClearStorage();
 				Helper.CardLanguageChanged += () => cardImageDownloader.ClearStorage();
@@ -92,9 +100,8 @@ namespace Hearthstone_Deck_Tracker.Utility.Assets
 			}
 
 			// no downloads can be in flight yet, safe to sweep
-			cardPortraitDownloader?.CleanUpOrphanedFiles();
-			// Local extraction may have produced files before they were added to Cache.xml.
-			// Keep them so the downloader can adopt them on first use.
+			// Local extraction may have produced portraits and tiles before Cache.xml indexed them.
+			// Keep those files so the downloaders can adopt them on first use.
 			cardImageDownloader?.CleanUpOrphanedFiles();
 			heroImageDownloader?.CleanUpOrphanedFiles();
 		}

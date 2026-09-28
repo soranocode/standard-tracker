@@ -363,6 +363,9 @@
                 <Rectangle Name="RectPlayerHand7" Width="{Binding CardWidth, RelativeSource={RelativeSource AncestorType=windows:OverlayWindow}}" Height="{Binding CardHeight, RelativeSource={RelativeSource AncestorType=windows:OverlayWindow}}"/>
                 <Rectangle Name="RectPlayerHand8" Width="{Binding CardWidth, RelativeSource={RelativeSource AncestorType=windows:OverlayWindow}}" Height="{Binding CardHeight, RelativeSource={RelativeSource AncestorType=windows:OverlayWindow}}"/>
                 <Rectangle Name="RectPlayerHand9" Width="{Binding CardWidth, RelativeSource={RelativeSource AncestorType=windows:OverlayWindow}}" Height="{Binding CardHeight, RelativeSource={RelativeSource AncestorType=windows:OverlayWindow}}"/>
+                <Canvas Name="MotherCostPreview" IsHitTestVisible="False" Panel.ZIndex="20"
+                        Width="{Binding Width, RelativeSource={RelativeSource AncestorType=windows:OverlayWindow}}"
+                        Height="{Binding Height, RelativeSource={RelativeSource AncestorType=windows:OverlayWindow}}"/>
                 <overlay:ExperienceCounter x:Name="ExperienceCounter" Visibility="Hidden"/>
                 <StackPanel>
                     <StackPanel Orientation="Horizontal" Name="StackPanelWarning" Visibility="Collapsed">

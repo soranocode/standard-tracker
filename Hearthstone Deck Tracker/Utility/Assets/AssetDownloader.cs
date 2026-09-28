@@ -19,6 +19,7 @@ namespace Hearthstone_Deck_Tracker.Utility.Assets
 		private readonly Func<T, string> _getUrl;
 		private readonly Func<T, string> _getFilename;
 		private readonly Func<T, Task<bool>>? _obtainMissingAsset;
+		private readonly HttpClient? _remoteAssetClient;
 		private readonly Dictionary<string, Task<bool>> _inProgressDownloads = new();
 		private readonly long? _maxCacheSize;
 		private readonly Func<byte[], U> _dataConverter;
@@ -75,12 +76,14 @@ namespace Hearthstone_Deck_Tracker.Utility.Assets
 			long? maxCacheSize = null,
 			string? placeholderAsset = null,
 			HashSet<T>? alwaysKeepCached = null,
-			Func<T, Task<bool>>? obtainMissingAsset = null)
+			Func<T, Task<bool>>? obtainMissingAsset = null,
+			HttpClient? remoteAssetClient = null)
 		{
 			_storageDestination = storageDestination;
 			_getFilename = fileNameConverter;
 			_getUrl = urlConverter;
 			_obtainMissingAsset = obtainMissingAsset;
+			_remoteAssetClient = remoteAssetClient;
 			_maxCacheSize = maxCacheSize;
 			_dataConverter = dataConverter;
 			_alwaysKeepCached = new HashSet<string>(alwaysKeepCached?.Select(_getFilename) ?? new List<string>());
@@ -237,7 +240,16 @@ namespace Hearthstone_Deck_Tracker.Utility.Assets
 		/// <exception cref="ArgumentNullException">Thrown if obj is null</exception>
 		private Task<bool> DownloadAsset(T obj)
 		{
-			return Task.FromResult(false); // Offline: never download art or upstream tools.
+			if(_remoteAssetClient == null)
+				return Task.FromResult(false);
+			if(obj == null)
+				throw new ArgumentNullException(nameof(obj));
+			var filename = _getFilename(obj);
+			ManageLRUCache();
+			if(_inProgressDownloads.TryGetValue(filename, out var inProgressDownload))
+				return inProgressDownload;
+			_inProgressDownloads[filename] = DownloadFileAsync(obj);
+			return _inProgressDownloads[filename];
 		}
 
 		/// <exception cref="ArgumentNullException">Thrown if obj is null</exception>
@@ -252,10 +264,10 @@ namespace Hearthstone_Deck_Tracker.Utility.Assets
 				using HttpRequestMessage request = new(HttpMethod.Get, _getUrl(obj));
 				request.Headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
 				request.Headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("deflate"));
-				if(_lruLookup.TryGetValue(filename, out var entry))
+				if(_lruLookup.TryGetValue(filename, out var entry) && !string.IsNullOrEmpty(entry.ETag))
 					request.Headers.IfNoneMatch.Add(new EntityTagHeaderValue(entry.ETag));
 				//Log.Debug($"Starting download for {filename} (isCacheUpdate={isCacheUpdate}).");
-				var response = await Core.HttpClient.SendAsync(request);
+				using var response = await _remoteAssetClient!.SendAsync(request);
 				if(response.StatusCode == HttpStatusCode.NotModified)
 				{
 					//Log.Debug($"{filename} not modified");
@@ -284,7 +296,7 @@ namespace Hearthstone_Deck_Tracker.Utility.Assets
 
 				var data = _dataConverter(bytes);
 
-				var etag = response.Headers.ETag.Tag;
+				var etag = response.Headers.ETag?.Tag ?? string.Empty;
 				if(entry == null)
 				{
 					entry = new LRUCache<U>.Entry(filename, etag);

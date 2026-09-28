@@ -76,7 +76,7 @@ namespace Hearthstone_Deck_Tracker.Importing
 		private static List<HearthMirror.Objects.Deck> GetConstructedDecks()
 			=> Reflection.Client.GetDecks()?.Where(IsValidDeck).ToList() ?? new List<HearthMirror.Objects.Deck>();
 
-		private static bool IsValidDeck(HearthMirror.Objects.Deck deck)
+		internal static bool IsValidDeck(HearthMirror.Objects.Deck deck)
 		{
 			if(deck.Type == BrawlDeckType || deck.Cards.Any(c => !new Hearthstone.Card(c.Id).IsCardLegal(HearthDb.Enums.GameType.GT_RANKED, HearthDb.Enums.FormatType.FT_STANDARD)))
 				return false;

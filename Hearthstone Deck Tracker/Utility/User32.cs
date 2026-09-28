@@ -146,6 +146,12 @@ namespace Hearthstone_Deck_Tracker
 		private const int SmSwapButton = 23;
 		private const int KeyDownMask = 0x8000;
 
+		public static bool IsLeftMouseButtonDown()
+		{
+			var vKey = GetSystemMetrics(SmSwapButton) != 0 ? VkRButton : VkLButton;
+			return (GetAsyncKeyState(vKey) & KeyDownMask) != 0;
+		}
+
 		public static bool IsRightMouseButtonDown()
 		{
 			var vKey = GetSystemMetrics(SmSwapButton) != 0 ? VkLButton : VkRButton;

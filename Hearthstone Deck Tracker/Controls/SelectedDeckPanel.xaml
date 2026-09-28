@@ -6,6 +6,7 @@
              xmlns:local="clr-namespace:Hearthstone_Deck_Tracker"
              xmlns:controls1="http://metro.mahapps.com/winfx/xaml/controls"
              xmlns:controls="clr-namespace:Hearthstone_Deck_Tracker.Controls"
+             xmlns:tooltips="clr-namespace:Hearthstone_Deck_Tracker.Controls.Tooltips"
              mc:Ignorable="d"
              d:DesignHeight="700" d:DesignWidth="320"
              Background="#121721" TextElement.FontFamily="Segoe UI" TextElement.Foreground="#EDF2FA">
@@ -35,11 +36,16 @@
                     </StackPanel>
                 </StackPanel>
             </DockPanel>
-            <Border Margin="0,10,0,0" Padding="0"
+            <Button x:Name="CopyDeckCodeButton" Margin="0,10,0,0" Padding="8,5" Style="{StaticResource STButton}"
+                    HorizontalContentAlignment="Stretch" ToolTip="Скопировать код колоды с названием"
+                    Click="CopyDeckCode_OnClick"
                     Visibility="{Binding HasDeck, Converter={StaticResource BoolToVisibility}}">
-                <TextBlock Text="{Binding DeckCode}" FontSize="10" FontFamily="Consolas" Foreground="#8FA1BA" TextTrimming="CharacterEllipsis"
-                           ToolTip="{Binding DeckCode}"/>
-            </Border>
+                <DockPanel LastChildFill="True">
+                    <TextBlock DockPanel.Dock="Right" Text="⧉" FontSize="14" Foreground="#B4C8E2" Margin="8,0,0,0"/>
+                    <TextBlock Text="{Binding DeckCode}" FontSize="10" FontFamily="Consolas" Foreground="#8FA1BA"
+                               TextTrimming="CharacterEllipsis" ToolTip="{Binding DeckCode}"/>
+                </DockPanel>
+            </Button>
             <Border Margin="0,12,0,0" Background="{StaticResource SurfaceBrush}" CornerRadius="9" Padding="12,9"
                     Visibility="{Binding HasDeck, Converter={StaticResource BoolToVisibility}}">
                 <UniformGrid Columns="3">
@@ -98,7 +104,7 @@
                         <Setter Property="Template">
                             <Setter.Value>
                                 <ControlTemplate TargetType="ListBoxItem">
-                                    <Border x:Name="CardSurface" Background="#1C2533" BorderBrush="#30465F" BorderThickness="1" CornerRadius="4" Height="34">
+                                    <Border x:Name="CardSurface" Background="#1C2533" BorderBrush="#30465F" BorderThickness="1" CornerRadius="4" Height="42">
                                         <ContentPresenter/>
                                     </Border>
                                     <ControlTemplate.Triggers>
@@ -112,21 +118,38 @@
                 </ListBox.ItemContainerStyle>
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <Grid>
+                        <Grid ClipToBounds="True" ToolTipService.InitialShowDelay="150"
+                              ToolTipService.BetweenShowDelay="0" ToolTipService.ShowDuration="30000">
+                            <Grid.ToolTip>
+                                <ToolTip Placement="Left" HorizontalOffset="-8" Background="Transparent" BorderThickness="0"
+                                         Padding="0" HasDropShadow="True"
+                                         DataContext="{Binding PlacementTarget.DataContext.Card, RelativeSource={RelativeSource Self}}">
+                                    <tooltips:CardTooltip/>
+                                </ToolTip>
+                            </Grid.ToolTip>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="34"/>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <Border Background="#2A4568">
-                                <TextBlock Text="{Binding Cost}" FontWeight="SemiBold" Foreground="#D7E8FF"
+                            <Image Grid.ColumnSpan="3" Source="{Binding Asset}" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality"/>
+                            <Rectangle Grid.ColumnSpan="3">
+                                <Rectangle.Fill>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                        <GradientStop Color="#F0121721" Offset="0"/>
+                                        <GradientStop Color="#D0121721" Offset="0.55"/>
+                                        <GradientStop Color="#55121721" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Rectangle.Fill>
+                            </Rectangle>
+                            <Border Grid.Column="0" Background="#D42A4568">
+                                <TextBlock Text="{Binding Card.Cost}" FontWeight="SemiBold" Foreground="#D7E8FF"
                                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
-                            <TextBlock Grid.Column="1" Text="{Binding LocalizedName}" FontWeight="SemiBold" Margin="10,0"
-                                       TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Foreground="#EDF2FA"
-                                       ToolTip="{Binding LocalizedName}"/>
-                            <TextBlock Grid.Column="2" Margin="0,0,10,0" VerticalAlignment="Center" Foreground="#A3B0C4">
-                                <Run Text="×"/><Run Text="{Binding Count, Mode=OneWay}"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Card.LocalizedName}" FontWeight="SemiBold" Margin="10,0"
+                                       TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Foreground="#EDF2FA"/>
+                            <TextBlock Grid.Column="2" Margin="0,0,10,0" VerticalAlignment="Center" Foreground="#EDF2FA" FontWeight="SemiBold">
+                                <Run Text="×"/><Run Text="{Binding Card.Count, Mode=OneWay}"/>
                             </TextBlock>
                         </Grid>
                     </DataTemplate>

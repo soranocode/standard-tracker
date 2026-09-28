@@ -40,6 +40,27 @@ class Smoke {
             if(Hearthstone_Deck_Tracker.Stats.DeckStatsList.Instance.DeckStats.Count != 0) throw new Exception("Stats are not empty");
             ((Hearthstone_Deck_Tracker.FlyoutControls.OptionsMain)window.FindName("Options")).Load(Core.Game);
             window.UpdateLayout();
+            var deckPicker = (DeckPicker)window.FindName("DeckPickerList");
+            var addDeckButton = deckPicker.FindName("LibraryAddDeck") as Button;
+            if(addDeckButton == null || addDeckButton.Content == null || addDeckButton.Visibility != Visibility.Visible)
+                throw new Exception("Deck-library add button is missing");
+            var deckCodeDialog = new Hearthstone_Deck_Tracker.Windows.DeckCodeImportWindow();
+            if(deckCodeDialog.Title != "Вставьте код колоды" || !(deckCodeDialog.FindName("DeckCodeInput") is TextBox))
+                throw new Exception("Deck-code import dialog did not load");
+            deckCodeDialog.Close();
+            const string sampleCode = "AAECAQcC69YHstgHDuPmBqr8Bqv8BqWFB+iHB9KXB7etB+yyB7XAB5XCB5vCB5zCB6ngB/vgBwAA";
+            var codeUtility = typeof(Deck).Assembly.GetType("Hearthstone_Deck_Tracker.Hearthstone.DeckCodeUtility");
+            var parse = codeUtility.GetMethod("Import", BindingFlags.Static | BindingFlags.Public);
+            var namedDeck = (Deck)parse.Invoke(null, new object[] { "### Dragon Warrior " + sampleCode + " ### You can view this deck at https://www.hsguru.com/deck/41753794" });
+            if(namedDeck.Name != "Dragon Warrior" || namedDeck.Class != "Warrior") throw new Exception("Deck title was not parsed");
+            var unnamedDeck = (Deck)parse.Invoke(null, new object[] { sampleCode });
+            if(unnamedDeck.Name != "Воин") throw new Exception("Unnamed deck did not use the class name");
+            var copy = codeUtility.GetMethod("CopyText", BindingFlags.Static | BindingFlags.Public);
+            var copiedDeckCode = (string)copy.Invoke(null, new object[] { namedDeck });
+            if(!copiedDeckCode.StartsWith("### Dragon Warrior\r\n"))
+                throw new Exception("Copied code has no library title");
+            if(((Deck)parse.Invoke(null, new object[] { copiedDeckCode })).Name != "Dragon Warrior")
+                throw new Exception("Copied deck code did not preserve its title on import");
             if(args.Length > 1) {
                 var picker = (DeckPicker)window.FindName("DeckPickerList");
                 var names = new[] { "Драконы на рассвете", "Ледяной контроль", "Темпо маг", "Контроль воин" };

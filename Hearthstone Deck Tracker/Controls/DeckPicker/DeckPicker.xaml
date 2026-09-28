@@ -99,7 +99,15 @@
       </ResourceDictionary>
     </DockPanel.Resources>
     <StackPanel DockPanel.Dock="Top" Margin="16,18,16,10">
-        <TextBlock Text="Библиотека колод" FontSize="22" FontWeight="SemiBold" Foreground="{DynamicResource TextBrush}"/>
+        <Grid>
+            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+            <TextBlock Text="Библиотека колод" FontSize="22" FontWeight="SemiBold" Foreground="{DynamicResource TextBrush}" VerticalAlignment="Center"/>
+            <Button x:Name="LibraryAddDeck" Grid.Column="1" Style="{StaticResource STButton}"
+                    Width="34" Height="34" Padding="0" ToolTip="Добавить колоду по коду" Click="LibraryAddDeck_OnClick">
+                <Path Width="16" Height="16" Data="M8,2 L8,14 M2,8 L14,8" Stroke="#EDF2FA" StrokeThickness="2"
+                      StrokeStartLineCap="Round" StrokeEndLineCap="Round" Stretch="None"/>
+            </Button>
+        </Grid>
         <TextBlock x:Name="LibraryCount" Text="Ваши колоды · Standard" Foreground="{DynamicResource GrayTextColorBrush}" Margin="0,4,0,16"/>
         <TextBox x:Name="LibrarySearch" Style="{StaticResource STSearch}" Tag="Поиск колоды, класса, архетипа" TextChanged="LibrarySearch_OnTextChanged"
                  controls1:TextBoxHelper.Watermark="Найти колоду, класс, архетип или тег"/>
@@ -385,9 +393,16 @@
             <DataTemplate>
                 <Grid>
                     <Grid.ColumnDefinitions><ColumnDefinition Width="36"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                    <Border Width="36" Height="40" CornerRadius="8" Background="Transparent" VerticalAlignment="Top">
-                        <Image Source="{Binding Deck.ClassImage}" Width="32" Height="32" RenderOptions.BitmapScalingMode="HighQuality"/>
-                    </Border>
+                    <StackPanel Grid.Column="0" Width="36" VerticalAlignment="Top">
+                        <Border Width="36" Height="36" CornerRadius="8" Background="Transparent">
+                            <Image Source="{Binding Deck.ClassImage}" Width="32" Height="32" RenderOptions.BitmapScalingMode="HighQuality"/>
+                        </Border>
+                        <Button Width="28" Height="25" Padding="0" Margin="0,3,0,0" Style="{StaticResource STButton}"
+                                ToolTip="Скопировать код колоды с названием" Click="CopyLibraryDeckCode_OnClick">
+                            <Path Width="14" Height="14" Data="M4,1 L12,1 L12,10 M1,4 L9,4 L9,13 L1,13 Z"
+                                  Stroke="#B4C8E2" StrokeThickness="1.5" Fill="Transparent" Stretch="Uniform"/>
+                        </Button>
+                    </StackPanel>
                     <StackPanel Grid.Column="1" Margin="8,0,12,0">
                         <TextBlock Text="{Binding Deck.NameAndVersion}" FontSize="15" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource TextBrush}" ToolTip="{Binding Deck.NameAndVersion}"/>
                         <Button Content="{Binding Archetype}" Click="SetArchetype_OnClick" HorizontalAlignment="Left" Padding="7,2" Margin="0,5,0,10" Foreground="#B4C8E2" FontSize="11" ToolTip="Изменить архетип колоды"/>
@@ -403,7 +418,7 @@
     </ListView>
         <StackPanel x:Name="LibraryEmpty" Visibility="Collapsed" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="24" IsHitTestVisible="False">
             <TextBlock Text="Здесь пока нет колод" FontSize="18" FontWeight="SemiBold" TextAlignment="Center" Foreground="{DynamicResource TextBrush}"/>
-            <TextBlock Text="Добавьте колоду через меню «Импорт» или измените фильтры." TextWrapping="Wrap" TextAlignment="Center" MaxWidth="340" Margin="0,12,0,0" Foreground="{DynamicResource GrayTextColorBrush}"/>
+            <TextBlock Text="Нажмите «+» рядом с заголовком или измените фильтры." TextWrapping="Wrap" TextAlignment="Center" MaxWidth="340" Margin="0,12,0,0" Foreground="{DynamicResource GrayTextColorBrush}"/>
         </StackPanel>
     </Grid>
 

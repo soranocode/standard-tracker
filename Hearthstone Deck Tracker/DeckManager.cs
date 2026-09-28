@@ -398,6 +398,85 @@ namespace Hearthstone_Deck_Tracker
 				return card;
 			}).WhereNotNull().ToList())).ToList() ?? new List<Sideboard>();
 
+		internal static void AutoSelectStandardMatchDeck(IGame game)
+		{
+			if(!Config.Instance.AutoDeckDetection || !StandardMode.IsSupported(game.CurrentFormatType, game.CurrentGameMode))
+				return;
+			try
+			{
+				var hsDeck = game.CurrentSelectedDeck;
+				if(hsDeck == null)
+				{
+					var selectedId = Reflection.Client.GetDeckPickerState()?.SelectedDeck;
+					if(selectedId > 0)
+					{
+						hsDeck = Reflection.Client.GetDecks()?.FirstOrDefault(d => d.Id == selectedId);
+						game.CurrentSelectedDeck = hsDeck;
+					}
+				}
+				if(hsDeck == null || hsDeck.Id <= 0)
+				{
+					Log.Info("No selected Hearthstone deck was captured for this Standard match");
+					return;
+				}
+				if(!DeckImporter.IsValidDeck(hsDeck))
+				{
+					Log.Warn($"Selected Hearthstone deck {hsDeck.Id} is incomplete or not Standard legal");
+					return;
+				}
+
+				var selected = FindMatchingStandardDeck(DeckList.Instance.Decks, hsDeck, DeckList.Instance.ActiveDeck);
+				if(selected == null)
+				{
+					var imported = DeckImporter.GetImportedDecks(new[] { hsDeck }, DeckList.Instance.Decks);
+					if(imported.Count > 0)
+					{
+						var saved = ImportDecksTo(DeckList.Instance.Decks, imported, false, true, true);
+						if(saved.Count > 0)
+						{
+							DeckList.Save();
+							selected = saved[0];
+							Log.Info($"Imported selected Standard deck from local Hearthstone files: {selected.Name}");
+						}
+					}
+				}
+				if(selected == null)
+				{
+					Log.Warn($"Could not load selected Standard deck {hsDeck.Id}");
+					return;
+				}
+				if(!ReferenceEquals(DeckList.Instance.ActiveDeck, selected))
+				{
+					Log.Info($"Using selected Standard deck: {selected.Name}");
+					DeckList.Instance.ActiveDeck = selected;
+				}
+			}
+			catch(Exception e)
+			{
+				Log.Error(e);
+			}
+		}
+
+		internal static Deck? FindMatchingStandardDeck(IEnumerable<Deck> decks, HearthMirror.Objects.Deck hsDeck, Deck? activeDeck = null)
+		{
+			var heroClass = new Card(hsDeck.Hero).PlayerClass;
+			var match = decks.Where(d => !d.Archived
+											&& string.Equals(d.Class, heroClass, StringComparison.OrdinalIgnoreCase))
+				.SelectMany(d => d.VersionsIncludingSelf.Select(d.GetVersion)
+					.Where(v => v.StandardViable && v.Cards.Sum(c => c.Count) == hsDeck.Cards.Sum(c => c.Count)
+						&& MatchesMirrorDeck(v, hsDeck))
+					.Select(v => new { Deck = d, Version = v }))
+				.OrderByDescending(x => x.Deck.HsId == hsDeck.Id)
+				.ThenByDescending(x => ReferenceEquals(x.Deck, activeDeck))
+				.ThenByDescending(x => x.Version.Version == x.Deck.SelectedVersion)
+				.FirstOrDefault();
+			if(match == null)
+				return null;
+			if(match.Deck.SelectedVersion != match.Version.Version)
+				match.Deck.SelectVersion(match.Version);
+			return match.Deck;
+		}
+
 		private static bool MatchesMirrorDeck(Deck deck, HearthMirror.Objects.Deck mirrorDeck)
 		{
 			if(!deck.Cards.All(c => mirrorDeck.Cards.Any(c2 => c.Id == c2.Id && c.Count == c2.Count)))

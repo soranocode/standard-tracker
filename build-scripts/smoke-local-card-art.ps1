@@ -1,11 +1,13 @@
 # Optional integration check: requires Hearthstone, Python, UnityPy, and Pillow.
 param(
     [string]$GameDir = 'C:\Program Files (x86)\Hearthstone',
-    [string]$CardId = 'CORE_EX1_011'
+    [string]$CardId = 'CORE_EX1_011',
+    [ValidateSet('Debug', 'Release')]
+    [string]$Configuration = 'Debug'
 )
 $ErrorActionPreference = 'Stop'
 $repoPath = Split-Path -Parent $PSScriptRoot
-$binPath = Join-Path $repoPath 'Hearthstone Deck Tracker/bin/x64/Debug'
+$binPath = Join-Path $repoPath "Hearthstone Deck Tracker/bin/x64/$Configuration"
 $framework = Join-Path $env:WINDIR 'Microsoft.NET/Framework64/v4.0.30319'
 $sourcePath = Join-Path $repoPath '.smoke-profile/local-card-art-smoke.cs'
 $output = Join-Path $binPath 'LocalCardArt.Smoke.exe'

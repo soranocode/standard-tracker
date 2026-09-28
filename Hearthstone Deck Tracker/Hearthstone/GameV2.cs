@@ -86,6 +86,13 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 			DeckList.Instance.ActiveDeckChanged += deck =>
 			{
 				IsUsingPremade = deck != null;
+				if(_selectingStandardMatchDeck)
+				{
+					// Keep the current game state; replaying logs here can skip the guarded game-start event.
+					Core.UpdatePlayerCards(true);
+					Core.Windows.CapturableOverlay?.UpdateContentVisibility();
+					return;
+				}
 
 				// Only need to reset if currently in a menu.
 				// This effectively restarts the log reader from the beginning of the game.
@@ -213,6 +220,7 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 		}
 
 		private FormatType _currentFormatType = FormatType.FT_UNKNOWN;
+		private bool _selectingStandardMatchDeck;
 		public FormatType CurrentFormatType => _currentFormatType;
 
 		public Format? CurrentFormat => HearthDbConverter.GetFormat(CurrentFormatType);
@@ -430,6 +438,22 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 
 			// both live on GameMgr, so the format is readable in the same window the game type was
 			_currentFormatType = (FormatType)HearthMirror.Reflection.Client.GetFormat();
+			for(var attempt = 0; attempt < 10 && _currentFormatType == FormatType.FT_UNKNOWN && IsConstructedMatch && !IsInMenu; attempt++)
+			{
+				await Task.Delay(200);
+				_currentFormatType = (FormatType)HearthMirror.Reflection.Client.GetFormat();
+			}
+			if(IsInMenu)
+				return;
+			_selectingStandardMatchDeck = true;
+			try
+			{
+				DeckManager.AutoSelectStandardMatchDeck(this);
+			}
+			finally
+			{
+				_selectingStandardMatchDeck = false;
+			}
 		}
 
 		internal void CacheSpectator() => _spectator = HearthMirror.Reflection.Client.IsSpectating();

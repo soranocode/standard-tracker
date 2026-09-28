@@ -1,4 +1,57 @@
-# Standard Tracker — checkpoint 2026-09-23
+# Standard Tracker — project notes
+
+## 2026-09-28 — M.O.T.H.E.R. cost preview
+
+During the Battlecry target selection for M.O.T.H.E.R. (`BE_036`), the game overlay
+shows green projected mana costs over affected hand cards. Moving across targets
+recalculates the selected card at -5 and each neighbor at one less reduction per
+step, down to -1. Displayed costs never fall below zero. The preview disappears
+after a target click, right click,
+leaving the game, or a timeout. The target-selection phase is inferred from mouse
+input and hand positions because the current game integration does not expose it
+directly. A live match is still needed to validate this timing and badge placement.
+
+## 2026-09-28 — Card language and hover images
+
+Selected-deck cards use the tracker's original hover tooltip and finished card
+renders from HearthstoneJSON. The ruRU CardDefs data from
+`https://api.hearthstonejson.com/v1/latest/CardDefs.ruRU.xml`
+(build 253216, retrieved 2026-09-28) is bundled as a compressed offline file and
+loaded with HearthDb after the base data. Newer cards missing from that snapshot
+still use the bundled English text instead of showing an empty description.
+
+
+## 2026-09-28 — Deck-code names, copying, and art in the selected deck
+
+Import now extracts the base64 deck code and `###` title separately, ignoring
+trailing source links. A bare code gets the Russian class name. Reimporting a
+matching deck repairs an erroneous source-link name. The selected-deck code row
+and a small library action copy `### <saved deck name>` plus the code. The selected
+deck list now displays cached/local-game card tiles under a readable gradient and
+starts extraction for the whole deck; missing tiles retain placeholders. The `+`
+uses a centered vector icon.
+
+## 2026-09-28 — Library deck-code import
+
+The `+` beside the deck-library heading opens a compact deck-code dialog. Valid
+Standard codes are decoded locally and saved in the library. Importing identical
+cards and sideboards again selects the existing deck (including an older version)
+instead of creating a duplicate; archived matches are restored. Library search and
+favorite filters are cleared to reveal it. At match start the selected game deck is
+matched by class and cards, with sideboards compared when game memory includes them.
+The game provides deck ID and contents, not the pasted deck-code text itself.
+
+## 2026-09-28 — Standard match deck selection
+
+At the start of a Standard Ranked, Casual, or Friendly match, the selected deck
+captured from Hearthstone is matched to a local deck by its cards, including saved
+versions. If no local deck matches, the selected Standard deck is imported from
+the local game data. This avoids depending on a Hearthstone deck ID for decks
+previously imported by deck code. Release x64 build, WPF smoke, three matching
+tests, and three isolation tests passed. A live match is still needed to verify
+the game-memory data and overlay timing end to end.
+
+## Earlier checkpoint — 2026-09-23
 
 Paused at user request while waiting for token limits to reset. Branch standard-tracker.
 Remote: https://github.com/soranocode/standard-tracker.
@@ -43,9 +96,9 @@ UNFINISHED (do not call this a finished release):
 - Audit auxiliary player/opponent/timer windows and remaining scene handler side effects.
 - Remove dormant HSReplay/BobsBuddy/Sentry/Squirrel binaries and callers together; references
   remain for retained WPF models even though cloud access is disabled.
-- Deck-list tiles now come from local Hearthstone Unity assets when Python, UnityPy,
-  and Pillow are available. Full rendered cards and language presentation still need
-  offline handling; downloads remain disabled.
+- Deck-list tiles come from local Hearthstone Unity assets when Python, UnityPy,
+  and Pillow are available. Full rendered cards in hover previews download
+  from HearthstoneJSON on demand and are cached; other upstream downloads stay disabled.
 - Pin/provision ignored lib/localizations for fresh checkout.
 - Legacy packaging/release scripts and GitHub workflows still target HearthSim. DO NOT use
   them unchanged. Auto-review rejected renaming workflows to disable them, requiring explicit

@@ -425,6 +425,7 @@ namespace Hearthstone_Deck_Tracker.Windows
 			while(_runInteractivityUpdates)
 			{
 				UpdateHoverable();
+				UpdateMotherCostPreview();
 				await Task.Delay(sixtyHz);
 			}
 		}

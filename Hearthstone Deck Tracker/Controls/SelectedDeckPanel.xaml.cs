@@ -8,9 +8,10 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using HearthDb.Deckstrings;
+using Hearthstone_Deck_Tracker.Controls.Overlay;
 using Hearthstone_Deck_Tracker.Hearthstone;
 using Hearthstone_Deck_Tracker.Utility;
+using Hearthstone_Deck_Tracker.Utility.Assets;
 using Hearthstone_Deck_Tracker.Utility.Extensions;
 using CardType = HearthDb.Enums.CardType;
 using TrackerDeck = Hearthstone_Deck_Tracker.Hearthstone.Deck;
@@ -25,6 +26,16 @@ namespace Hearthstone_Deck_Tracker.Controls
 		{
 			InitializeComponent();
 			DataContext = ViewModel;
+			Loaded += (_, _) =>
+			{
+				CardDefsManager.CardsChanged += OnCardDefsChanged;
+				Helper.CardLanguageChanged += OnCardDefsChanged;
+			};
+			Unloaded += (_, _) =>
+			{
+				CardDefsManager.CardsChanged -= OnCardDefsChanged;
+				Helper.CardLanguageChanged -= OnCardDefsChanged;
+			};
 			// Keep the compact chart treatment local to this panel.
 			for(var i = 0; i < 8; i++)
 			{
@@ -51,6 +62,25 @@ namespace Hearthstone_Deck_Tracker.Controls
 		}
 
 		public void UpdateValues() => ManaCurveMyDecks.UpdateValues();
+
+		private void OnCardDefsChanged()
+		{
+			_ = Dispatcher.BeginInvoke(new Action(ViewModel.RefreshCardLanguage));
+		}
+
+		private void CopyDeckCode_OnClick(object sender, RoutedEventArgs e)
+		{
+			var copyText = ViewModel.DeckCodeCopyText;
+			if(!string.IsNullOrEmpty(copyText))
+				Clipboard.SetText(copyText);
+		}
+
+	}
+
+	public class SelectedDeckCardRow : CardAssetViewModel
+	{
+		public new Hearthstone.Card Card => base.Card!;
+		public SelectedDeckCardRow(Hearthstone.Card card) : base(card, CardAssetType.Tile) { }
 	}
 
 	public class SelectedDeckPanelViewModel : INotifyPropertyChanged
@@ -58,11 +88,11 @@ namespace Hearthstone_Deck_Tracker.Controls
 		private TrackerDeck? _deck;
 		private string _searchText = "";
 		private string _typeFilter = "all";
-		private List<Hearthstone.Card> _allCards = new();
+		private List<SelectedDeckCardRow> _allCards = new();
 
 		public event PropertyChangedEventHandler? PropertyChanged;
 
-		public ObservableCollection<Hearthstone.Card> VisibleCards { get; } = new();
+		public ObservableCollection<SelectedDeckCardRow> VisibleCards { get; } = new();
 
 		public bool HasDeck => _deck != null;
 		public bool HasCards => VisibleCards.Count > 0;
@@ -82,8 +112,7 @@ namespace Hearthstone_Deck_Tracker.Controls
 					return "";
 				try
 				{
-					var hearthDbDeck = HearthDbConverter.ToHearthDbDeck(_deck.GetSelectedDeckVersion());
-					return hearthDbDeck == null ? "" : DeckSerializer.Serialize(hearthDbDeck, false);
+					return DeckCodeUtility.Code(_deck);
 				}
 				catch
 				{
@@ -92,9 +121,11 @@ namespace Hearthstone_Deck_Tracker.Controls
 			}
 		}
 
-		public int TotalCards => _allCards.Sum(c => c.Count);
-		public int MinionCards => _allCards.Where(c => c.TypeEnum == CardType.MINION).Sum(c => c.Count);
-		public int SpellCards => _allCards.Where(c => c.TypeEnum == CardType.SPELL).Sum(c => c.Count);
+		public string DeckCodeCopyText => _deck == null ? "" : DeckCodeUtility.CopyText(_deck);
+
+		public int TotalCards => _allCards.Sum(c => c.Card.Count);
+		public int MinionCards => _allCards.Where(c => c.Card.TypeEnum == CardType.MINION).Sum(c => c.Card.Count);
+		public int SpellCards => _allCards.Where(c => c.Card.TypeEnum == CardType.SPELL).Sum(c => c.Card.Count);
 		public IEnumerable<int> ManaCounts => Enumerable.Range(0, 8)
 			.Select(cost => _deck?.GetSelectedDeckVersion().Cards.Where(c => Math.Min(c.Cost, 7) == cost).Sum(c => c.Count) ?? 0);
 
@@ -104,7 +135,7 @@ namespace Hearthstone_Deck_Tracker.Controls
 			{
 				if(_deck == null)
 					return "";
-				var shown = VisibleCards.Sum(c => c.Count);
+				var shown = VisibleCards.Sum(c => c.Card.Count);
 				return $"Показано {shown} из {TotalCards}";
 			}
 		}
@@ -157,16 +188,32 @@ namespace Hearthstone_Deck_Tracker.Controls
 			}
 		}
 
+		public void RefreshCardLanguage()
+		{
+			_allCards = CreateRows(_deck);
+			RefreshVisible();
+		}
+
+		private static List<SelectedDeckCardRow> CreateRows(TrackerDeck? deck)
+		{
+			if(deck == null)
+				return new List<SelectedDeckCardRow>();
+			return Helper.ResolveZilliax3000(deck.GetSelectedDeckVersion().Cards, deck.GetSelectedDeckVersion().Sideboards)
+				.ToSortedCardList()
+				// Deck objects can predate a card-data reload. Resolve each card against the current HearthDb map.
+				.Select(card => new SelectedDeckCardRow(new Hearthstone.Card(card.Id) { Count = card.Count }))
+				.ToList();
+		}
+
 		public void SetDeck(TrackerDeck? deck)
 		{
 			_deck = deck;
 			_searchText = "";
 			_typeFilter = "all";
-			_allCards = deck == null
-				? new List<Hearthstone.Card>()
-				: Helper.ResolveZilliax3000(deck.GetSelectedDeckVersion().Cards, deck.GetSelectedDeckVersion().Sideboards)
-					.ToSortedCardList()
-					.ToList();
+			_allCards = CreateRows(deck);
+			// Start local extraction for the whole deck so rows below the fold are ready when scrolled into view.
+			foreach(var row in _allCards)
+				_ = row.Asset;
 			RefreshVisible();
 			OnPropertyChanged(nameof(HasDeck));
 			OnPropertyChanged(nameof(DeckName));
@@ -175,6 +222,7 @@ namespace Hearthstone_Deck_Tracker.Controls
 			OnPropertyChanged(nameof(ClassImage));
 			OnPropertyChanged(nameof(ClassColorBrush));
 			OnPropertyChanged(nameof(DeckCode));
+			OnPropertyChanged(nameof(DeckCodeCopyText));
 			OnPropertyChanged(nameof(TotalCards));
 			OnPropertyChanged(nameof(MinionCards));
 			OnPropertyChanged(nameof(SpellCards));
@@ -199,15 +247,15 @@ namespace Hearthstone_Deck_Tracker.Controls
 		private void RefreshVisible()
 		{
 			VisibleCards.Clear();
-			IEnumerable<Hearthstone.Card> query = _allCards;
+			IEnumerable<SelectedDeckCardRow> query = _allCards;
 			if(_typeFilter == "minion")
-				query = query.Where(c => c.TypeEnum == CardType.MINION);
+				query = query.Where(c => c.Card.TypeEnum == CardType.MINION);
 			else if(_typeFilter == "spell")
-				query = query.Where(c => c.TypeEnum == CardType.SPELL);
+				query = query.Where(c => c.Card.TypeEnum == CardType.SPELL);
 
 			var text = (_searchText ?? "").Trim();
 			if(text.Length > 0)
-				query = query.Where(c => (c.LocalizedName ?? c.Name ?? "").IndexOf(text, StringComparison.OrdinalIgnoreCase) >= 0);
+				query = query.Where(c => (c.Card.LocalizedName ?? c.Card.Name ?? "").IndexOf(text, StringComparison.OrdinalIgnoreCase) >= 0);
 
 			foreach(var card in query)
 				VisibleCards.Add(card);
