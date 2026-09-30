@@ -380,7 +380,7 @@ namespace Hearthstone_Deck_Tracker
 
 		public static void AutoImportArena(ArenaInfo? info = null)
 		{
-			// Only manually imported Standard decks are retained.
+			// Arena is not supported.
 		}
 
 		public static void ImportArenaDeck(HearthMirror.Objects.Deck deck)
@@ -398,75 +398,87 @@ namespace Hearthstone_Deck_Tracker
 				return card;
 			}).WhereNotNull().ToList())).ToList() ?? new List<Sideboard>();
 
-		internal static void AutoSelectStandardMatchDeck(IGame game)
+		internal static bool AutoSelectStandardMatchDeck(IGame game, bool inQueue = false)
 		{
-			if(!Config.Instance.AutoDeckDetection || !StandardMode.IsSupported(game.CurrentFormatType, game.CurrentGameMode))
-				return;
+			if(!Config.Instance.AutoDeckDetection
+				|| (!inQueue && !StandardMode.IsSupported(game.CurrentFormatType, game.CurrentGameMode)))
+				return false;
 			try
 			{
-				var hsDeck = game.CurrentSelectedDeck;
+				var hsDeck = new ConstructedDeckReader().Read(inQueue ? null : game.CurrentSelectedDeck,
+					game.Player.OriginalClass, game.Player.RevealedCards);
 				if(hsDeck == null)
-				{
-					var selectedId = Reflection.Client.GetDeckPickerState()?.SelectedDeck;
-					if(selectedId > 0)
-					{
-						hsDeck = Reflection.Client.GetDecks()?.FirstOrDefault(d => d.Id == selectedId);
-						game.CurrentSelectedDeck = hsDeck;
-					}
-				}
-				if(hsDeck == null || hsDeck.Id <= 0)
-				{
-					Log.Info("No selected Hearthstone deck was captured for this Standard match");
-					return;
-				}
-				if(!DeckImporter.IsValidDeck(hsDeck))
-				{
-					Log.Warn($"Selected Hearthstone deck {hsDeck.Id} is incomplete or not Standard legal");
-					return;
-				}
-
-				var selected = FindMatchingStandardDeck(DeckList.Instance.Decks, hsDeck, DeckList.Instance.ActiveDeck);
+					return false;
+				var selected = GetOrImportConstructedDeck(DeckList.Instance.Decks, hsDeck, DeckList.Instance.ActiveDeck);
 				if(selected == null)
 				{
-					var imported = DeckImporter.GetImportedDecks(new[] { hsDeck }, DeckList.Instance.Decks);
-					if(imported.Count > 0)
-					{
-						var saved = ImportDecksTo(DeckList.Instance.Decks, imported, false, true, true);
-						if(saved.Count > 0)
-						{
-							DeckList.Save();
-							selected = saved[0];
-							Log.Info($"Imported selected Standard deck from local Hearthstone files: {selected.Name}");
-						}
-					}
+					Log.Warn($"Could not load selected constructed deck {hsDeck.Id}");
+					return false;
 				}
-				if(selected == null)
-				{
-					Log.Warn($"Could not load selected Standard deck {hsDeck.Id}");
-					return;
-				}
+				DeckList.Save();
+				BindConstructedDeckToGame(game, selected, hsDeck);
 				if(!ReferenceEquals(DeckList.Instance.ActiveDeck, selected))
 				{
-					Log.Info($"Using selected Standard deck: {selected.Name}");
+					Log.Info($"Using selected constructed deck: {selected.Name}");
 					DeckList.Instance.ActiveDeck = selected;
 				}
+				Core.MainWindow.DeckPickerList.RevealDeck(selected);
+				return true;
 			}
 			catch(Exception e)
 			{
 				Log.Error(e);
+				return false;
 			}
 		}
 
-		internal static Deck? FindMatchingStandardDeck(IEnumerable<Deck> decks, HearthMirror.Objects.Deck hsDeck, Deck? activeDeck = null)
+		internal static Deck? GetOrImportConstructedDeck(IList<Deck> decks, HearthMirror.Objects.Deck hsDeck, Deck? activeDeck = null)
+		{
+			var selected = FindMatchingStandardDeck(decks, hsDeck, activeDeck, includeArchived: true);
+			if(selected == null)
+			{
+				// The game can omit sideboards on its first read. The import model expects a dictionary.
+				hsDeck.Sideboards ??= new Dictionary<string, List<HearthMirror.Objects.Card>>();
+				var imported = DeckImporter.GetImportedDecks(new[] { hsDeck }, decks);
+				ImportDecksTo(decks, imported, false, true, true);
+				selected = FindMatchingStandardDeck(decks, hsDeck, activeDeck, includeArchived: true);
+			}
+			if(selected != null)
+			{
+				selected.Archived = false;
+				selected.HsId = hsDeck.Id;
+			}
+			return selected;
+		}
+
+		internal static void BindConstructedDeckToGame(IGame game, Deck selected, HearthMirror.Objects.Deck hsDeck)
+		{
+			game.CurrentSelectedDeck = hsDeck;
+			game.IsUsingPremade = true;
+			if(!game.IsInMenu && game.CurrentGameStats is { } stats)
+			{
+				stats.DeckId = selected.DeckId;
+				stats.HsDeckId = hsDeck.Id;
+				stats.PlayerDeckVersion = selected.SelectedVersion;
+				stats.SetPlayerCards(hsDeck, new List<Card>());
+				if(hsDeck.Sideboards?.Count > 0)
+					stats.SetPlayerSideboardsFromDict(hsDeck.Sideboards);
+				else
+					stats.PlayerSideboards = selected.GetSelectedDeckVersion().Sideboards.ToList();
+			}
+		}
+
+		internal static Deck? FindMatchingStandardDeck(IEnumerable<Deck> decks, HearthMirror.Objects.Deck hsDeck, Deck? activeDeck = null, bool includeArchived = false)
 		{
 			var heroClass = new Card(hsDeck.Hero).PlayerClass;
-			var match = decks.Where(d => !d.Archived
+			var match = decks.Where(d => (!d.Archived || includeArchived)
 											&& string.Equals(d.Class, heroClass, StringComparison.OrdinalIgnoreCase))
 				.SelectMany(d => d.VersionsIncludingSelf.Select(d.GetVersion)
-					.Where(v => v.StandardViable && v.Cards.Sum(c => c.Count) == hsDeck.Cards.Sum(c => c.Count)
+					.Where(v => v.IsConstructedDeck && v.Cards.Sum(c => c.Count) == hsDeck.Cards.Sum(c => c.Count)
 						&& MatchesMirrorDeck(v, hsDeck))
 					.Select(v => new { Deck = d, Version = v }))
-				.OrderByDescending(x => x.Deck.HsId == hsDeck.Id)
+				.OrderBy(x => x.Deck.Archived)
+				.ThenByDescending(x => x.Deck.HsId == hsDeck.Id)
 				.ThenByDescending(x => ReferenceEquals(x.Deck, activeDeck))
 				.ThenByDescending(x => x.Version.Version == x.Deck.SelectedVersion)
 				.FirstOrDefault();
@@ -596,7 +608,7 @@ namespace Hearthstone_Deck_Tracker
 
 		public static void SaveDeck(Deck deck, bool invokeApi = true)
 		{
-			if(!deck.StandardViable)
+			if(!deck.IsConstructedDeck)
 				return;
 			deck.Edited();
 			DeckList.Instance.Decks.Add(deck);
@@ -608,7 +620,7 @@ namespace Hearthstone_Deck_Tracker
 
 		public static void SaveDeck(Deck baseDeck, Deck newVersion, bool overwriteCurrent = false)
 		{
-			if(!newVersion.StandardViable)
+			if(!newVersion.IsConstructedDeck)
 				return;
 			DeckList.Instance.Decks.Remove(baseDeck);
 			baseDeck.Versions?.Clear();
@@ -823,8 +835,6 @@ namespace Hearthstone_Deck_Tracker
 			else if(mode != GameMode.None)
 			{
 				filtered = filtered.Where(x => !x.IsArenaDeck).ToList();
-				if(format == Format.Standard)
-					filtered = filtered.Where(x => x.StandardViable).ToList();
 			}
 			return filtered;
 		}

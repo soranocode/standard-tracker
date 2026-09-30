@@ -410,7 +410,9 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 
 		public Visibility WildIndicatorVisibility => IsArenaDeck || !IsWildDeck ? Visibility.Collapsed : Visibility.Visible;
 
-		public bool StandardViable => !IsArenaDeck && !IsDungeonDeck && !IsDuelsDeck && !IsBrawlDeck
+		public bool IsConstructedDeck => !IsArenaDeck && !IsDungeonDeck && !IsDuelsDeck && !IsBrawlDeck;
+
+		public bool StandardViable => IsConstructedDeck
 			&& !IsWildDeck && !IsClassicDeck && !IsTwistDeck;
 
 		public bool IsWildDeck => GetSelectedDeckVersion().Cards.Any(x => Helper.WildOnlySets.Contains(x.Set));

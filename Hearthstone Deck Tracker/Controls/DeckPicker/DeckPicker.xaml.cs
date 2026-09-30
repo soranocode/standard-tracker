@@ -91,9 +91,15 @@ namespace Hearthstone_Deck_Tracker.Controls.DeckPicker
 			}
 			DeckList.Save();
 
-			// Reveal the saved deck even if the current library filters hid its class or name.
+			RevealDeck(deck);
+		}
+
+		public void RevealDeck(Deck deck)
+		{
+			// Reveal an imported deck even if library filters hid its class or name.
 			CloseSearchField();
 			LibrarySearch.Clear();
+			_favoritesOnly = false;
 			FavoritesFilter.IsChecked = false;
 			SelectDeckAndAppropriateView(deck, true);
 		}
@@ -259,7 +265,7 @@ namespace Hearthstone_Deck_Tracker.Controls.DeckPicker
 
 		public Visibility VisibilitySearchBar => SearchBarVisibile ? Visible : Collapsed;
 
-		public ObservableCollection<DeckType> DeckTypeItems => _deckTypeItems ??= new ObservableCollection<DeckType> { DeckType.Standard };
+		public ObservableCollection<DeckType> DeckTypeItems => _deckTypeItems ??= new ObservableCollection<DeckType> { DeckType.All };
 
 		public Deck? ActiveDeck => DeckList.Instance.ActiveDeck;
 
@@ -470,7 +476,7 @@ namespace Hearthstone_Deck_Tracker.Controls.DeckPicker
 				}
 			}
 			Sort();
-			LibraryCount.Text = $"{DisplayedDecks.Count} колод · Standard";
+			LibraryCount.Text = $"{DisplayedDecks.Count} колод · Standard / Wild";
 			LibraryEmpty.Visibility = DisplayedDecks.Count == 0 ? Visible : Collapsed;
 			if(selectedDeck != null && reselectActiveDeck && decks.Contains(selectedDeck))
 				SelectDeck(selectedDeck);
@@ -536,33 +542,10 @@ namespace Hearthstone_Deck_Tracker.Controls.DeckPicker
 			}
 		}
 
-		private bool IsConstructedDeck(Deck deck) => !deck.IsBrawlDeck && !deck.IsDungeonDeck && !deck.IsDuelsDeck && !deck.IsArenaDeck;
-
 		private bool DeckMatchesSelectedDeckType(Deck deck)
 		{
-			switch(Config.Instance.SelectedDeckPickerDeckType)
-			{
-				case DeckType.All:
-					return true;
-				case DeckType.Arena:
-					return deck.IsArenaDeck;
-				case DeckType.Dungeon:
-					return deck.IsDungeonDeck;
-				case DeckType.Duels:
-					return deck.IsDuelsDeck;
-				case DeckType.Brawl:
-					return deck.IsBrawlDeck;
-				case DeckType.Standard:
-					return IsConstructedDeck(deck) && deck.StandardViable;
-				case DeckType.Wild:
-					return IsConstructedDeck(deck) && !deck.IsClassicDeck && (Config.Instance.DeckPickerWildIncludesStandard || !deck.StandardViable);
-				case DeckType.Classic:
-					return IsConstructedDeck(deck) && deck.IsClassicDeck;
-				case DeckType.Twist:
-					return IsConstructedDeck(deck) && deck.IsTwistDeck;
-				default:
-					return false;
-			}
+			// Ignore legacy format filters: bundled legality data must not hide a deck.
+			return deck.IsConstructedDeck;
 		}
 
 		private void Sort(bool refresh = false)
@@ -637,28 +620,7 @@ namespace Hearthstone_Deck_Tracker.Controls.DeckPicker
 		public async void SelectDeckAndAppropriateView(Deck deck, bool forceUpdate = false)
 		{
 			ClearFromCache(deck);
-			if((DeckType?)ListViewDeckType.SelectedItem != DeckType.All)
-			{
-				if(deck.IsArenaDeck)
-					SelectDeckType(DeckType.Arena);
-				else if(deck.IsDungeonDeck)
-					SelectDeckType(DeckType.Dungeon);
-				else if(deck.IsDuelsDeck)
-					SelectDeckType(DeckType.Duels);
-				else if(deck.IsBrawlDeck)
-					SelectDeckType(DeckType.Brawl);
-				else if(IsConstructedDeck(deck) && (DeckType?)ListViewDeckType.SelectedItem != DeckType.Wild)
-				{
-					if(deck.StandardViable)
-						SelectDeckType(DeckType.Standard);
-					else if (deck.IsClassicDeck)
-						SelectDeckType(DeckType.Classic);
-					else if (deck.IsTwistDeck)
-						SelectDeckType(DeckType.Twist);
-					else
-						SelectDeckType(DeckType.Wild);
-				}
-			}
+			SelectDeckType(DeckType.All);
 			if(deck.Archived)
 				SelectClass(HeroClassAll.Archived);
 			else if(!SelectedClasses.Contains(HeroClassAll.All) && Enum.TryParse(deck.Class, out HeroClassAll deckClass) && !SelectedClasses.Contains(deckClass))
@@ -775,13 +737,13 @@ namespace Hearthstone_Deck_Tracker.Controls.DeckPicker
 
 		public void SelectDeckType(DeckType selectedDeckType, bool ignoreSelectionChange = false)
 		{
-			var index = DeckTypeItems.IndexOf(DeckType.Standard);
+			Config.Instance.SelectedDeckPickerDeckType = DeckType.All;
+			var index = DeckTypeItems.IndexOf(DeckType.All);
 			if(ListViewDeckType.SelectedIndex == index)
 				return;
 			if(ignoreSelectionChange)
 				_ignoreSelectionChange = true;
 			ListViewDeckType.SelectedIndex = index;
-			Config.Instance.SelectedDeckPickerDeckType = selectedDeckType;
 			if(ignoreSelectionChange)
 				_ignoreSelectionChange = false;
 		}

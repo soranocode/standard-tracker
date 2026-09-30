@@ -16,12 +16,12 @@ namespace HDTTests
 	public class StandardTrackerIsolationTests
 	{
 		[TestMethod]
-		public void OnlyConfirmedStandardQueuesAreSupported()
+		public void OnlyConfirmedStandardAndWildQueuesAreSupported()
 		{
 			foreach(FormatType format in Enum.GetValues(typeof(FormatType)))
 			foreach(GameMode mode in Enum.GetValues(typeof(GameMode)))
 			{
-				var expected = format == FormatType.FT_STANDARD
+				var expected = (format == FormatType.FT_STANDARD || format == FormatType.FT_WILD)
 					&& (mode == GameMode.Ranked || mode == GameMode.Casual || mode == GameMode.Friendly);
 				Assert.AreEqual(expected, StandardMode.IsSupported(format, mode), format + "/" + mode);
 			}

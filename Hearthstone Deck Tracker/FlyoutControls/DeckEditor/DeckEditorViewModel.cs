@@ -275,7 +275,7 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.DeckEditor
 
 		public ICommand SaveCommand => new Command(SaveDeck);
 
-		public bool CanSave => Errors == 0 && Deck.StandardViable;
+		public bool CanSave => Errors == 0 && Deck.IsConstructedDeck;
 
 		public event Action? DeckSaved;
 		private void SaveDeck()

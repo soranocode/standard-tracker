@@ -32,11 +32,6 @@ namespace Hearthstone_Deck_Tracker.Windows
 					ValidationMessage.Text = "Не удалось прочитать карты и класс из кода.";
 					return;
 				}
-				if(!deck.StandardViable)
-				{
-					ValidationMessage.Text = "Эта колода не относится к режиму Standard.";
-					return;
-				}
 				ImportedDeck = deck;
 				DialogResult = true;
 			}

@@ -452,6 +452,7 @@ namespace Hearthstone_Deck_Tracker
 						Remote.LiveSecrets.Load();
 
 						Reflection.StartIpcClient();
+						Watchers.QueueWatcher.Run();
 
 						CardDefsManager.EnsureLatestCardDefs();
 					}
@@ -471,6 +472,7 @@ namespace Hearthstone_Deck_Tracker
 					TrayIcon.MenuItemStartHearthstone.Visible = false;
 
 					Game.IsRunning = true;
+					Game.UpdateConstructedDeck();
 					GameIsRunningChanged?.Invoke(true);
 
 					// ContentVisibility depends on Game.IsRunning, so notify only after it is set.
@@ -510,6 +512,7 @@ namespace Hearthstone_Deck_Tracker
 				else if(Game.IsRunning)
 				{
 					Game.IsRunning = false;
+					Game.CurrentSelectedDeck = null;
 					GameIsRunningChanged?.Invoke(false);
 					Overlay.UnhookGameWindow();
 					Overlay.HideOverlayWindow();

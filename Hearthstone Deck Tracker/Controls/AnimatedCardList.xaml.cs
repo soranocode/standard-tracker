@@ -148,7 +148,8 @@ public partial class AnimatedCardList
 				// CardListHelper has the correct initial size for auto sizing purposes.
 				// (Otherwise the card will be initialized with Scale.Y=1 instead of 0)
 				fadeIns.Add(animatedCard.FadeIn(!reset));
-				AnimatedCards.Insert(cards.IndexOf(newCard), animatedCard);
+				// Card.Equals only compares IDs, but created and original copies can occupy separate rows.
+				AnimatedCards.Insert(cards.FindIndex(card => ReferenceEquals(card, newCard)), animatedCard);
 
 				if(!animatedCard.IsLoaded)
 				{

@@ -197,6 +197,8 @@ Resources/Tiles/
 /knowledge/
 
 # Local isolation-check artifacts
+__pycache__/
+*.py[cod]
 /.smoke-profile/
 /artifacts/
 /isolate_tracker.py

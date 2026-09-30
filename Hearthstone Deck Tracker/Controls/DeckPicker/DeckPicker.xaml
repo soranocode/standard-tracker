@@ -108,7 +108,7 @@
                       StrokeStartLineCap="Round" StrokeEndLineCap="Round" Stretch="None"/>
             </Button>
         </Grid>
-        <TextBlock x:Name="LibraryCount" Text="Ваши колоды · Standard" Foreground="{DynamicResource GrayTextColorBrush}" Margin="0,4,0,16"/>
+        <TextBlock x:Name="LibraryCount" Text="Ваши колоды · Standard / Wild" Foreground="{DynamicResource GrayTextColorBrush}" Margin="0,4,0,16"/>
         <TextBox x:Name="LibrarySearch" Style="{StaticResource STSearch}" Tag="Поиск колоды, класса, архетипа" TextChanged="LibrarySearch_OnTextChanged"
                  controls1:TextBoxHelper.Watermark="Найти колоду, класс, архетип или тег"/>
         <WrapPanel Margin="0,12,0,0">

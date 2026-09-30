@@ -57,10 +57,13 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 		{
 			_isInQueue = e.IsInQueue;
 			_gameFound = !e.IsInQueue && e.Previous is FindGameState.SERVER_GAME_CONNECTING or FindGameState.SERVER_GAME_STARTED;
+			if(!e.IsInQueue && !_gameFound && _game.IsInMenu)
+				_game.CurrentSelectedDeck = null;
 
 			if(!_game.IsInMenu)
 				return;
-			if(!Modes.Contains(_game.CurrentMode) && !LettuceModes.Contains(_game.CurrentMode))
+			var mode = SceneHandler.Scene ?? _game.CurrentMode;
+			if(!Modes.Contains(mode) && !LettuceModes.Contains(mode))
 				return;
 
 			if(_game.CurrentMode == Mode.TOURNAMENT)
@@ -75,6 +78,14 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 				Log.Info($"Now in queue");
 
 				CardDefsManager.EnsureLatestCardDefs();
+
+				if(mode is TOURNAMENT or FRIENDLY)
+				{
+					// Import the selected deck even when collection-wide auto-import is disabled.
+					if(_game is GameV2 game)
+						game.BeginConstructedDeckCapture();
+					return;
+				}
 
 				if(_game.CurrentMode == DRAFT)
 					_game.CurrentSelectedDeck = DeckImporter.ArenaInfoCache?.Deck;

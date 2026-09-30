@@ -91,8 +91,13 @@ public class SceneHandler
 
 		if(to == Mode.TOURNAMENT)
 		{
+			Watchers.QueueWatcher.Run();
 			Watchers.DeckPickerWatcher.Run();
 			Core.Overlay.UpdateMulliganGuidePreLobbyVisibility();
+		}
+		else if(to == Mode.FRIENDLY)
+		{
+			Watchers.QueueWatcher.Run();
 		}
 		else if(to == Mode.BACON)
 		{
@@ -106,6 +111,7 @@ public class SceneHandler
 		}
 		else if(to == Mode.GAMEPLAY)
 		{
+			Watchers.QueueWatcher.Stop();
 			Core.Overlay.UpdateBattlegroundsSessionVisibility();
 			Watchers.BigCardWatcher.Run();
 			Watchers.ChoicesWatcher.Run();

@@ -4,7 +4,7 @@ $ErrorActionPreference = 'Stop'
 $repoPath = Split-Path -Parent $PSScriptRoot
 $binPath = Join-Path $repoPath "Hearthstone Deck Tracker/bin/x64/$Configuration"
 $binPath = [IO.Path]::GetFullPath($binPath)
-$profilePath = Join-Path $repoPath '.smoke-profile'
+$profilePath = Join-Path ([IO.Path]::GetTempPath()) ('standard-smoke-' + [Guid]::NewGuid())
 $output = Join-Path $binPath 'StandardTracker.Smoke.exe'
 if (Test-Path -LiteralPath $output) { Remove-Item -LiteralPath $output }
 $source = @'
@@ -48,6 +48,84 @@ class Smoke {
             if(deckCodeDialog.Title != "Вставьте код колоды" || !(deckCodeDialog.FindName("DeckCodeInput") is TextBox))
                 throw new Exception("Deck-code import dialog did not load");
             deckCodeDialog.Close();
+            Console.WriteLine("Checking Wild deck save and library...");
+            var wildDeck = new Deck { Name = "Wild import regression", Class = "Druid" };
+            wildDeck.Cards.Add(new Card("LOE_077") { Count = 2 });
+            foreach(var card in HearthDb.Cards.Collectible.Values.Where(c => c.Class == HearthDb.Enums.CardClass.DRUID
+                && Helper.WildOnlySets.Contains(HearthDbConverter.SetConverter(c.Set))).Take(14))
+                wildDeck.Cards.Add(new Card(card) { Count = 2 });
+            if(wildDeck.StandardViable) throw new Exception("Wild fixture must fail the old Standard gate");
+            var editor = new Hearthstone_Deck_Tracker.FlyoutControls.DeckEditor.DeckEditorViewModel();
+            editor.SetDeck(wildDeck, true);
+            if(!editor.CanSave) throw new Exception("Wild deck cannot be saved in the editor");
+            DeckManager.SaveDeck(wildDeck);
+            if(!DeckList.Instance.Decks.Contains(wildDeck)) throw new Exception("Wild deck was not saved");
+            if(!XmlManager<DeckList>.Load(Config.Instance.DataDir + "PlayerDecks.xml").Decks.Any(d => d.DeckId == wildDeck.DeckId))
+                throw new Exception("Wild deck was not persisted to the test profile");
+            deckPicker.SelectedClasses.Clear();
+            deckPicker.SelectedClasses.Add(Hearthstone_Deck_Tracker.Enums.HeroClassAll.All);
+            Config.Instance.SelectedTags = new System.Collections.Generic.List<string> { "All" };
+            Config.Instance.SelectedDeckPickerDeckType = Hearthstone_Deck_Tracker.Enums.DeckType.Standard;
+            deckPicker.UpdateDecks();
+            if(!deckPicker.DisplayedDecks.Any(x => x.Deck == wildDeck)) throw new Exception("Legacy Standard filter hid Wild deck");
+            var wildDialog = new Hearthstone_Deck_Tracker.Windows.DeckCodeImportWindow { Left = -10000, Top = -10000, WindowStartupLocation = WindowStartupLocation.Manual, ShowInTaskbar = false };
+            var wildCode = HearthDb.Deckstrings.DeckSerializer.Serialize(HearthDbConverter.ToHearthDbDeck(wildDeck), false);
+            ((TextBox)wildDialog.FindName("DeckCodeInput")).Text = wildCode;
+            wildDialog.Loaded += (sender, e) => {
+                Console.WriteLine("Checking Wild deck-code import...");
+                typeof(Hearthstone_Deck_Tracker.Windows.DeckCodeImportWindow)
+                    .GetMethod("AddDeck_OnClick", BindingFlags.NonPublic | BindingFlags.Instance)
+                    .Invoke(wildDialog, new object[] { null, new RoutedEventArgs() });
+                if(wildDialog.ImportedDeck == null) wildDialog.DialogResult = false;
+            };
+            if(wildDialog.ShowDialog() != true || wildDialog.ImportedDeck == null || wildDialog.ImportedDeck.StandardViable)
+                throw new Exception("Wild deck-code import was rejected: " + ((TextBlock)wildDialog.FindName("ValidationMessage")).Text);
+            wildDialog.Close();
+            DeckList.Instance.ActiveDeck = null;
+            DeckList.Instance.Decks.Remove(wildDeck);
+            DeckList.Save();
+            Console.WriteLine("PASS: Wild deck-code dialog, editor saving, persistence, and library visibility with legacy Standard filter");
+            var game = Core.Game;
+            game.IsInMenu = false;
+            game.IsRunning = true;
+            var stats = new Hearthstone_Deck_Tracker.Stats.GameStats(Hearthstone_Deck_Tracker.Enums.GameResult.None, "Mage", "Druid") { Turns = 7 };
+            game.CurrentGameStats = stats;
+            game.CurrentSelectedDeck = new HearthMirror.Objects.Deck {
+                Id = 4242, Name = "Detected in progress", Hero = HearthDb.CardIds.Collectible.Druid.MalfurionStormrageHeroHeroSkins,
+                Cards = wildDeck.Cards.Select(c => new HearthMirror.Objects.Card((string)typeof(Card).GetProperty("Id").GetValue(c, null), c.Count, 0)).ToList(),
+                Sideboards = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<HearthMirror.Objects.Card>>()
+            };
+            var sentinel = new Hearthstone_Deck_Tracker.Hearthstone.Entities.Entity(4242);
+            game.Entities.Add(sentinel.Id, sentinel);
+            var privateFields = BindingFlags.NonPublic | BindingFlags.Instance;
+            typeof(GameV2).GetMethod("ResumeInProgressMatch", privateFields).Invoke(game, null);
+            if(game.CurrentGameStats != stats || stats.Turns != 7 || !stats.IsReconnect || !game.Entities.ContainsKey(sentinel.Id))
+                throw new Exception("Reconnect recovery reset existing game state");
+            typeof(GameV2).GetField("_currentGameType", privateFields).SetValue(game, HearthDb.Enums.GameType.GT_RANKED);
+            typeof(GameV2).GetField("_currentFormatType", privateFields).SetValue(game, HearthDb.Enums.FormatType.FT_WILD);
+            typeof(GameV2).GetField("_spectator", privateFields).SetValue(game, false);
+            Config.Instance.ConstructedAutoImportNew = false;
+            Config.Instance.AutoDeckDetection = true;
+            deckPicker.DeckNameFilter = "hide detected deck";
+            typeof(DeckPicker).GetField("_favoritesOnly", privateFields).SetValue(deckPicker, true);
+            var sync = typeof(GameV2).GetMethod("TrySyncConstructedDeck", privateFields);
+            sync.Invoke(game, new object[] { false });
+            var detected = DeckList.Instance.ActiveDeck;
+            if(detected == null || detected.HsId != 4242 || detected.Cards.Sum(c => c.Count) != 30)
+                throw new Exception("Full in-progress deck was not imported");
+            if(game.CurrentGameStats != stats || stats.Turns != 7 || !game.Entities.ContainsKey(sentinel.Id)
+                || stats.DeckId != detected.DeckId || stats.PlayerCards.Sum(c => c.Count) != 30)
+                throw new Exception("Mid-game deck selection reset game state or failed to bind statistics");
+            if(!deckPicker.DisplayedDecks.Any(x => x.Deck == detected)) throw new Exception("Detected deck is hidden by library filters");
+            sync.Invoke(game, new object[] { false });
+            if(DeckList.Instance.Decks.Count != 1) throw new Exception("Repeated detection duplicated the deck");
+            game.IsRunning = false;
+            game.IsInMenu = true;
+            game.CurrentSelectedDeck = null;
+            DeckList.Instance.ActiveDeck = null;
+            DeckList.Instance.Decks.Remove(detected);
+            DeckList.Save();
+            Console.WriteLine("PASS: full mid-game import with bulk auto-import disabled, no duplicates, library reveal, statistics binding, and game-state preservation");
             const string sampleCode = "AAECAQcC69YHstgHDuPmBqr8Bqv8BqWFB+iHB9KXB7etB+yyB7XAB5XCB5vCB5zCB6ngB/vgBwAA";
             var codeUtility = typeof(Deck).Assembly.GetType("Hearthstone_Deck_Tracker.Hearthstone.DeckCodeUtility");
             var parse = codeUtility.GetMethod("Import", BindingFlags.Static | BindingFlags.Public);
@@ -125,7 +203,7 @@ $references = @((Join-Path $framework 'WPF/PresentationFramework.dll'),
     $netstandardPath,
     (Join-Path $framework 'WPF/PresentationCore.dll'), (Join-Path $framework 'WPF/WindowsBase.dll'),
     (Join-Path $framework 'System.Xaml.dll'), (Join-Path $framework 'System.Core.dll'),
-    (Join-Path $binPath 'HearthstoneDeckTracker.exe'), (Join-Path $binPath 'HearthDb.dll'),
+    (Join-Path $binPath 'HearthstoneDeckTracker.exe'), (Join-Path $binPath 'HearthDb.dll'), (Join-Path $binPath 'HearthMirror.dll'),
     (Join-Path $binPath 'MahApps.Metro.dll')) | ForEach-Object { '/reference:' + $_ }
 & (Join-Path $framework 'csc.exe') /nologo /target:exe /platform:x64 "/out:$output" @references $sourcePath
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

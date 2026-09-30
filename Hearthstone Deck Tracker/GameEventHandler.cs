@@ -700,6 +700,10 @@ namespace Hearthstone_Deck_Tracker
 			if(_game.GameEntity is null || _game.CurrentMode != Mode.GAMEPLAY)
 				return;
 
+			_game.ResumeInProgressMatch();
+			_game.CacheMatchInfo();
+			_game.CacheGameType();
+
 			if(_game.IsTraditionalHearthstoneMatch)
 			{
 				CardLegalityChecker.LoadCardsByFormat(_game.CurrentGameType, _game.CurrentFormatType);
@@ -764,6 +768,8 @@ namespace Hearthstone_Deck_Tracker
 					return;
 				}
 				_handledGameEnd = true;
+				// One final read can recover a deck that became available just before game end.
+				_game.CacheGameType();
 				if(!StandardMode.IsSupported(_game.CurrentFormatType, _game.CurrentGameMode))
 				{
 					TurnTimer.Instance.Stop();

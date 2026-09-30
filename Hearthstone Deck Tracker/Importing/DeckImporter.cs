@@ -78,7 +78,7 @@ namespace Hearthstone_Deck_Tracker.Importing
 
 		internal static bool IsValidDeck(HearthMirror.Objects.Deck deck)
 		{
-			if(deck.Type == BrawlDeckType || deck.Cards.Any(c => !new Hearthstone.Card(c.Id).IsCardLegal(HearthDb.Enums.GameType.GT_RANKED, HearthDb.Enums.FormatType.FT_STANDARD)))
+			if(deck.Type == BrawlDeckType)
 				return false;
 			try
 			{

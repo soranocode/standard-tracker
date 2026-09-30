@@ -221,6 +221,8 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 
 		private FormatType _currentFormatType = FormatType.FT_UNKNOWN;
 		private bool _selectingStandardMatchDeck;
+		private bool _constructedDeckResolved;
+		private DateTime _lastConstructedDeckRead = DateTime.MinValue;
 		public FormatType CurrentFormatType => _currentFormatType;
 
 		public Format? CurrentFormat => HearthDbConverter.GetFormat(CurrentFormatType);
@@ -427,28 +429,94 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 			Log.Info($"{Player.Name} [PlayerId={Player.Id}] vs {Opponent.Name} [PlayerId={Opponent.Id}]");
 		}
 
-		internal async void CacheGameType()
+		internal void CacheGameType()
 		{
-			GameType gameType;
-			while((gameType = (GameType)HearthMirror.Reflection.Client.GetGameType()) == GameType.GT_UNKNOWN)
-				await Task.Delay(1000);
-
-			if(!_gameTypeDuosCorrectionCheckCompleted)  // Do not let a late mirror overwrite a bg game type already corrected by TryCorrectMisreadSoloGameType.
-				_currentGameType = gameType;
-
-			// both live on GameMgr, so the format is readable in the same window the game type was
-			_currentFormatType = (FormatType)HearthMirror.Reflection.Client.GetFormat();
-			for(var attempt = 0; attempt < 10 && _currentFormatType == FormatType.FT_UNKNOWN && IsConstructedMatch && !IsInMenu; attempt++)
+			try
 			{
-				await Task.Delay(200);
-				_currentFormatType = (FormatType)HearthMirror.Reflection.Client.GetFormat();
+				RefreshMatchType();
+				if(!IsInMenu && !_constructedDeckResolved)
+					TrySyncConstructedDeck(false);
 			}
-			if(IsInMenu)
+			catch(Exception e)
+			{
+				Log.Error(e);
+			}
+		}
+
+		private void RefreshMatchType()
+		{
+			// Retry through the regular update loop; no async read may outlive its match.
+			var gameType = (GameType)HearthMirror.Reflection.Client.GetGameType();
+			if(gameType != GameType.GT_UNKNOWN && !_gameTypeDuosCorrectionCheckCompleted)
+			{
+				if(_currentGameType != gameType)
+					_currentGameMode = GameMode.None;
+				_currentGameType = gameType;
+			}
+			var format = (FormatType)HearthMirror.Reflection.Client.GetFormat();
+			if(format != FormatType.FT_UNKNOWN)
+				_currentFormatType = format;
+		}
+
+		internal void BeginConstructedDeckCapture()
+		{
+			CurrentSelectedDeck = null;
+			_constructedDeckResolved = false;
+			_lastConstructedDeckRead = DateTime.MinValue;
+			UpdateConstructedDeck();
+		}
+
+		internal void UpdateConstructedDeck()
+		{
+			if(!IsRunning)
 				return;
+			if(IsInMenu && SceneHandler.Scene == Mode.GAMEPLAY
+				&& GameEntity?.GetTag(GameTag.STATE) == (int)State.RUNNING)
+				ResumeInProgressMatch();
+			if(_constructedDeckResolved || (DateTime.UtcNow - _lastConstructedDeckRead).TotalSeconds < 1)
+				return;
+			_lastConstructedDeckRead = DateTime.UtcNow;
+			try
+			{
+				if(IsInMenu)
+				{
+					var scene = SceneHandler.Scene ?? CurrentMode;
+					if(QueueEvents.IsInQueue && scene is Mode.TOURNAMENT or Mode.FRIENDLY)
+						TrySyncConstructedDeck(true);
+				}
+				else if(CurrentGameStats?.Result == GameResult.None)
+				{
+					if(_currentGameType == GameType.GT_UNKNOWN || _currentFormatType == FormatType.FT_UNKNOWN)
+						RefreshMatchType();
+					TrySyncConstructedDeck(false);
+				}
+			}
+			catch(Exception e)
+			{
+				Log.Error(e);
+			}
+		}
+
+		internal void ResumeInProgressMatch()
+		{
+			var recovering = IsInMenu || CurrentGameStats == null || CurrentGameStats.Result != GameResult.None;
+			IsInMenu = false;
+			if(CurrentGameStats == null || CurrentGameStats.Result != GameResult.None)
+				CurrentGameStats = new GameStats(GameResult.None, "", "") { Region = CurrentRegion };
+			CurrentGameStats.IsReconnect = true;
+			if(recovering)
+			{
+				_constructedDeckResolved = false;
+				_lastConstructedDeckRead = DateTime.MinValue;
+			}
+		}
+
+		private void TrySyncConstructedDeck(bool inQueue)
+		{
 			_selectingStandardMatchDeck = true;
 			try
 			{
-				DeckManager.AutoSelectStandardMatchDeck(this);
+				_constructedDeckResolved = DeckManager.AutoSelectStandardMatchDeck(this, inQueue);
 			}
 			finally
 			{
@@ -502,6 +570,8 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 			_currentGameType = GameType.GT_UNKNOWN;
 			_gameTypeDuosCorrectionCheckCompleted = false;
 			_currentFormatType = FormatType.FT_UNKNOWN;
+			_constructedDeckResolved = false;
+			_lastConstructedDeckRead = DateTime.MinValue;
 			if(!IsInMenu && resetStats)
 				CurrentGameStats = new GameStats(GameResult.None, "", "") {PlayerName = "", OpponentName = "", Region = CurrentRegion};
 			PowerLog.Clear();
