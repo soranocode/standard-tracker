@@ -3,13 +3,10 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Xml.Serialization;
 using Hearthstone_Deck_Tracker.Annotations;
 using Hearthstone_Deck_Tracker.Hearthstone;
-using Hearthstone_Deck_Tracker.Utility.Logging;
 
 #endregion
 
@@ -18,7 +15,6 @@ namespace Hearthstone_Deck_Tracker.Stats
 	public class LastGames : INotifyPropertyChanged
 	{
 		private const int MaxGamesCount = 10;
-		private const string FileName = "LastGames.xml";
 		private List<GameInfo>? _gameInfos;
 		private bool _hasGames;
 
@@ -31,8 +27,6 @@ namespace Hearthstone_Deck_Tracker.Stats
 		}
 
 		public static LastGames Instance { get; } = new LastGames();
-
-		private static string FilePath => Path.Combine(Config.AppDataPath, FileName);
 
 		public List<GameInfo> GameInfos => _gameInfos ??= Load();
 
@@ -107,46 +101,26 @@ namespace Hearthstone_Deck_Tracker.Stats
 		{
 			if(deckId == Guid.Empty)
 				return;
-			var games = GameInfos.Where(x => x.DeckId == deckId);
+			var games = GameInfos.Where(x => x.DeckId == deckId).ToList();
 			foreach(var game in games)
 				GameInfos.Remove(game);
 			OnPropertyChanged(nameof(Games));
 		}
 
-		public static void Save()
+		// Recent replays are a view of the native match library, not a second store.
+		public static void Save() => Refresh(DeckStatsList.Instance, DefaultDeckStats.Instance);
+
+		internal static void Refresh(DeckStatsList stats, DefaultDeckStats defaults)
 		{
-			try
-			{
-				if(Instance._gameInfos != null)
-					XmlManager<List<GameInfo>>.Save(FilePath, Instance._gameInfos);
-			}
-			catch(Exception e)
-			{
-				Log.Error(e);
-			}
+			Instance._gameInfos = FromStatistics(stats, defaults);
+			Instance.OnPropertyChanged(nameof(Games));
 		}
 
-		private static List<GameInfo> Load()
-		{
-			if(!File.Exists(FilePath))
-			{
-				var games = new List<GameStats>();
-				var enumerator = DeckStatsList.Instance.DeckStats.GetEnumerator();
-				while(enumerator.MoveNext())
-					games.AddRange(enumerator.Current.Value.Games.Where(x => x.HasReplayFile));
-				return games.OrderByDescending(x => x.StartTime).Take(10).Select(
-						x => new GameInfo { DeckId = x.DeckId, GameId = x.GameId }).ToList();
-			}
-			try
-			{
-				return XmlManager<List<GameInfo>>.Load(FilePath);
-			}
-			catch(Exception e)
-			{
-				Log.Error(e);
-				return new List<GameInfo>();
-			}
-		}
+		private static List<GameInfo> Load() => FromStatistics(DeckStatsList.Instance, DefaultDeckStats.Instance);
+		private static List<GameInfo> FromStatistics(DeckStatsList stats, DefaultDeckStats defaults) => stats.DeckStats.Values
+			.Concat(defaults.DeckStats).SelectMany(s => s.Games)
+			.Where(g => g.HasReplayFile).OrderByDescending(g => g.StartTime).Take(MaxGamesCount)
+			.Select(g => new GameInfo(g.DeckId, g.GameId, g.PlayerHero)).ToList();
 
 		public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -171,13 +145,10 @@ namespace Hearthstone_Deck_Tracker.Stats
 				Hero = hero;
 		}
 
-		[XmlAttribute("deckId")]
 		public Guid DeckId { get; set; }
 
-		[XmlAttribute("gameId")]
 		public Guid GameId { get; set; }
 
-		[XmlAttribute("hero")]
 		public string? Hero { get; set; }
 	}
 }

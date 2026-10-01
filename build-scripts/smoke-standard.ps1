@@ -17,7 +17,6 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Data;
-using System.Xml.Serialization;
 using Hearthstone_Deck_Tracker;
 using Hearthstone_Deck_Tracker.Hearthstone;
 using Hearthstone_Deck_Tracker.Controls.DeckPicker;
@@ -48,6 +47,21 @@ class Smoke {
             if(deckCodeDialog.Title != "Вставьте код колоды" || !(deckCodeDialog.FindName("DeckCodeInput") is TextBox))
                 throw new Exception("Deck-code import dialog did not load");
             deckCodeDialog.Close();
+            var importMenu = (Hearthstone_Deck_Tracker.Windows.MainWindowControls.MainWindowMenuView)window.FindName("MainWindowMenu");
+            importMenu.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.ContextIdle, new Action(() => {}));
+            foreach(var name in new[] { "ImportHdtData", "ImportFirestoneData", "FirestoneExportHelp" }) {
+                var item = importMenu.FindName(name) as MenuItem;
+				if(item != null && item.GetBindingExpression(MenuItem.CommandProperty) != null)
+					item.GetBindingExpression(MenuItem.CommandProperty).UpdateTarget();
+                if(item == null || item.Command == null || !item.Command.CanExecute(null))
+                    throw new Exception("Migration menu command is missing: " + name + "; item=" + (item == null ? "null" : "present")
+						+ "; context=" + (item == null || item.DataContext == null ? "null" : item.DataContext.GetType().Name)
+                        + "; binding=" + (item == null || item.GetBindingExpression(MenuItem.CommandProperty) == null ? "null" : item.GetBindingExpression(MenuItem.CommandProperty).Status.ToString()));
+            }
+            using(var resource = typeof(App).Assembly.GetManifestResourceStream("FirestoneExport.js")) {
+                if(resource == null || resource.Length == 0) throw new Exception("Firestone export helper is missing");
+            }
+            Console.WriteLine("PASS: migration menu commands and bundled Firestone export helper");
             Console.WriteLine("Checking Wild deck save and library...");
             var wildDeck = new Deck { Name = "Wild import regression", Class = "Druid" };
             wildDeck.Cards.Add(new Card("LOE_077") { Count = 2 });
@@ -60,8 +74,10 @@ class Smoke {
             if(!editor.CanSave) throw new Exception("Wild deck cannot be saved in the editor");
             DeckManager.SaveDeck(wildDeck);
             if(!DeckList.Instance.Decks.Contains(wildDeck)) throw new Exception("Wild deck was not saved");
-            if(!XmlManager<DeckList>.Load(Config.Instance.DataDir + "PlayerDecks.xml").Decks.Any(d => d.DeckId == wildDeck.DeckId))
+            if(!StandardTracker.Library.LibraryStore.ReadFile(Path.Combine(Config.Instance.DataDir, "library.json")).Decks.Any(d => d.Id == wildDeck.DeckId))
                 throw new Exception("Wild deck was not persisted to the test profile");
+            if(new[] { "PlayerDecks.xml", "DeckStats.xml", "DefaultDeckStats.xml" }.Any(name => File.Exists(Path.Combine(Config.Instance.DataDir, name))))
+                throw new Exception("Native library still writes HDT profile XML");
             deckPicker.SelectedClasses.Clear();
             deckPicker.SelectedClasses.Add(Hearthstone_Deck_Tracker.Enums.HeroClassAll.All);
             Config.Instance.SelectedTags = new System.Collections.Generic.List<string> { "All" };
@@ -151,11 +167,10 @@ class Smoke {
                 }
                 var first = DeckList.Instance.Decks[0];
                 if(((Deck)first.Clone()).Archetype != first.Archetype) throw new Exception("Clone lost archetype");
-                var serializer = new XmlSerializer(typeof(Deck));
-                using(var buffer = new MemoryStream()) {
-                    serializer.Serialize(buffer, first); buffer.Position = 0;
-                    if(((Deck)serializer.Deserialize(buffer)).Archetype != first.Archetype) throw new Exception("Serialization lost archetype");
-                }
+                DeckList.Save();
+                var nativeLibrary = StandardTracker.Library.LibraryStore.ReadFile(Path.Combine(Config.Instance.DataDir, "library.json"));
+                if(nativeLibrary.Decks.Single(d => d.Id == first.DeckId).Archetype != first.Archetype)
+                    throw new Exception("Native library lost archetype");
                 picker.SelectedClasses.Clear();
                 picker.SelectedClasses.Add(Hearthstone_Deck_Tracker.Enums.HeroClassAll.All);
                 Config.Instance.SelectedTags = new System.Collections.Generic.List<string> { "All" };
@@ -184,7 +199,7 @@ class Smoke {
                 bitmap.Render(surface);
                 var png = new PngBitmapEncoder(); png.Frames.Add(BitmapFrame.Create(bitmap));
                 using(var output = File.Create(args[1])) png.Save(output);
-                Console.WriteLine("PASS: archetype search, grouping, favorites, clone and XML round trip; library rendered");
+                Console.WriteLine("PASS: archetype search, grouping, favorites, clone and native persistence; library rendered");
             }
             Console.WriteLine("PASS: WPF main window and options loaded; isolated standalone profile; " + window.Title);
             return 0;
@@ -204,6 +219,7 @@ $references = @((Join-Path $framework 'WPF/PresentationFramework.dll'),
     (Join-Path $framework 'WPF/PresentationCore.dll'), (Join-Path $framework 'WPF/WindowsBase.dll'),
     (Join-Path $framework 'System.Xaml.dll'), (Join-Path $framework 'System.Core.dll'),
     (Join-Path $binPath 'HearthstoneDeckTracker.exe'), (Join-Path $binPath 'HearthDb.dll'), (Join-Path $binPath 'HearthMirror.dll'),
+    (Join-Path $binPath 'StandardTracker.Library.dll'),
     (Join-Path $binPath 'MahApps.Metro.dll')) | ForEach-Object { '/reference:' + $_ }
 & (Join-Path $framework 'csc.exe') /nologo /target:exe /platform:x64 "/out:$output" @references $sourcePath
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

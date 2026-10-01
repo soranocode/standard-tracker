@@ -9,7 +9,7 @@
     <Company>HearthSim</Company>
     <Product>Standard Tracker</Product>
     <NeutralLanguage>en</NeutralLanguage>
-    <Description>Hearthstone Deck Tracker</Description>
+    <Description>Standard and Wild tracker with an independent local deck library</Description>
     <Copyright>Copyright 2026 HearthSim LLC. All rights reserved.</Copyright>
     <!-- InformationalVersion and therefore the Sentry release name derive from Version, which may
          carry a -dev suffix. Version and BuildNumber are rewritten by build-scripts/update_version.ps1. -->
@@ -91,6 +91,8 @@
   </Target>
 
   <ItemGroup>
+    <EmbeddedResource Include="Importing\FirestoneExport.js" LogicalName="FirestoneExport.js" />
+    <ProjectReference Include="..\StandardTracker.Library\StandardTracker.Library.csproj" />
     <PackageReference Include="ControlzEx" Version="3.0.2.4" />
     <PackageReference Include="DeltaCompressionDotNet" Version="1.1.0" />
     <PackageReference Include="HtmlAgilityPack" Version="1.11.23" />

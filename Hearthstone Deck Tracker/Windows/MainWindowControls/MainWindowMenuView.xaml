@@ -135,6 +135,10 @@
                     </Rectangle.OpacityMask>
                 </Rectangle>
             </MenuItem.Icon>
+            <MenuItem x:Name="ImportHdtData" Header="Перенести из Hearthstone Deck Tracker" Command="{Binding ImportHdtDataCommand}"/>
+            <MenuItem x:Name="ImportFirestoneData" Header="Перенести из Firestone" Command="{Binding ImportFirestoneDataCommand}"/>
+            <MenuItem x:Name="FirestoneExportHelp" Header="Выгрузить историю Firestone" Command="{Binding FirestoneExportHelpCommand}"/>
+            <Separator/>
             <MenuItem Header="{lex:LocTextUpper MainWindow_Menu_Import_DeckString}" Command="{Binding ImportFromDeckString}" />
             <Separator/>
             <MenuItem Header="{lex:LocTextUpper MainWindow_Menu_Import_Constructed}" Command="{Binding ImportFromConstructedCommand}" />

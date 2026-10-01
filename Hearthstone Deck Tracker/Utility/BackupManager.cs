@@ -1,12 +1,13 @@
-﻿#region
+#region
 
 using System;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using Hearthstone_Deck_Tracker.Controls.Error;
 using Hearthstone_Deck_Tracker.Stats;
-using Hearthstone_Deck_Tracker.Utility.Extensions;
+using Hearthstone_Deck_Tracker.Library;
+using Hearthstone_Deck_Tracker.Importing;
+using StandardTracker.Library;
 using Hearthstone_Deck_Tracker.Utility.Logging;
 
 #endregion
@@ -16,7 +17,7 @@ namespace Hearthstone_Deck_Tracker.Utility
 	public class BackupManager
 	{
 		private const int MaxBackups = 7;
-		private static readonly string[] Files = {"PlayerDecks.xml", "DeckStats.xml", "DefaultDeckStats.xml", "config.xml", "HotKeys.xml"};
+		private static readonly string[] Files = {LibraryStore.FileName, "config.xml", "HotKeys.xml"};
 
 		public static void Run()
 		{
@@ -83,13 +84,46 @@ namespace Hearthstone_Deck_Tracker.Utility
 		{
 			try
 			{
-				var archive = new ZipArchive(backup.OpenRead(), ZipArchiveMode.Read);
+				using var archive = new ZipArchive(backup.OpenRead(), ZipArchiveMode.Read);
+				Directory.CreateDirectory(Config.Instance.DataDir);
+				// Check the native library before replacing any current profile data.
+				if((files.Length == 0 || files.Contains(LibraryStore.FileName)) && archive.GetEntry(LibraryStore.FileName) is { } libraryEntry)
+				{
+					var temporary = Path.Combine(Config.Instance.DataDir, "restore-library-" + Guid.NewGuid().ToString("N") + ".json");
+					try
+					{
+						libraryEntry.ExtractToFile(temporary);
+						var library = LibraryStore.ReadFile(temporary);
+						new LibraryStore(Config.Instance.DataDir).Save(library);
+					}
+					finally { if(File.Exists(temporary)) File.Delete(temporary); }
+				}
+				else if(files.Length == 0 && HdtProfileReader.FileNames.Any(name => archive.GetEntry(name) != null))
+				{
+					// Earlier Standard Tracker backups can be explicitly restored into
+					// the native format. Only known entries are read from the archive.
+					var temporary = Path.Combine(Config.Instance.DataDir, "restore-previous-" + Guid.NewGuid().ToString("N"));
+					Directory.CreateDirectory(temporary);
+					try
+					{
+						foreach(var name in HdtProfileReader.FileNames)
+							archive.GetEntry(name)?.ExtractToFile(Path.Combine(temporary, name));
+						var source = HdtProfileReader.ReadProfile(temporary);
+						var library = LibraryRuntimeAdapter.Capture(source.Decks, source.Stats, source.Defaults, Guid.NewGuid());
+						new LibraryStore(Config.Instance.DataDir).Save(library);
+					}
+					finally { Directory.Delete(temporary, true); }
+				}
+				else if(files.Contains(LibraryStore.FileName)) return false;
 				if(files.Length == 0)
-					archive.ExtractToDirectory(Config.Instance.DataDir, true);
+				{
+					foreach(var file in Files.Where(x => x != LibraryStore.FileName))
+						archive.GetEntry(file)?.ExtractToFile(Path.Combine(Config.Instance.DataDir, file), true);
+				}
 				else
 				{
-					foreach(var file in files.Where(x => Files.Contains(x)))
-						archive.GetEntry(file).ExtractToFile(Path.Combine(Config.Instance.DataDir, file), true);
+					foreach(var file in files.Where(x => Files.Contains(x) && x != LibraryStore.FileName))
+						archive.GetEntry(file)?.ExtractToFile(Path.Combine(Config.Instance.DataDir, file), true);
 				}
 				if(!reload)
 					return true;
@@ -98,20 +132,13 @@ namespace Hearthstone_Deck_Tracker.Utility
 					Config.Load();
 					Config.Save();
 				}
-				if(files.Length == 0 || files.Contains("PlayerDecks.xml"))
+				if(files.Length == 0 || files.Contains(LibraryStore.FileName))
 				{
 					DeckList.Reload();
-					DeckList.Save();
-				}
-				if(files.Length == 0 || files.Contains("DeckStats.xml"))
-				{
 					DeckStatsList.Reload();
-					DeckStatsList.Save();
-				}
-				if(files.Length == 0 || files.Contains("DefaultDeckStats.xml"))
-				{
 					DefaultDeckStats.Reload();
-					DefaultDeckStats.Save();
+					StandardLibrarySession.Save();
+					LastGames.Save();
 				}
 				return true;
 			}
@@ -131,52 +158,5 @@ namespace Hearthstone_Deck_Tracker.Utility
 			return latest != null && Restore(latest, reload, files);
 		}
 
-		internal static T? TryRestore<T>(string file)
-		{
-			var restored = false;
-			try
-			{
-				Log.Info($"Restoring latest backup for {file}...");
-				var filePath = Path.Combine(Config.Instance.DataDir, file);
-				if(!(restored = RestoreFromLatest(false, 0, file)))
-					return default(T);
-				try
-				{
-					return XmlManager<T>.Load(filePath);
-				}
-				catch(Exception ex2)
-				{
-					Log.Error(ex2);
-					Log.Info($"Restoring second to latest backup for {file}...");
-					if(!(restored = RestoreFromLatest(false, 1, file)))
-						return default;
-					try
-					{
-						return XmlManager<T>.Load(filePath);
-					}
-					catch(Exception ex3)
-					{
-						Log.Error(ex3);
-						return default;
-					}
-				}
-			}
-			finally
-			{
-				if(restored)
-				{
-					ErrorManager.AddError(file + " was corrupted but restored from the latest backup.",
-						"This is likely due to an unexpected shutdown." + Environment.NewLine
-						+ "Backups are generated on the first start of each day, so there may be lost data." + Environment.NewLine
-						+ "We are very sorry for the inconvenience. :(", true);
-				}
-				else
-				{
-					ErrorManager.AddError(file + " was corrupted and could not be restored from a backup.",
-						"This is likely due to an unexpected shutdown." + Environment.NewLine
-						+ "We are very sorry for any data that was lost. :(", true);
-				}
-			}
-		}
 	}
 }

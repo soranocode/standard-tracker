@@ -56,6 +56,10 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 		private bool? _isArenaDeck;
 		private bool? _isDungeonDeck;
 		private bool? _isDuelsDeck;
+		// Persistence adapters read flags without querying global statistics.
+		internal bool? StoredArenaFlag => _isArenaDeck;
+		internal bool? StoredDungeonFlag => _isDungeonDeck;
+		internal bool? StoredDuelsFlag => _isDuelsDeck;
 		private DateTime _lastCacheUpdate = DateTime.MinValue;
 		private string _name = string.Empty;
 		private string? _note;
@@ -432,7 +436,26 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 		public List<Mechanic> Mechanics => _relevantMechanics.Select(x => new Mechanic(x, this)).Where(m => m.Count > 0).ToList();
 
 		public object Clone() => new Deck(Name, Class, Cards, Sideboards, Tags, Note, Url, LastEdited, Archived, MissingCards, Version, Versions,
-										  DeckId, HsId, SelectedVersion, _isArenaDeck, ArenaReward) { Archetype = Archetype };
+											  DeckId, HsId, SelectedVersion, _isArenaDeck, ArenaReward) { Archetype = Archetype };
+
+		// A migration preview must not query the global statistics store for a foreign deck.
+		internal Deck CloneForImport()
+		{
+			var copy = (Deck)MemberwiseClone();
+			copy.PropertyChanged = null;
+			copy.SelectedVersionChanged = null;
+			copy.OnStatsUpdated = null;
+			copy._cachedGames = null;
+			copy._isArenaDeck ??= false;
+			copy._isDungeonDeck ??= false;
+			copy._isDuelsDeck ??= false;
+			copy.Cards = new ObservableCollection<Card>(Cards.Select(c => (Card)c.Clone()));
+			copy.Sideboards = Sideboards.Select(s => (Sideboard)s.Clone()).ToList();
+			copy.MissingCards = MissingCards.Select(c => (Card)c.Clone()).ToList();
+			copy._tags = new List<string>(_tags);
+			copy.Versions = Versions.Select(v => v.CloneForImport()).ToList();
+			return copy;
+		}
 
 		public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -600,6 +623,7 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 
 		public void StatsUpdated()
 		{
+			_cachedGames = null;
 			OnPropertyChanged(nameof(StatsString));
 			OnPropertyChanged(nameof(LastPlayed));
 			OnPropertyChanged(nameof(LastPlayedNewFirst));

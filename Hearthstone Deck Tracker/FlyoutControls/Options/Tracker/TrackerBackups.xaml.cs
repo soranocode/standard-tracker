@@ -47,8 +47,10 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.Tracker
 				MessageDialogStyle.AffirmativeAndNegative);
 			if(result != MessageDialogResult.Affirmative)
 				return;
-			BackupManager.Restore(selected.FileInfo, true);
-			window.ShowMessage("Success", "Please restart HDT for this to take effect.").Forget();
+			if(BackupManager.Restore(selected.FileInfo, true))
+				window.ShowMessage("Резервная копия восстановлена", "Перезапустите Standard Tracker, чтобы открыть восстановленную библиотеку.").Forget();
+			else
+				window.ShowMessage("Не удалось восстановить копию", "Проверьте файл резервной копии и доступ к папке профиля.").Forget();
 		}
 
 		private void ButtonCreateNew_Click(object sender, RoutedEventArgs e)

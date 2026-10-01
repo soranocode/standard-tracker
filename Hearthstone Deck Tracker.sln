@@ -33,6 +33,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bootstrap", "Bootstrap\Boot
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignToolShim", "SignToolShim\SignToolShim.csproj", "{1324828D-7E53-4458-BE90-A6EEAA565810}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StandardTracker.Library", "StandardTracker.Library\StandardTracker.Library.csproj", "{47EBD16B-FAC7-4529-A079-71076637DA93}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -40,6 +42,12 @@ Global
 		Squirrel|x64 = Squirrel|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{47EBD16B-FAC7-4529-A079-71076637DA93}.Debug|x64.ActiveCfg = Debug|x64
+		{47EBD16B-FAC7-4529-A079-71076637DA93}.Debug|x64.Build.0 = Debug|x64
+		{47EBD16B-FAC7-4529-A079-71076637DA93}.Release|x64.ActiveCfg = Release|x64
+		{47EBD16B-FAC7-4529-A079-71076637DA93}.Release|x64.Build.0 = Release|x64
+		{47EBD16B-FAC7-4529-A079-71076637DA93}.Squirrel|x64.ActiveCfg = Release|x64
+		{47EBD16B-FAC7-4529-A079-71076637DA93}.Squirrel|x64.Build.0 = Release|x64
 		{E63A3F1C-E662-4E62-BE43-AF27CB9E953D}.Debug|x64.ActiveCfg = Debug|x64
 		{E63A3F1C-E662-4E62-BE43-AF27CB9E953D}.Debug|x64.Build.0 = Debug|x64
 		{E63A3F1C-E662-4E62-BE43-AF27CB9E953D}.Release|x64.ActiveCfg = Release|x64

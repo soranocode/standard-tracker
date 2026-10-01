@@ -38,9 +38,13 @@ namespace Hearthstone_Deck_Tracker.Stats
 	public class GameStats : INotifyPropertyChanged
 	{
 		private Guid? _deckId;
+		internal Guid? StoredDeckId => _deckId;
 		private string? _deckName;
+		internal string? StoredDeckName => _deckName;
 		private string? _deckNameAndVersion;
 		public Guid GameId;
+		public string? ImportSource { get; set; }
+		public string? ImportId { get; set; }
 		private Format _format = Enums.Format.Standard;
 		private string? _note;
 		private string? _playerHero;

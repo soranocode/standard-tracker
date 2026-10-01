@@ -2,6 +2,7 @@
 
 using System;
 using System.Linq;
+using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
 using Hearthstone_Deck_Tracker.Importing;
@@ -11,6 +12,7 @@ using Hearthstone_Deck_Tracker.Utility.Logging;
 using MahApps.Metro.Controls.Dialogs;
 using Hearthstone_Deck_Tracker.Enums;
 using Hearthstone_Deck_Tracker.Enums.Hearthstone;
+using Hearthstone_Deck_Tracker.Stats;
 using Deck = Hearthstone_Deck_Tracker.Hearthstone.Deck;
 
 #endregion
@@ -19,6 +21,113 @@ namespace Hearthstone_Deck_Tracker.Windows
 {
 	public partial class MainWindow
 	{
+		private bool _trackerDataImportInProgress;
+
+		internal async void ImportTrackerData(bool firestone)
+		{
+			if(_trackerDataImportInProgress) return;
+			_trackerDataImportInProgress = true;
+			ProgressDialogController? progress = null;
+			try
+			{
+				if(Core.Game.IsRunning && !Core.Game.IsInMenu)
+				{
+					await this.ShowMessageAsync("Перенос данных", "Завершите текущий матч, затем повторите перенос.");
+					return;
+				}
+				var source = firestone ? "Firestone" : "Hearthstone Deck Tracker";
+				var instructions = firestone
+					? "Выберите JSON с полной историей матчей или FirestoneDB.sqlite из версии Electron.\n\n"
+						+ "Для Overwolf сначала используйте «Выгрузить историю Firestone» в меню импорта. Старый user-match-history.json может содержать только часть истории.\n\n"
+						+ "Будут перенесены матчи Standard и Wild. Колоды восстановятся из кодов в истории; матчи без кода останутся в общей статистике."
+					: "Закройте Hearthstone Deck Tracker и выберите PlayerDecks.xml в его папке данных (обычно %APPDATA%\\HearthstoneDeckTracker).\n\n"
+						+ "DeckStats.xml и DefaultDeckStats.xml будут прочитаны из той же папки. Перенесём колоды, их версии и матчи Standard и Wild.";
+				if(await this.ShowMessageAsync("Перенос из " + source, instructions, MessageDialogStyle.AffirmativeAndNegative,
+					new MetroDialogSettings { AffirmativeButtonText = "Выбрать файл", NegativeButtonText = "Отмена", DefaultButtonFocus = MessageDialogResult.Negative }) != MessageDialogResult.Affirmative)
+					return;
+				var legacyPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "HearthstoneDeckTracker");
+				var dialog = new Microsoft.Win32.OpenFileDialog
+				{
+					Title = "Данные " + source,
+					Filter = firestone ? "История Firestone|*.json;*.sqlite;*.sqlite3;*.db" : "Данные HDT|PlayerDecks.xml;DeckStats.xml;DefaultDeckStats.xml",
+					InitialDirectory = !firestone && Directory.Exists(legacyPath) ? legacyPath : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
+				};
+				if(dialog.ShowDialog(this) != true) return;
+				if(!firestone && string.Equals(Path.GetFullPath(Path.GetDirectoryName(dialog.FileName)!), Path.GetFullPath(Config.Instance.DataDir).TrimEnd(Path.DirectorySeparatorChar), StringComparison.OrdinalIgnoreCase))
+					throw new InvalidDataException("Выбрана папка нашего трекера. Выберите данные Hearthstone Deck Tracker.");
+				progress = await this.ShowProgressAsync("Перенос из " + source, "Читаем колоды и историю матчей…");
+				progress.SetIndeterminate();
+				var data = await Task.Run(() => firestone ? TrackerDataImporter.ReadFirestone(dialog.FileName) : TrackerDataImporter.ReadHdt(Path.GetDirectoryName(dialog.FileName)!));
+				var preview = TrackerDataImporter.Prepare(data, DeckList.Instance, DeckStatsList.Instance, DefaultDeckStats.Instance);
+				await progress.CloseAsync();
+				progress = null;
+				var summary = preview.Summary;
+				if(preview.Warnings.Count > 0) summary += "\n\n" + string.Join("\n", preview.Warnings.Take(5));
+				if(!preview.HasChanges)
+				{
+					await this.ShowMessageAsync("Нет новых данных для переноса", summary);
+					return;
+				}
+				if(await this.ShowMessageAsync("Проверка переноса из " + source,
+					summary + "\n\nПеред сохранением создадим резервную копию наших данных.", MessageDialogStyle.AffirmativeAndNegative,
+					new MetroDialogSettings { AffirmativeButtonText = "Перенести", NegativeButtonText = "Отмена", DefaultButtonFocus = MessageDialogResult.Negative }) != MessageDialogResult.Affirmative)
+					return;
+				if(Core.Game.IsRunning && !Core.Game.IsInMenu)
+				{
+					await this.ShowMessageAsync("Перенос отложен", "Начался матч. Завершите его и повторите перенос.");
+					return;
+				}
+				progress = await this.ShowProgressAsync("Перенос из " + source, "Сохраняем данные и резервную копию…");
+				progress.SetIndeterminate();
+				if(Core.Game.IsRunning && !Core.Game.IsInMenu)
+				{
+					await progress.CloseAsync();
+					progress = null;
+					await this.ShowMessageAsync("Перенос отложен", "Начался матч. Завершите его и повторите перенос.");
+					return;
+				}
+				// Refresh and commit on the dispatcher without yielding between them. A game
+				// finishing during source reading must not be overwritten by an older snapshot.
+				preview = TrackerDataImporter.Prepare(data, DeckList.Instance, DeckStatsList.Instance, DefaultDeckStats.Instance);
+				var backup = TrackerDataImporter.Save(preview, Config.Instance.DataDir);
+				TrackerDataImporter.Apply(preview, DeckList.Instance, DeckStatsList.Instance, DefaultDeckStats.Instance);
+				DeckPickerList.UpdateDecks();
+				StatsOverview.UpdateStats();
+				await progress.CloseAsync();
+				progress = null;
+				await this.ShowMessageAsync("Данные перенесены", preview.Summary + "\n\nРезервная копия: " + backup);
+			}
+			catch(Exception ex)
+			{
+				if(progress != null) { await progress.CloseAsync(); progress = null; }
+				Log.Error(ex);
+				await this.ShowMessageAsync("Не удалось перенести данные", ex.Message + "\n\nПроверьте выбранный файл и повторите перенос.");
+			}
+			finally { _trackerDataImportInProgress = false; }
+		}
+
+		internal async void ShowFirestoneExportHelp()
+		{
+			var result = await this.ShowMessageAsync("Выгрузить историю Firestone",
+				"В версии Overwolf откройте инструменты разработчика окна Firestone и вкладку Console.\n\n"
+				+ "Нажмите «Скопировать скрипт», вставьте его в консоль Firestone и выполните. Он прочитает всю таблицу матчей и скопирует JSON в буфер обмена.\n\n"
+				+ "Вставьте результат в Блокнот, сохраните как firestone-history.json в UTF-8 и выберите этот файл при переносе.\n\n"
+				+ "Для версии Electron можно сразу выбрать FirestoneDB.sqlite. Закройте Firestone перед чтением базы.",
+				MessageDialogStyle.AffirmativeAndNegative, new MetroDialogSettings { AffirmativeButtonText = "Скопировать скрипт", NegativeButtonText = "Закрыть" });
+			if(result != MessageDialogResult.Affirmative) return;
+			try
+			{
+				using(var stream = typeof(MainWindow).Assembly.GetManifestResourceStream("FirestoneExport.js"))
+				using(var reader = new StreamReader(stream!))
+					System.Windows.Clipboard.SetText(reader.ReadToEnd());
+			}
+			catch(Exception ex)
+			{
+				Log.Error(ex);
+				await this.ShowMessageAsync("Скрипт не скопирован", "Не удалось записать скрипт в буфер обмена. Повторите копирование.");
+			}
+		}
+
 		public async void ImportDeck(string? url = null)
 		{
 			var result = await ImportDeckFromUrl(url);

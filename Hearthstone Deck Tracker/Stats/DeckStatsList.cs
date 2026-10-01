@@ -1,14 +1,12 @@
-﻿#region
+#region
 
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Xml.Serialization;
 using Hearthstone_Deck_Tracker.Hearthstone;
-using Hearthstone_Deck_Tracker.Utility;
-using Hearthstone_Deck_Tracker.Utility.Logging;
+using Hearthstone_Deck_Tracker.Library;
 
 #endregion
 
@@ -30,34 +28,9 @@ namespace Hearthstone_Deck_Tracker.Stats
 
 		public static DeckStatsList Instance => _instance.Value;
 
-		private static DeckStatsList Load()
-		{
-#if(!SQUIRREL)
-			SetupDeckStatsFile();
-#endif
-			var file = Path.Combine(Config.Instance.DataDir, "DeckStats.xml");
-			if(!File.Exists(file))
-				return new DeckStatsList();
-			DeckStatsList? instance = null;
-			try
-			{
-				instance = XmlManager<DeckStatsList>.Load(file);
-			}
-			catch(Exception ex)
-			{
-				Log.Error(ex);
-				try
-				{
-					File.Move(file, Helper.GetValidFilePath(Config.Instance.DataDir, "DeckStats_corrupted", "xml"));
-				}
-				catch(Exception ex1)
-				{
-					Log.Error(ex1);
-				}
-				instance = BackupManager.TryRestore<DeckStatsList>("DeckStats.xml") ?? new DeckStatsList();
-			}
-			return instance;
-		}
+		internal static DeckStatsList? LoadedInstance => _instance.IsValueCreated ? _instance.Value : null;
+
+		private static DeckStatsList Load() => StandardLibrarySession.Current.Stats;
 
 #if(!SQUIRREL)
 		internal static void SetupDeckStatsFile()
@@ -67,13 +40,13 @@ namespace Hearthstone_Deck_Tracker.Stats
 #endif
 
 
-		public static void Save()
-		{
-			Instance.SerializableDeckStats = Instance.DeckStats.Values.ToList();
-			XmlManager<DeckStatsList>.Save(Config.Instance.DataDir + "DeckStats.xml", Instance);
-		}
+		public static void Save() => StandardLibrarySession.Save(stats: Instance);
 
-		internal static void Reload() => _instance = new Lazy<DeckStatsList>(Load);
+		internal static void Reload()
+		{
+			StandardLibrarySession.Reset();
+			_instance = new Lazy<DeckStatsList>(Load);
+		}
 
 		internal DeckStats Add(Deck deck)
 		{

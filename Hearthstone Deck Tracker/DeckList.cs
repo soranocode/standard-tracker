@@ -1,14 +1,13 @@
-﻿#region
+#region
 
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Linq;
 using System.Xml.Serialization;
 using Hearthstone_Deck_Tracker.Hearthstone;
-using Hearthstone_Deck_Tracker.Utility;
 using Hearthstone_Deck_Tracker.Utility.Logging;
+using Hearthstone_Deck_Tracker.Library;
 
 #endregion
 
@@ -19,6 +18,7 @@ namespace Hearthstone_Deck_Tracker
 	{
 		private static Lazy<DeckList> _instance = new Lazy<DeckList>(Load);
 		private Deck? _activeDeck;
+		internal Guid LibraryId { get; set; }
 
 		[XmlArray(ElementName = "Tags")]
 		[XmlArrayItem(ElementName = "Tag")]
@@ -99,58 +99,11 @@ namespace Hearthstone_Deck_Tracker
 			Save(this);
 		}
 
+		internal static DeckList? LoadedInstance => _instance.IsValueCreated ? _instance.Value : null;
+
 		private static DeckList Load()
 		{
-#if(!SQUIRREL)
-			SetupDeckListFile();
-#endif
-			var file = Config.Instance.DataDir + "PlayerDecks.xml";
-			DeckList instance;
-			if(!File.Exists(file))
-				instance = new DeckList();
-			else
-			{
-				try
-				{
-					instance = XmlManager<DeckList>.Load(file);
-				}
-				catch(Exception ex)
-				{
-					Log.Error(ex);
-					try
-					{
-						File.Move(file, Helper.GetValidFilePath(Config.Instance.DataDir, "PlayerDecks_corrupted", "xml"));
-					}
-					catch(Exception ex1)
-					{
-						Log.Error(ex1);
-					}
-					instance = BackupManager.TryRestore<DeckList>("PlayerDecks.xml") ?? new DeckList();
-				}
-			}
-
-			var save = false;
-			if(!instance.AllTags.Contains("All"))
-			{
-				instance.AllTags.Add("All");
-				save = true;
-			}
-			if(!instance.AllTags.Contains("Favorite"))
-			{
-				if(instance.AllTags.Count > 1)
-					instance.AllTags.Insert(1, "Favorite");
-				else
-					instance.AllTags.Add("Favorite");
-				save = true;
-			}
-			if(!instance.AllTags.Contains("None"))
-			{
-				instance.AllTags.Add("None");
-				save = true;
-			}
-			if(save)
-				Save(instance);
-
+			var instance = StandardLibrarySession.Current.Decks;
 			instance.LoadActiveDeck();
 			return instance;
 		}
@@ -162,10 +115,14 @@ namespace Hearthstone_Deck_Tracker
 		}
 
 #endif
-		private static void Save(DeckList instance) => XmlManager<DeckList>.Save(Config.Instance.DataDir + "PlayerDecks.xml", instance);
+		private static void Save(DeckList instance) => StandardLibrarySession.Save(decks: instance);
 		public static void Save() => Save(Instance);
 
-		internal static void Reload() => _instance = new Lazy<DeckList>(Load);
+		internal static void Reload()
+		{
+			StandardLibrarySession.Reset();
+			_instance = new Lazy<DeckList>(Load);
+		}
 	}
 
 	public class DeckInfo

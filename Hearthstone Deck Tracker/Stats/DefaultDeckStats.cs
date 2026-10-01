@@ -1,11 +1,9 @@
-﻿#region
+#region
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using Hearthstone_Deck_Tracker.Utility;
-using Hearthstone_Deck_Tracker.Utility.Logging;
+using Hearthstone_Deck_Tracker.Library;
 
 #endregion
 
@@ -16,7 +14,7 @@ namespace Hearthstone_Deck_Tracker.Stats
 		private static Lazy<DefaultDeckStats> _instance = new Lazy<DefaultDeckStats>(Load);
 		public List<DeckStats> DeckStats;
 
-		private DefaultDeckStats()
+		internal DefaultDeckStats()
 		{
 			DeckStats = new List<DeckStats>();
 		}
@@ -39,32 +37,9 @@ namespace Hearthstone_Deck_Tracker.Stats
 			return ds;
 		}
 
-		private static DefaultDeckStats Load()
-		{
-#if(!SQUIRREL)
-			SetupDefaultDeckStatsFile();
-#endif
-			var file = Path.Combine(Config.Instance.DataDir, "DefaultDeckStats.xml");
-			if(!File.Exists(file))
-				return new DefaultDeckStats();
-			try
-			{
-				return XmlManager<DefaultDeckStats>.Load(file);
-			}
-			catch(Exception ex)
-			{
-				Log.Error(ex);
-				try
-				{
-					File.Move(file, Helper.GetValidFilePath(Config.Instance.DataDir, "DefaultDeckStats_corrupted", "xml"));
-				}
-				catch(Exception ex1)
-				{
-					Log.Error(ex1);
-				}
-				return BackupManager.TryRestore<DefaultDeckStats>("DefaultDeckStats.xml") ?? new DefaultDeckStats();
-			}
-		}
+		internal static DefaultDeckStats? LoadedInstance => _instance.IsValueCreated ? _instance.Value : null;
+
+		private static DefaultDeckStats Load() => StandardLibrarySession.Current.Defaults;
 
 #if(!SQUIRREL)
 		internal static void SetupDefaultDeckStatsFile()
@@ -73,8 +48,12 @@ namespace Hearthstone_Deck_Tracker.Stats
 		}
 #endif
 
-		public static void Save() => XmlManager<DefaultDeckStats>.Save(Config.Instance.DataDir + "DefaultDeckStats.xml", Instance);
+		public static void Save() => StandardLibrarySession.Save(defaults: Instance);
 
-		internal static void Reload() => _instance = new Lazy<DefaultDeckStats>(Load);
+		internal static void Reload()
+		{
+			StandardLibrarySession.Reset();
+			_instance = new Lazy<DefaultDeckStats>(Load);
+		}
 	}
 }

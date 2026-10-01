@@ -1,5 +1,51 @@
 # Standard Tracker — project notes
 
+## 2026-10-01 — Independent library and tracker data migration
+
+`StandardTracker.Library` is our separate deck/history project, with its own
+versioned JSON contract and repository. It has no dependency on HDT, WPF,
+HearthDb or HearthMirror. The desktop scaffold connects through
+`LibraryRuntimeAdapter` / `StandardLibrarySession`; all deck and statistics save
+entry points now write one `%APPDATA%/StandardTracker/library.json`. The library
+owns decks, historical versions, cards/sideboards, match progress, ranks, tags,
+recent deck selection and import identities. Recent replays are derived from the
+native match history. Runtime library code no longer writes any of the HDT XML
+profile files or `LastGames.xml`. `LIBRARY.md` describes the contract and boundary.
+
+The Import menu now supports explicit migration from Hearthstone Deck Tracker
+profile XML and Firestone match-history JSON / Electron SQLite. HDT decks,
+historical versions and Standard/Wild match progress merge into the local library;
+same-content decks retain their saved local names. Firestone reconstructs decks
+from history deck codes. Missing/bad codes preserve the match in default statistics.
+The menu also includes a read-only IndexedDB export helper for Firestone Overwolf.
+`TRACKER-IMPORT.md` documents extraction, supported shapes, backups and limitations.
+
+Previews operate on detached data. Matching versions are remapped, same-source
+matches deduplicate by persistent IDs, and skipped/invalid/unassigned records are
+reported. Saving flushes a staged native library, preserves the previous file in
+`ImportBackups` and atomically replaces the whole library, then refreshes existing
+deck objects and statistics. Import is blocked during a match and duplicate
+submission is prevented. HDT/Firestone remain read-only source adapters; their
+files are no longer needed after migration. Original HDT profiles are never
+automatically attached. Earlier Standard Tracker XML in our isolated profile is
+upgraded once with originals retained. Daily/manual backups now contain the
+native library, and explicitly restoring an earlier development ZIP converts its
+old data. Corrupt native files can recover from `.bak` with damaged bytes retained;
+unsupported schema versions are rejected before interpreting deck/match shapes.
+
+Validation: Debug and Release x64 builds, 73 library/migration/isolation/deck-sync/import
+tests (12 native-library and 18 migration tests), Debug and Release WPF smoke, and four export-helper
+success/failure scenarios passed. Native SQLite source bytes remain unchanged;
+failed atomic commits retain the original library and import backup, verified with
+a locked destination. Migration survives removing the original HDT files and
+restarting from the native store. Scoped UI static audit
+and diff whitespace check passed. Whole-repository UI audit still reports 11
+existing findings in old browser design mockups, outside the native import feature.
+Tests use synthetic profiles; a real HDT/Firestone profile and the export helper in
+actual Overwolf DevTools still need end-to-end validation. Firestone's obsolete
+JSON cache can be incomplete; its current Overwolf LevelDB files are not read
+directly. Cross-source duplicate matches with unrelated IDs are not inferred.
+
 ## 2026-09-30 — Cross-device checkpoint and web test space
 
 The current work is saved on GitHub in the repository's `standard-tracker`
