@@ -82,6 +82,10 @@ for validation and unfinished work. Dormant upstream binary dependencies remain.
 Build: `./bootstrap.ps1` (Windows, Visual Studio MSBuild, .NET SDK, net472 targeting pack).
 Requires provisioned local `lib/` and translations. NuGet may require internet.
 Test: `./test-standard.ps1`.
+Portable ZIP after a Release build:
+`powershell.exe -NoProfile -File build-scripts/package-standard.ps1 -PackageVersion <version>`.
+The standalone packager includes runtime dependencies, localization and licenses;
+its archive and SHA256 file are written to `artifacts/`.
 WPF smoke: `powershell.exe -NoProfile -STA -File build-scripts/smoke-standard.ps1`.
 Dynamic overlay smoke (after a Release build):
 `powershell.exe -NoProfile -STA -File build-scripts/smoke-overlay-layout.ps1 -Configuration Release`.

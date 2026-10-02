@@ -76,7 +76,7 @@ namespace Hearthstone_Deck_Tracker.Windows.MainWindowControls
 			}
 		}
 
-		public ObservableCollection<Brush> RecentResults { get; } = new();
+		public ObservableCollection<GameStats> RecentResults { get; } = new();
 
 		public int Wins
 		{
@@ -238,8 +238,8 @@ namespace Hearthstone_Deck_Tracker.Windows.MainWindowControls
 			Losses = periodGames.Count(g => g.Result == GameResult.Loss);
 			WinrateTotal = TotalGames == 0 ? 0 : Math.Round(100.0 * Wins / TotalGames, 1);
 			RecentResults.Clear();
-			foreach(var game in periodGames.Take(24).Reverse())
-				RecentResults.Add(GetResultAccent(game.Result));
+			foreach(var game in periodGames.Take(10).Reverse())
+				RecentResults.Add(game);
 			if(_resultFilter == "win")
 				query = query.Where(g => g.Result == GameResult.Win);
 			else if(_resultFilter == "loss")

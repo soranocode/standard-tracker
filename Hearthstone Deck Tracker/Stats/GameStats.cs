@@ -130,6 +130,8 @@ namespace Hearthstone_Deck_Tracker.Stats
 				OnPropertyChanged();
 				OnPropertyChanged(nameof(ResultString));
 				OnPropertyChanged(nameof(ResultTextColor));
+				OnPropertyChanged(nameof(ResultAccentBrush));
+				OnPropertyChanged(nameof(OpponentResultAccentBrush));
 			}
 		}
 
@@ -406,15 +408,18 @@ namespace Hearthstone_Deck_Tracker.Stats
 		}
 
 		[XmlIgnore]
-		public SolidColorBrush ResultAccentBrush
+		public SolidColorBrush ResultAccentBrush => GetResultAccentBrush(Result);
+
+		[XmlIgnore]
+		public SolidColorBrush OpponentResultAccentBrush => GetResultAccentBrush(
+			Result == GameResult.Win ? GameResult.Loss : GameResult.Win);
+
+		private static SolidColorBrush GetResultAccentBrush(GameResult result)
 		{
-			get
-			{
-				var c = Result == GameResult.Win
-					? Color.FromRgb(0x80, 0xD8, 0xB0)
-					: Color.FromRgb(0xED, 0x93, 0x9E);
-				return new SolidColorBrush(c);
-			}
+			var c = result == GameResult.Win
+				? Color.FromRgb(0x80, 0xD8, 0xB0)
+				: Color.FromRgb(0xED, 0x93, 0x9E);
+			return new SolidColorBrush(c);
 		}
 
 		[XmlIgnore]

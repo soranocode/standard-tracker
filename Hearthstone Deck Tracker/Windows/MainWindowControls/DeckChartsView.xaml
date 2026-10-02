@@ -43,17 +43,32 @@
                     <ItemsControl ItemsSource="{Binding RecentResults}" Margin="0,16,0,0">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <UniformGrid Rows="1"/>
+                                <UniformGrid Rows="1" Columns="10"/>
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Border Height="4" CornerRadius="3" Margin="0,0,6,0" Background="{Binding}"/>
+                                <Border Width="30" Height="30" CornerRadius="15" BorderThickness="2" Padding="2"
+                                        Margin="0,0,0,6" HorizontalAlignment="Center" BorderBrush="{Binding ResultAccentBrush}">
+                                    <Border.ToolTip>
+                                        <StackPanel>
+                                            <TextBlock FontWeight="SemiBold">
+                                                <Run Text="Против "/><Run Text="{Binding OpponentName, Mode=OneWay}"/>
+                                            </TextBlock>
+                                            <TextBlock>
+                                                <Run Text="{Binding PlayerHero, Converter={StaticResource LocalizationConverter}, Mode=OneWay}"/>
+                                                <Run Text=" · "/>
+                                                <Run Text="{Binding Result, Converter={StaticResource EnumDescriptionConverter}, Mode=OneWay}"/>
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </Border.ToolTip>
+                                    <Image Source="{Binding PlayerHeroImage}" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                </Border>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                     <DockPanel Margin="0,8,0,0">
-                        <TextBlock Text="Последние матчи" FontSize="11" Foreground="#A3B0C4"/>
+                        <TextBlock Text="Последние 10 матчей" FontSize="11" Foreground="#A3B0C4"/>
                         <TextBlock Text="Старые → новые" FontSize="11" Foreground="#A3B0C4" HorizontalAlignment="Right"/>
                     </DockPanel>
                 </StackPanel>
@@ -92,18 +107,39 @@
                                   <Expander.Header>
                                 <Grid>
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="40"/>
+                                        <ColumnDefinition Width="88"/>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <Border Width="30" Height="30" CornerRadius="8" Margin="0" HorizontalAlignment="Left" VerticalAlignment="Center"
-                                            Background="{Binding ResultIconBackground}">
-                                        <TextBlock Text="{Binding ResultGlyph}" HorizontalAlignment="Center" VerticalAlignment="Center"
-                                                   FontWeight="SemiBold" Foreground="{Binding ResultAccentBrush}"/>
-                                    </Border>
+                                    <Grid Width="80" Height="34" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="34"/><ColumnDefinition Width="12"/><ColumnDefinition Width="34"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border Width="34" Height="34" CornerRadius="17" BorderThickness="2" Padding="1"
+                                                BorderBrush="{Binding ResultAccentBrush}">
+                                            <Border.ToolTip><TextBlock><Run Text="Вы: "/><Run Text="{Binding PlayerHero, Converter={StaticResource LocalizationConverter}, Mode=OneWay}"/></TextBlock></Border.ToolTip>
+                                            <Image Source="{Binding PlayerHeroImage}" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                        </Border>
+                                        <TextBlock Grid.Column="1" Text="—" Foreground="#A3B0C4" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        <Border Grid.Column="2" Width="34" Height="34" CornerRadius="17" BorderThickness="2" Padding="1"
+                                                BorderBrush="{Binding OpponentResultAccentBrush}">
+                                            <Border.ToolTip><TextBlock><Run Text="Соперник: "/><Run Text="{Binding OpponentHero, Converter={StaticResource LocalizationConverter}, Mode=OneWay}"/></TextBlock></Border.ToolTip>
+                                            <Image Source="{Binding OpponentHeroImage}" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                        </Border>
+                                    </Grid>
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,8,0">
-                                        <TextBlock Text="{Binding OpponentHero, Converter={StaticResource LocalizationConverter}}"
-                                                   FontWeight="SemiBold" FontSize="14" Foreground="#EDF2FA" TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock FontWeight="SemiBold" FontSize="14" Foreground="#EDF2FA" TextTrimming="CharacterEllipsis"
+                                                   ToolTip="{Binding OpponentName}">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Text" Value="{Binding OpponentName}"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding OpponentName}" Value="{x:Null}"><Setter Property="Text" Value="Неизвестный соперник"/></DataTrigger>
+                                                        <DataTrigger Binding="{Binding OpponentName}" Value=""><Setter Property="Text" Value="Неизвестный соперник"/></DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
                                         <TextBlock FontSize="11" Foreground="#A3B0C4" Margin="0,3,0,0">
                                             <Run Text="{Binding Turns, Mode=OneWay}"/><Run Text=" ходов · "/><Run Text="{Binding SortableDuration, Mode=OneWay}"/><Run Text=" мин"/>
                                         </TextBlock>

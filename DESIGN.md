@@ -36,8 +36,16 @@ it does not introduce a second token source.
 
 The scoped library uses Segoe UI, foreground #EDF2FA, muted text #A3B0C4,
 surfaces #1C2533, borders #34445A, hover #29384E and keyboard focus #79B4FF.
-`STButton` owns button hover, pressed, disabled and focus states. The main menu
-and modal feedback use the existing MahApps controls and theme.
+`STButton` owns button hover, pressed, disabled and focus states. The top toolbar
+uses native WPF `MenuItem` controls styled by `STToolbarMenuItem`, its primary
+variant and `STToolbarSubmenuItem` in the same resource dictionary. Modal
+feedback continues to use the MahApps theme.
+
+The toolbar groups creation and import on the left, selected-deck actions beside
+them and statistics on the right. New deck is the primary action. Buttons are
+40px high with sentence-case labels, and drop-downs share the dark palette and
+keyboard focus states. Keep the three library, match-history and selected-deck
+columns below; the toolbar uses their outer horizontal alignment.
 
 Canonical ownership for migration: `MainWindowMenuView` owns its entry points;
 Windows `OpenFileDialog` owns local file selection; MahApps `ShowProgressAsync`

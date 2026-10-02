@@ -32,6 +32,9 @@ class Smoke {
             HearthDb.Cards.LoadBaseData(HearthDb.Cards.GetBundledBaseData());
             var app = new App();
             app.InitializeComponent();
+            app.Startup -= (StartupEventHandler)Delegate.CreateDelegate(typeof(StartupEventHandler), app,
+                typeof(App).GetMethod("App_OnStartup", BindingFlags.Instance | BindingFlags.NonPublic));
+            app.ShutdownMode = ShutdownMode.OnExplicitShutdown;
             System.Threading.SynchronizationContext.SetSynchronizationContext(new System.Windows.Threading.DispatcherSynchronizationContext());
             var window = Core.MainWindow;
             if(!window.Title.StartsWith("Standard Tracker")) throw new Exception("Incorrect identity");
@@ -202,8 +205,8 @@ class Smoke {
                 Console.WriteLine("PASS: archetype search, grouping, favorites, clone and native persistence; library rendered");
             }
             Console.WriteLine("PASS: WPF main window and options loaded; isolated standalone profile; " + window.Title);
-            return 0;
-        } catch(Exception e) { Console.WriteLine(e); return 1; }
+            Environment.Exit(0); return 0;
+        } catch(Exception e) { Console.WriteLine(e); Environment.Exit(1); return 1; }
     }
 }
 '@

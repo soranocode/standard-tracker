@@ -1,5 +1,32 @@
 # Standard Tracker — project notes
 
+## 2026-10-02 — Main workspace UI and portable build
+
+The top menu is now a dark button toolbar: new deck and import, selected-deck
+actions, and statistics on the right. Existing commands and migration entry points
+remain. Favorite stars use centered vector icons. The Hearthstone launch button
+was removed and all three main columns align at the top.
+
+Recent results show the player's class icons for the latest ten matches in one
+row, oldest on the left. A new match displaces the leftmost result. History rows
+show player and opponent icons plus opponent nickname. Their borders show opposite
+win/loss outcomes; blank nicknames have a fallback and long names have a tooltip.
+
+Validation: Debug and Release x64 builds passed. Release WPF smoke passed window,
+migration-command, deck saving, Wild import/persistence and mid-game deck binding
+checks with synthetic profiles. Native renders verified ten-result ordering,
+opposite borders and result changes, toolbar availability, and star centering;
+the layout was inspected at 1440x760 and 1200x640. Interactive menu checks are
+limited by mouse-capture failure in this automation session (the unchanged WPF
+menu fails identically). Existing whole-repository web mockup audit findings
+remain outside these native changes. Screenshots in `design/` use synthetic data.
+
+Diagnostic scripts detach production startup to keep their profiles isolated and
+exit promptly. `package-standard.ps1` creates a portable standalone ZIP with
+manifest-selected runtime files, card assets, theme images, licenses and source
+commit metadata, excluding diagnostic executables, profiles and logs. The inherited
+upstream installer/release scripts remain unused.
+
 ## 2026-10-01 — Independent library and tracker data migration
 
 `StandardTracker.Library` is our separate deck/history project, with its own

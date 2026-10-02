@@ -1,9 +1,19 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- Shared palette for the main screen controls. -->
+    <SolidColorBrush x:Key="STForegroundBrush" Color="#EDF2FA"/>
+    <SolidColorBrush x:Key="STMutedBrush" Color="#A3B0C4"/>
+    <SolidColorBrush x:Key="STSurfaceBrush" Color="#1C2533"/>
+    <SolidColorBrush x:Key="STBorderBrush" Color="#34445A"/>
+    <SolidColorBrush x:Key="STHoverBrush" Color="#29384E"/>
+    <SolidColorBrush x:Key="STFocusBrush" Color="#79B4FF"/>
+    <SolidColorBrush x:Key="STPressedBrush" Color="#304666"/>
+    <SolidColorBrush x:Key="STStrongBorderBrush" Color="#52769E"/>
+
     <!-- Scoped to our library, selected deck and match history. -->
     <Style x:Key="STButton" TargetType="Button">
-        <Setter Property="Foreground" Value="#EDF2FA"/><Setter Property="Background" Value="#1C2533"/>
-        <Setter Property="BorderBrush" Value="#34445A"/><Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Foreground" Value="{StaticResource STForegroundBrush}"/><Setter Property="Background" Value="{StaticResource STSurfaceBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource STBorderBrush}"/><Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Padding" Value="10,6"/><Setter Property="Cursor" Value="Hand"/>
         <Setter Property="HorizontalContentAlignment" Value="Center"/>
         <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
@@ -11,12 +21,119 @@
                 <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center"/>
             </Border>
             <ControlTemplate.Triggers>
-                <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Surface" Property="Background" Value="#29384E"/><Setter TargetName="Surface" Property="BorderBrush" Value="#52769E"/></Trigger>
-                <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Surface" Property="BorderBrush" Value="#79B4FF"/></Trigger>
-                <Trigger Property="IsPressed" Value="True"><Setter TargetName="Surface" Property="Background" Value="#304666"/></Trigger>
+                <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Surface" Property="Background" Value="{StaticResource STHoverBrush}"/><Setter TargetName="Surface" Property="BorderBrush" Value="{StaticResource STStrongBorderBrush}"/></Trigger>
+                <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Surface" Property="BorderBrush" Value="{StaticResource STFocusBrush}"/></Trigger>
+                <Trigger Property="IsPressed" Value="True"><Setter TargetName="Surface" Property="Background" Value="{StaticResource STPressedBrush}"/></Trigger>
                 <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.4"/></Trigger>
             </ControlTemplate.Triggers>
         </ControlTemplate></Setter.Value></Setter>
+    </Style>
+    <Style x:Key="STToolbarMenuItem" TargetType="MenuItem">
+        <Setter Property="Foreground" Value="{StaticResource STForegroundBrush}"/>
+        <Setter Property="Background" Value="{StaticResource STSurfaceBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource STBorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="FontFamily" Value="Segoe UI"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+        <Setter Property="Height" Value="40"/>
+        <Setter Property="Padding" Value="12,0"/>
+        <Setter Property="Margin" Value="0,0,8,0"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="MenuItem">
+                    <Grid>
+                        <Border x:Name="Surface" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center">
+                                <ContentPresenter x:Name="Icon" ContentSource="Icon" Width="16" Height="16" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                <ContentPresenter ContentSource="Header" RecognizesAccessKey="True" VerticalAlignment="Center"/>
+                                <Path x:Name="Chevron" Data="M 0 0 L 4 4 L 8 0" Stroke="{TemplateBinding Foreground}" StrokeThickness="1.5" Margin="10,0,0,0" VerticalAlignment="Center" Visibility="Collapsed"/>
+                            </StackPanel>
+                        </Border>
+                        <Popup x:Name="PART_Popup" Placement="Bottom" VerticalOffset="8" PlacementTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}" IsOpen="{Binding IsSubmenuOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" AllowsTransparency="True" Focusable="False" PopupAnimation="Fade">
+                            <Border Background="{StaticResource STSurfaceBrush}" BorderBrush="{StaticResource STStrongBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="6" MinWidth="220">
+                                <ScrollViewer MaxHeight="460" CanContentScroll="True" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                                    <ItemsPresenter x:Name="ItemsPresenter" KeyboardNavigation.DirectionalNavigation="Cycle" KeyboardNavigation.TabNavigation="Cycle" Grid.IsSharedSizeScope="True"/>
+                                </ScrollViewer>
+                            </Border>
+                        </Popup>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Icon" Value="{x:Null}"><Setter TargetName="Icon" Property="Visibility" Value="Collapsed"/></Trigger>
+                        <Trigger Property="HasItems" Value="True"><Setter TargetName="Chevron" Property="Visibility" Value="Visible"/></Trigger>
+                        <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Surface" Property="Background" Value="{StaticResource STHoverBrush}"/><Setter TargetName="Surface" Property="BorderBrush" Value="{StaticResource STStrongBorderBrush}"/></Trigger>
+                        <Trigger Property="IsHighlighted" Value="True"><Setter TargetName="Surface" Property="Background" Value="{StaticResource STHoverBrush}"/><Setter TargetName="Surface" Property="BorderBrush" Value="{StaticResource STStrongBorderBrush}"/></Trigger>
+                        <Trigger Property="IsSubmenuOpen" Value="True"><Setter TargetName="Surface" Property="Background" Value="{StaticResource STPressedBrush}"/><Setter TargetName="Surface" Property="BorderBrush" Value="{StaticResource STFocusBrush}"/></Trigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Surface" Property="BorderBrush" Value="{StaticResource STFocusBrush}"/></Trigger>
+                        <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.4"/></Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style x:Key="STToolbarPrimaryMenuItem" TargetType="MenuItem" BasedOn="{StaticResource STToolbarMenuItem}">
+        <Setter Property="Background" Value="{StaticResource STPressedBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource STFocusBrush}"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+    <Style x:Key="STToolbarSubmenuItem" TargetType="MenuItem">
+        <Setter Property="Foreground" Value="{StaticResource STForegroundBrush}"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="FontFamily" Value="Segoe UI"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontWeight" Value="Normal"/>
+        <Setter Property="Height" Value="Auto"/>
+        <Setter Property="MinHeight" Value="32"/>
+        <Setter Property="Padding" Value="10,7"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="MenuItem">
+                    <Grid>
+                        <Border x:Name="Surface" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="4" Padding="{TemplateBinding Padding}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="28"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="12"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid Width="24" Height="24" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                    <ContentPresenter x:Name="Icon" ContentSource="Icon" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    <Path x:Name="Checkmark" Data="M 0 5 L 3 8 L 9 0" Stroke="{TemplateBinding Foreground}" StrokeThickness="1.5" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
+                                </Grid>
+                                <ContentPresenter Grid.Column="1" ContentSource="Header" RecognizesAccessKey="True" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="InputGesture" Grid.Column="2" Text="{TemplateBinding InputGestureText}" Foreground="{StaticResource STMutedBrush}" Margin="18,0,8,0" VerticalAlignment="Center"/>
+                                <Path x:Name="Chevron" Grid.Column="3" Data="M 0 0 L 4 4 L 0 8" Stroke="{StaticResource STMutedBrush}" StrokeThickness="1.5" HorizontalAlignment="Right" VerticalAlignment="Center" Visibility="Collapsed"/>
+                            </Grid>
+                        </Border>
+                        <Popup x:Name="PART_Popup" Placement="Right" HorizontalOffset="7" VerticalOffset="-6" PlacementTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}" IsOpen="{Binding IsSubmenuOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" AllowsTransparency="True" Focusable="False" PopupAnimation="Fade">
+                            <Border Background="{StaticResource STSurfaceBrush}" BorderBrush="{StaticResource STStrongBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="6" MinWidth="220">
+                                <ScrollViewer MaxHeight="460" CanContentScroll="True" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                                    <ItemsPresenter x:Name="ItemsPresenter" KeyboardNavigation.DirectionalNavigation="Cycle" KeyboardNavigation.TabNavigation="Cycle" Grid.IsSharedSizeScope="True"/>
+                                </ScrollViewer>
+                            </Border>
+                        </Popup>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="InputGestureText" Value=""><Setter TargetName="InputGesture" Property="Visibility" Value="Collapsed"/></Trigger>
+                        <Trigger Property="HasItems" Value="True"><Setter TargetName="Chevron" Property="Visibility" Value="Visible"/></Trigger>
+                        <Trigger Property="IsChecked" Value="True"><Setter TargetName="Checkmark" Property="Visibility" Value="Visible"/><Setter TargetName="Icon" Property="Visibility" Value="Collapsed"/></Trigger>
+                        <Trigger Property="IsHighlighted" Value="True"><Setter TargetName="Surface" Property="Background" Value="{StaticResource STHoverBrush}"/></Trigger>
+                        <Trigger Property="IsSubmenuOpen" Value="True"><Setter TargetName="Surface" Property="Background" Value="{StaticResource STPressedBrush}"/></Trigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Surface" Property="BorderBrush" Value="{StaticResource STFocusBrush}"/></Trigger>
+                        <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.4"/></Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
     <Style x:Key="STFilter" TargetType="RadioButton">
         <Setter Property="Foreground" Value="#A3B0C4"/><Setter Property="Padding" Value="10,6"/>

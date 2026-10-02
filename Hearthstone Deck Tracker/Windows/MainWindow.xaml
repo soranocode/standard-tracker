@@ -237,7 +237,6 @@
                     <ColumnDefinition Width="1*"/>
                 </Grid.ColumnDefinitions>
                 <DockPanel Grid.Column="2" Margin="8,0,0,0">
-                    <controls1:StartHearthstoneButton DockPanel.Dock="Top" Margin="0,0,0,12"/>
                     <Border Name="PanelVersionComboBox" BorderThickness="1" BorderBrush="#34445A" Background="#1C2533" Visibility="Collapsed" Margin="0,0,0,5" DockPanel.Dock="Top" CornerRadius="7" Padding="4">
                         <DockPanel>
                             <TextBlock Text="{lex:LocTextUpper MainWindow_Label_SelectedVersion}" FontWeight="SemiBold" FontSize="14" VerticalAlignment="Center" Margin="5,0,0,0" Foreground="#EDF2FA"/>

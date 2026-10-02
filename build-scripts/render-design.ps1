@@ -34,6 +34,9 @@ class DesignRender {
             HearthDb.Config.AutoLoadCardDefs = false;
             HearthDb.Cards.LoadBaseData(HearthDb.Cards.GetBundledBaseData());
             var app = new App(); app.InitializeComponent();
+            app.Startup -= (StartupEventHandler)Delegate.CreateDelegate(typeof(StartupEventHandler), app,
+                typeof(App).GetMethod("App_OnStartup", BindingFlags.Instance | BindingFlags.NonPublic));
+            app.ShutdownMode = ShutdownMode.OnExplicitShutdown;
             Hearthstone_Deck_Tracker.Utility.LocUtil.UpdateCultureInfo();
             System.Threading.SynchronizationContext.SetSynchronizationContext(new DispatcherSynchronizationContext());
             var window = Core.MainWindow;
@@ -61,12 +64,16 @@ class DesignRender {
                 picker.UpdateDecks();
                 var selected = DeckList.Instance.Decks[0];
                 panel.SetDeck(selected);
+                ((MainWindowMenuView)window.FindName("MainWindowMenu")).SelectedDecks = new[] { selected };
                 window.GetType().GetProperty("SelectedDeckName").SetValue(window, selected.Name, null);
                 window.GetType().GetMethod("OnPropertyChanged", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public, null, new[] { typeof(string) }, null).Invoke(window, new object[] { "SelectedDeckName" });
                 var model = (DeckChartsViewModel)history.DataContext;
                 model.HasDeck = true;
                 model.Games = Enumerable.Range(0, 8).Select(i => new GameStats {
-                    OpponentHero = classes[i % classes.Length], Result = i % 3 == 0 ? GameResult.Loss : GameResult.Win,
+                    PlayerHero = selected.Class,
+                    OpponentHero = classes[i % classes.Length],
+                    OpponentName = i == 7 ? null : new[] { "ShadowFox", "FrostWolf", "ArcaneStormWithAVeryLongNickname", "IronShield" }[i % 4],
+                    Result = i % 3 == 0 ? GameResult.Loss : GameResult.Win,
                     StartTime = DateTime.Today.AddDays(-i / 3).AddHours(18).AddMinutes(-i * 13),
                     EndTime = DateTime.Today.AddDays(-i / 3).AddHours(18).AddMinutes(-i * 13 + 9),
                     Turns = 7 + i, Coin = i % 2 == 0, Note = i == 0 ? "Не хватило ответа на последнюю угрозу." : null
@@ -92,7 +99,7 @@ class DesignRender {
             var png = new PngBitmapEncoder(); png.Frames.Add(BitmapFrame.Create(bitmap));
             using(var output = File.Create(args[1])) png.Save(output);
             Console.WriteLine("Rendered " + args[1]); return 0;
-        } catch(Exception e) { Console.WriteLine(e); return 1; }
+        } catch(Exception e) { Console.WriteLine(e); Environment.Exit(1); return 1; }
     }
 }
 '@
